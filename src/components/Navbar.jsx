@@ -18,7 +18,7 @@ const Navbar = () => {
             {/* Logo */}
             <div className=' flex items-center gap-1 cursor-pointer '>
               <div> 
-                <img src="/src/assets/mainlogo.png" alt='logo' className=' w-11 h-11 bg-black  opacity-85 rounded-full hover:opacity-100 transition-opacity ' />
+                <img src="/src/assets/mainlogo.png" alt='logo' className=' w-11 h-11 bg-black  opacity-88 rounded-full hover:opacity-100 transition-opacity ' />
               </div>
             </div>
 
