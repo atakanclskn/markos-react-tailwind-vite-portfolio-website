@@ -10,3 +10,24 @@
     transform: translateX(-100%);
   }
 }
+
+.gradient-mask::before,
+.gradient-mask::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 10%;
+  height: 100%;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.gradient-mask::before {
+  left: 0;
+  background: linear-gradient(to right, white, transparent);
+}
+
+.gradient-mask::after {
+  right: 0;
+  background: linear-gradient(to left, white, transparent);
+}
