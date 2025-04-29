@@ -50,7 +50,7 @@ const Navbar = () => {
 
         {/* Desktop Contact Button */}
         <button className='hidden md:block bg-red-800 text-white px-6 py-2.5 rounded-lg hover:bg-red-900 text-sm font-medium transition-all hover:shadow-lg hover:shadow-red-100'>
-          <a href="#newsletter">Contact Me</a>
+          <a href="#home">Contact Me</a>
         </button>
 
         {/* Mobile Menu with animation */}

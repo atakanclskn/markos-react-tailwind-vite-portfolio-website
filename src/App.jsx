@@ -7,6 +7,8 @@ import Hero from './components/Hero'
 import CompanyLogo from './components/CompanyLogo'
 import PurposeSection from './components/PurposeSection'
 import PortfolioSection from './components/PortfolioSection'
+import Footer from './components/Footer'
+import AboutSection from './components/AboutSection'
 
 
 
@@ -22,6 +24,11 @@ function App() {
         <CompanyLogo />
         <PurposeSection/>
         <PortfolioSection />
+        <AboutSection />
+
+        <div className="bg-black text-white">
+        <Footer />
+        </div>
 
       </div>
     </main>
