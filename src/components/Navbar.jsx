@@ -49,7 +49,7 @@ const Navbar = () => {
             }`}
           >
             <img
-              src="/src/assets/mainlogo.png"
+              src="/assets/mainlogo.png"
               alt="logo"
               className="w-10 h-10 rounded-full bg-black/70 hover:opacity-100 transition-opacity"
             />
