@@ -11,6 +11,7 @@
   }
 }
 
+
 .gradient-mask::before,
 .gradient-mask::after {
   content: '';
@@ -30,4 +31,27 @@
 .gradient-mask::after {
   right: 0;
   background: linear-gradient(to left, white, transparent);
+}
+
+@keyframes shine {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shine-text {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #999999 50%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 2s linear infinite;
 }
