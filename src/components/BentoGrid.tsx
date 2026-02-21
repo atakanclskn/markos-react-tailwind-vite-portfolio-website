@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 
@@ -94,7 +94,7 @@ interface BentoCardProps {
 function BentoCard({ category, images, configIndex, cardIndex, staggerDelay, onClick }: BentoCardProps) {
     const [activeImage, setActiveImage] = useState(0);
     const [showNext, setShowNext] = useState(false);
-    const nextImageRef = useRef(0);
+    const [nextImage, setNextImage] = useState(0);
     // Each card holds its own "applied" config, delayed from the parent
     const [appliedConfig, setAppliedConfig] = useState(configIndex);
     const { theme } = useTheme();
@@ -113,10 +113,11 @@ function BentoCard({ category, images, configIndex, cardIndex, staggerDelay, onC
     useEffect(() => {
         const baseDelay = 5000 + Math.random() * 4000;
         const interval = setInterval(() => {
-            nextImageRef.current = (activeImage + 1) % images.length;
+            const next = (activeImage + 1) % images.length;
+            setNextImage(next);
             setShowNext(true);
             const timer = setTimeout(() => {
-                setActiveImage(nextImageRef.current);
+                setActiveImage(next);
                 setShowNext(false);
             }, 2500);
             return () => clearTimeout(timer);
@@ -158,8 +159,8 @@ function BentoCard({ category, images, configIndex, cardIndex, staggerDelay, onC
             <AnimatePresence>
                 {showNext && (
                     <motion.img
-                        key={`crossfade-${nextImageRef.current}`}
-                        src={images[nextImageRef.current]}
+                        key={`crossfade-${nextImage}`}
+                        src={images[nextImage]}
                         alt={category}
                         className="absolute inset-0 h-full w-full object-cover"
                         initial={{ opacity: 0 }}

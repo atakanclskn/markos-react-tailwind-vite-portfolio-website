@@ -11,20 +11,21 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [theme, setTheme] = useState<Theme>('dark');
-    const [mounted, setMounted] = useState(false);
-
-    // Load saved theme on mount
-    useEffect(() => {
-        const saved = localStorage.getItem('markos-theme') as Theme | null;
-        if (saved) {
-            setTheme(saved);
-            if (saved === 'light') {
-                document.body.classList.add('light');
-            }
+    const [theme, setTheme] = useState<Theme>(() => {
+        if (typeof window !== 'undefined') {
+            return (localStorage.getItem('markos-theme') as Theme) || 'dark';
         }
-        setMounted(true);
-    }, []);
+        return 'dark';
+    });
+
+    // Sync body class when theme changes
+    useEffect(() => {
+        if (theme === 'light') {
+            document.body.classList.add('light');
+        } else {
+            document.body.classList.remove('light');
+        }
+    }, [theme]);
 
     const toggleTheme = useCallback((event?: React.MouseEvent) => {
         const newTheme: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -63,11 +64,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             overlay.remove();
         }, 1000);
     }, [theme]);
-
-    // Prevent flash of wrong theme
-    if (!mounted) {
-        return null;
-    }
 
     return (
         <ThemeContext.Provider value={{ theme, toggleTheme }}>
