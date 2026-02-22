@@ -68,8 +68,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         await Promise.all([
             // Logo: shrink and move to top-left (navbar position)
             logoControls.start({
-                scale: 0.35,
-                x: 0,
+                scale: 1,
                 y: '-42vh',
                 transition: {
                     duration: 1.1,
@@ -177,8 +176,8 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             <div className="relative z-10 flex flex-col items-center gap-8">
                 <motion.div
                     className="flex flex-col items-center leading-none"
-                    initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    initial={{ opacity: 0, scale: 2.4, y: 20 }}
+                    animate={{ opacity: 1, scale: 3, y: 0 }}
                     transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
                     style={{ willChange: 'transform' }}
                 >
@@ -186,15 +185,16 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                         className="flex flex-col items-center leading-none"
                         animate={logoControls}
                     >
+                        {/* Identical styles to Navbar logo */}
                         <h1
-                            className="text-4xl tracking-[0.3em] text-white sm:text-5xl md:text-6xl lg:text-7xl"
+                            className="text-xl tracking-[0.2em] text-white sm:text-2xl"
                             style={{ fontFamily: 'var(--font-monoton)' }}
                         >
                             MARKOS
                         </h1>
                         <span
-                            className="text-xs font-light tracking-[0.5em] text-white/60 uppercase sm:text-sm md:text-base"
-                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '6px' }}
+                            className="text-[0.6rem] tracking-[0.4em] text-white/60 uppercase sm:text-[0.75rem]"
+                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '2px' }}
                         >
                             STUDIO
                         </span>

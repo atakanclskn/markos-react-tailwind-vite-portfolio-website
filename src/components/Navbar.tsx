@@ -71,7 +71,7 @@ export default function Navbar({ visible }: NavbarProps) {
                         }}
                     >
                         {/* Left Nav Links */}
-                        <div className="hidden flex-1 items-center gap-10 md:flex">
+                        <div className="hidden items-center gap-8 md:flex" style={{ marginRight: 'auto', paddingLeft: '4vw' }}>
                             {LEFT_LINKS.map((link) => (
                                 <a
                                     key={link.label}
@@ -123,7 +123,7 @@ export default function Navbar({ visible }: NavbarProps) {
                         </div>
 
                         {/* Right Nav Links */}
-                        <div className="hidden flex-1 items-center justify-end gap-10 md:flex">
+                        <div className="hidden items-center gap-8 md:flex" style={{ marginLeft: 'auto', paddingRight: '4vw' }}>
                             {RIGHT_LINKS.map((link) => (
                                 <a
                                     key={link.label}
