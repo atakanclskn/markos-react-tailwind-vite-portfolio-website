@@ -68,20 +68,20 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         await Promise.all([
             // Logo: shrink and move to top-left (navbar position)
             logoControls.start({
-                scale: 1,
-                y: '-42vh',
+                scale: 0.333,
+                y: '-40vh',
                 transition: {
-                    duration: 1.1,
-                    ease: [0.76, 0, 0.24, 1], // smooth cubic bezier
+                    duration: 1.4,
+                    ease: [0.76, 0, 0.24, 1],
                 },
             }),
             // Background & carousel: fade out
             bgControls.start({
                 opacity: 0,
                 transition: {
-                    duration: 0.9,
+                    duration: 1.0,
                     ease: [0.4, 0, 0.2, 1],
-                    delay: 0.2,
+                    delay: 0.4,
                 },
             }),
         ]);
@@ -176,8 +176,8 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             <div className="relative z-10 flex flex-col items-center gap-8">
                 <motion.div
                     className="flex flex-col items-center leading-none"
-                    initial={{ opacity: 0, scale: 2.4, y: 20 }}
-                    animate={{ opacity: 1, scale: 3, y: 0 }}
+                    initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
                     style={{ willChange: 'transform' }}
                 >
@@ -185,16 +185,17 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                         className="flex flex-col items-center leading-none"
                         animate={logoControls}
                     >
-                        {/* Identical styles to Navbar logo */}
+                        {/* 3x of navbar sizes: text-xl→text-[3.75rem], text-2xl→text-[4.5rem] */}
                         <h1
-                            className="text-xl tracking-[0.2em] text-white sm:text-2xl"
+                            className="text-[3.75rem] tracking-[0.2em] text-white sm:text-[4.5rem]"
                             style={{ fontFamily: 'var(--font-monoton)' }}
                         >
                             MARKOS
                         </h1>
+                        {/* 3x of navbar STUDIO: text-[0.6rem]→text-[1.8rem], text-[0.75rem]→text-[2.25rem] */}
                         <span
-                            className="text-[0.6rem] tracking-[0.4em] text-white/60 uppercase sm:text-[0.75rem]"
-                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '2px' }}
+                            className="text-[1.8rem] tracking-[0.4em] text-white/60 uppercase sm:text-[2.25rem]"
+                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '9px' }}
                         >
                             STUDIO
                         </span>

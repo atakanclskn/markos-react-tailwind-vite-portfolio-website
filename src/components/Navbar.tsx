@@ -49,12 +49,12 @@ export default function Navbar({ visible }: NavbarProps) {
             {visible && (
                 <motion.header
                     className="fixed top-0 left-0 z-50 w-full"
-                    initial={{ y: -100, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
                     <nav
-                        className="relative flex items-center justify-between px-6 py-4 transition-all duration-500 md:px-12 lg:px-20"
+                        className="relative flex items-center justify-center px-6 py-4 transition-all duration-500 md:px-12 lg:px-20"
                         style={{
                             backgroundColor: scrolled
                                 ? theme === 'dark'
@@ -71,7 +71,12 @@ export default function Navbar({ visible }: NavbarProps) {
                         }}
                     >
                         {/* Left Nav Links */}
-                        <div className="hidden items-center gap-8 md:flex" style={{ marginRight: 'auto', paddingLeft: '4vw' }}>
+                        <motion.div
+                            className="hidden flex-1 items-center justify-end gap-8 md:flex"
+                            initial={{ x: 40, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
                             {LEFT_LINKS.map((link) => (
                                 <a
                                     key={link.label}
@@ -95,11 +100,11 @@ export default function Navbar({ visible }: NavbarProps) {
                                     />
                                 </a>
                             ))}
-                        </div>
+                        </motion.div>
 
                         {/* Center Logo */}
                         <div
-                            className="flex flex-col items-center leading-none"
+                            className="mx-8 flex flex-col items-center leading-none md:mx-12"
                         >
                             <h1
                                 className="text-xl tracking-[0.2em] sm:text-2xl"
@@ -123,7 +128,12 @@ export default function Navbar({ visible }: NavbarProps) {
                         </div>
 
                         {/* Right Nav Links */}
-                        <div className="hidden items-center gap-8 md:flex" style={{ marginLeft: 'auto', paddingRight: '4vw' }}>
+                        <motion.div
+                            className="hidden flex-1 items-center justify-start gap-8 md:flex"
+                            initial={{ x: -40, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                        >
                             {RIGHT_LINKS.map((link) => (
                                 <a
                                     key={link.label}
@@ -147,11 +157,11 @@ export default function Navbar({ visible }: NavbarProps) {
                                     />
                                 </a>
                             ))}
-                        </div>
+                        </motion.div>
 
                         {/* Mobile Menu Button */}
                         <button
-                            className="flex flex-col gap-[5px] md:hidden"
+                            className="absolute right-6 flex flex-col gap-[5px] md:hidden"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
