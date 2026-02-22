@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Galeri | Markos Studio',
-    description: 'Markos Studio fotograf galerisi',
+    title: 'Gallery | Markos Studio',
+    description: 'Markos Studio photography gallery',
 };
 
 export default function GalleryLayout({

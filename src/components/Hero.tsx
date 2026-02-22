@@ -45,8 +45,8 @@ export default function Hero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                 >
-                    Her Karede Bir{' '}
-                    <span className="text-gradient-brand">Hikaye</span>
+                    Every Frame a{' '}
+                    <span className="text-gradient-brand">Story</span>
                 </motion.h2>
 
                 {/* Subtitle */}
@@ -63,9 +63,9 @@ export default function Hero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.7 }}
                 >
-                    Markos Studio olarak anlarinizi zamansiz sanata donusturuyoruz.
-                    Dogadan modaya, portredan urune kadar her alanda profesyonel
-                    fotograf hizmeti sunuyoruz.
+                    At Markos Studio, we transform your moments into timeless art.
+                    From nature to fashion, portraits to products, we provide professional
+                    photography services across every field.
                 </motion.p>
 
                 {/* CTA button */}
@@ -91,7 +91,7 @@ export default function Hero() {
                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                         }}
                     >
-                        <span className="relative z-10">Portfoyumuzu Kesfet</span>
+                        <span className="relative z-10">Explore Our Portfolio</span>
                         <svg
                             className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
                             fill="none"
@@ -116,7 +116,7 @@ export default function Hero() {
                 </motion.div>
             </div>
 
-            {/* Scroll indicator - positioned at very bottom of viewport, no longer overlapping CTA */}
+            {/* Scroll indicator */}
             <motion.div
                 className="absolute bottom-6 left-1/2 -translate-x-1/2"
                 initial={{ opacity: 0 }}

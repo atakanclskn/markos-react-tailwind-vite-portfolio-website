@@ -24,7 +24,7 @@ export default function FounderSection() {
                             color: 'var(--color-brand)',
                         }}
                     >
-                        Kurucu
+                        Founder
                     </p>
                     <h2
                         className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
@@ -33,7 +33,7 @@ export default function FounderSection() {
                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                         }}
                     >
-                        Biz Kimiz
+                        About Us
                     </h2>
                 </motion.div>
 
@@ -50,7 +50,7 @@ export default function FounderSection() {
                         <div className="relative overflow-hidden rounded-2xl">
                             <img
                                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80"
-                                alt="Onur Satici - Markos Studio Kurucu"
+                                alt="Onur Satici - Markos Studio Founder"
                                 className="aspect-[3/4] w-full object-cover"
                             />
                             <div
@@ -92,7 +92,7 @@ export default function FounderSection() {
                                 color: 'var(--color-brand)',
                             }}
                         >
-                            Kurucu & Fotograf Sanatcisi
+                            Founder & Photography Artist
                         </p>
                         <p
                             className="mb-6 text-base leading-relaxed"
@@ -104,10 +104,10 @@ export default function FounderSection() {
                                         : 'rgba(0,0,0,0.6)',
                             }}
                         >
-                            10 yili askin deneyimiyle Markos Studio&apos;nun arkasindaki yaratici guc.
-                            Dogal isik ve kompozisyonun ustasi olarak, her projeye benzersiz bir
-                            bakis acisi katmaktadir. Istanbul ve cevresinde calisarak, markalar ve
-                            bireyler icin unutulmaz goruller yaratmaktadir.
+                            The creative force behind Markos Studio with over 10 years of experience.
+                            As a master of natural light and composition, he brings a unique perspective
+                            to every project. Working in and around Istanbul, he creates unforgettable
+                            visuals for brands and individuals alike.
                         </p>
                         <p
                             className="text-base leading-relaxed"
@@ -119,18 +119,18 @@ export default function FounderSection() {
                                         : 'rgba(0,0,0,0.6)',
                             }}
                         >
-                            Manzara fotografciligindaki tutkusu, onu dunyanin dort bir yanina
-                            goturmus ve calismalari uluslararasi sergilerde yer almistir.
-                            Markos Studio olarak odak noktamiz sizin hikayenizi en etkileyici
-                            sekilde anlatmaktir.
+                            His passion for landscape photography has taken him around the world,
+                            with his work featured in international exhibitions.
+                            At Markos Studio, our focus is telling your story in the most
+                            compelling way possible.
                         </p>
 
                         {/* Stats */}
                         <div className="mt-10 grid grid-cols-3 gap-6">
                             {[
-                                { value: '10+', label: 'Yil Deneyim' },
-                                { value: '500+', label: 'Proje' },
-                                { value: '50+', label: 'Marka' },
+                                { value: '10+', label: 'Years Experience' },
+                                { value: '500+', label: 'Projects' },
+                                { value: '50+', label: 'Brands' },
                             ].map((stat) => (
                                 <div key={stat.label}>
                                     <p

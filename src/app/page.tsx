@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AnimatePresence, LayoutGroup } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Preloader from '@/components/Preloader';
 import Navbar from '@/components/Navbar';
@@ -17,9 +17,10 @@ export default function HomePage() {
   const router = useRouter();
 
   const handlePreloaderComplete = () => {
+    // Preloader logo has already animated to navbar position
+    // Show navbar immediately — logo is already where it should be
     setLoading(false);
-    // Small delay before showing navbar to allow smooth exit
-    setTimeout(() => setShowNavbar(true), 200);
+    setShowNavbar(true);
   };
 
   const handleCategoryClick = (category: string) => {
@@ -32,8 +33,8 @@ export default function HomePage() {
   };
 
   return (
-    <LayoutGroup>
-      <AnimatePresence mode="wait">
+    <>
+      <AnimatePresence>
         {loading && (
           <Preloader key="preloader" onComplete={handlePreloaderComplete} />
         )}
@@ -53,6 +54,6 @@ export default function HomePage() {
           <Footer />
         </>
       )}
-    </LayoutGroup>
+    </>
   );
 }

@@ -9,11 +9,17 @@ interface NavbarProps {
     visible: boolean;
 }
 
-const NAV_LINKS = [
-    { label: 'Biz Kimiz', href: '#founder' },
-    { label: 'Kategoriler', href: '#categories' },
-    { label: 'Iletisim', href: '#contact' },
+const LEFT_LINKS = [
+    { label: 'About Us', href: '#founder' },
+    { label: 'Categories', href: '#categories' },
 ];
+
+const RIGHT_LINKS = [
+    { label: 'Founder', href: '#founder' },
+    { label: 'Contact', href: '#contact' },
+];
+
+const ALL_LINKS = [...LEFT_LINKS, ...RIGHT_LINKS];
 
 export default function Navbar({ visible }: NavbarProps) {
     const [scrolled, setScrolled] = useState(false);
@@ -45,7 +51,7 @@ export default function Navbar({ visible }: NavbarProps) {
                     className="fixed top-0 left-0 z-50 w-full"
                     initial={{ y: -100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
                 >
                     <nav
                         className="relative flex items-center justify-between px-6 py-4 transition-all duration-500 md:px-12 lg:px-20"
@@ -64,22 +70,61 @@ export default function Navbar({ visible }: NavbarProps) {
                                 : '1px solid transparent',
                         }}
                     >
-                        {/* Logo */}
-                        <motion.h1
-                            layoutId="studio-logo"
-                            className="text-xl tracking-[0.2em] sm:text-2xl"
-                            style={{
-                                fontFamily: 'var(--font-monoton)',
-                                color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
-                            }}
-                            transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        >
-                            MARKOS
-                        </motion.h1>
+                        {/* Left Nav Links */}
+                        <div className="hidden flex-1 items-center gap-10 md:flex">
+                            {LEFT_LINKS.map((link) => (
+                                <a
+                                    key={link.label}
+                                    href={link.href}
+                                    onClick={(e) => handleNavClick(e, link.href)}
+                                    className="group relative text-sm font-medium tracking-wider uppercase transition-colors duration-300"
+                                    style={{
+                                        fontFamily: 'var(--font-outfit)',
+                                        color:
+                                            theme === 'dark'
+                                                ? 'rgba(255,255,255,0.7)'
+                                                : 'rgba(0,0,0,0.7)',
+                                    }}
+                                >
+                                    {link.label}
+                                    <span
+                                        className="absolute -bottom-1 left-0 h-[1px] w-0 transition-all duration-300 group-hover:w-full"
+                                        style={{
+                                            backgroundColor: 'var(--color-brand)',
+                                        }}
+                                    />
+                                </a>
+                            ))}
+                        </div>
 
-                        {/* Desktop Nav Links */}
-                        <div className="hidden items-center gap-10 md:flex">
-                            {NAV_LINKS.map((link) => (
+                        {/* Center Logo */}
+                        <div
+                            className="flex flex-col items-center leading-none"
+                        >
+                            <h1
+                                className="text-xl tracking-[0.2em] sm:text-2xl"
+                                style={{
+                                    fontFamily: 'var(--font-monoton)',
+                                    color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
+                                }}
+                            >
+                                MARKOS
+                            </h1>
+                            <span
+                                className="text-[0.6rem] tracking-[0.4em] uppercase sm:text-[0.75rem]"
+                                style={{
+                                    fontFamily: 'var(--font-outfit)',
+                                    color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                                    marginTop: '2px',
+                                }}
+                            >
+                                STUDIO
+                            </span>
+                        </div>
+
+                        {/* Right Nav Links */}
+                        <div className="hidden flex-1 items-center justify-end gap-10 md:flex">
+                            {RIGHT_LINKS.map((link) => (
                                 <a
                                     key={link.label}
                                     href={link.href}
@@ -149,7 +194,7 @@ export default function Navbar({ visible }: NavbarProps) {
                                 }}
                             >
                                 <div className="flex flex-col gap-6 px-6 py-8">
-                                    {NAV_LINKS.map((link, i) => (
+                                    {ALL_LINKS.map((link, i) => (
                                         <motion.a
                                             key={link.label}
                                             href={link.href}

@@ -5,13 +5,13 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 
 const SUBJECT_OPTIONS = [
-    'Genel Bilgi',
-    'Landscape Fotograf',
-    'Portre Fotograf',
-    'Fashion Fotograf',
-    'Urun Fotograf',
-    'Dugun & Organizasyon',
-    'Diger',
+    'General Inquiry',
+    'Landscape Photography',
+    'Portrait Photography',
+    'Fashion Photography',
+    'Product Photography',
+    'Wedding & Events',
+    'Other',
 ];
 
 export default function ContactSection() {
@@ -68,7 +68,7 @@ export default function ContactSection() {
                             color: 'var(--color-brand)',
                         }}
                     >
-                        Iletisim
+                        Contact
                     </p>
                     <h2
                         className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
@@ -77,7 +77,7 @@ export default function ContactSection() {
                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                         }}
                     >
-                        Birlikte Calisalim
+                        Let&apos;s Work Together
                     </h2>
                 </motion.div>
 
@@ -97,7 +97,7 @@ export default function ContactSection() {
                                 color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                             }}
                         >
-                            Projenize Baslayalim
+                            Start Your Project
                         </h3>
                         <p
                             className="mb-10 text-base leading-relaxed"
@@ -109,8 +109,8 @@ export default function ContactSection() {
                                         : 'rgba(0,0,0,0.5)',
                             }}
                         >
-                            Projenizi hayata gecirmek icin bizimle iletisime gecin.
-                            Size en kisa surede donecegiz.
+                            Get in touch to bring your project to life.
+                            We&apos;ll get back to you as soon as possible.
                         </p>
 
                         {/* Contact details */}
@@ -169,7 +169,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                                         }}
                                     >
-                                        Telefon
+                                        Phone
                                     </p>
                                     <p
                                         className="text-sm"
@@ -204,7 +204,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                                         }}
                                     >
-                                        Lokasyon
+                                        Location
                                     </p>
                                     <p
                                         className="text-sm"
@@ -213,7 +213,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        Istanbul, Turkiye
+                                        Istanbul, Turkey
                                     </p>
                                 </div>
                             </div>
@@ -238,7 +238,7 @@ export default function ContactSection() {
                                     color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                                 }}
                             >
-                                Su an yeni projeler icin musaitiz
+                                Currently available for new projects
                             </span>
                         </div>
                     </motion.div>
@@ -275,7 +275,7 @@ export default function ContactSection() {
                                         color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                                     }}
                                 >
-                                    Mesajiniz Iletildi
+                                    Message Sent
                                 </h4>
                                 <p
                                     className="text-sm"
@@ -284,7 +284,7 @@ export default function ContactSection() {
                                         color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                     }}
                                 >
-                                    En kisa surede size donecegiz.
+                                    We&apos;ll get back to you shortly.
                                 </p>
                                 <button
                                     className="mt-6 text-sm font-medium underline transition-colors duration-300"
@@ -294,7 +294,7 @@ export default function ContactSection() {
                                     }}
                                     onClick={() => setSubmitted(false)}
                                 >
-                                    Yeni mesaj gonder
+                                    Send another message
                                 </button>
                             </motion.div>
                         ) : (
@@ -303,7 +303,7 @@ export default function ContactSection() {
                                 <div>
                                     <input
                                         type="text"
-                                        placeholder="Adiniz"
+                                        placeholder="Your Name"
                                         required
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -322,7 +322,7 @@ export default function ContactSection() {
                                         style={inputBaseStyle}
                                     >
                                         <option value="" disabled>
-                                            Konu Secin
+                                            Select Subject
                                         </option>
                                         {SUBJECT_OPTIONS.map((opt) => (
                                             <option key={opt} value={opt}>
@@ -336,7 +336,7 @@ export default function ContactSection() {
                                 <div>
                                     <input
                                         type="email"
-                                        placeholder="E-posta Adresiniz"
+                                        placeholder="Your Email"
                                         required
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -349,7 +349,7 @@ export default function ContactSection() {
                                 <div>
                                     <input
                                         type="tel"
-                                        placeholder="Telefon Numaraniz"
+                                        placeholder="Your Phone Number"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
@@ -360,7 +360,7 @@ export default function ContactSection() {
                                 {/* Message */}
                                 <div>
                                     <textarea
-                                        placeholder="Mesajiniz"
+                                        placeholder="Your Message"
                                         required
                                         rows={5}
                                         value={formData.message}
@@ -383,7 +383,7 @@ export default function ContactSection() {
                                     whileHover={{ scale: 1.01 }}
                                     whileTap={{ scale: 0.99 }}
                                 >
-                                    {isSubmitting ? 'Gonderiliyor...' : 'Mesaj Gonder'}
+                                    {isSubmitting ? 'Sending...' : 'Send Message'}
                                 </motion.button>
                             </form>
                         )}

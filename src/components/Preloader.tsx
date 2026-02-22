@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import { useEffect, useState, useCallback } from 'react';
 
 // Demo placeholder images for development
 const PLACEHOLDER_IMAGES = [
@@ -20,6 +20,11 @@ interface PreloaderProps {
 export default function Preloader({ onComplete }: PreloaderProps) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [isExiting, setIsExiting] = useState(false);
+
+    const logoControls = useAnimation();
+    const bgControls = useAnimation();
+    const progressBarControls = useAnimation();
 
     // Carousel: cycle through images
     useEffect(() => {
@@ -49,13 +54,49 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         return () => clearInterval(timer);
     }, []);
 
-    // Trigger onComplete when progress reaches 100
+    const startExitAnimation = useCallback(async () => {
+        if (isExiting) return;
+        setIsExiting(true);
+
+        // First: fade out the progress bar
+        await progressBarControls.start({
+            opacity: 0,
+            transition: { duration: 0.3, ease: 'easeOut' },
+        });
+
+        // Then: simultaneously move logo to navbar position and fade background
+        await Promise.all([
+            // Logo: shrink and move to top-left (navbar position)
+            logoControls.start({
+                scale: 0.35,
+                x: 0,
+                y: '-42vh',
+                transition: {
+                    duration: 1.1,
+                    ease: [0.76, 0, 0.24, 1], // smooth cubic bezier
+                },
+            }),
+            // Background & carousel: fade out
+            bgControls.start({
+                opacity: 0,
+                transition: {
+                    duration: 0.9,
+                    ease: [0.4, 0, 0.2, 1],
+                    delay: 0.2,
+                },
+            }),
+        ]);
+
+        onComplete();
+    }, [isExiting, logoControls, bgControls, progressBarControls, onComplete]);
+
+    // Trigger exit animation when progress reaches 100
     useEffect(() => {
         if (progress >= 100) {
-            const timeout = setTimeout(onComplete, 800);
+            const timeout = setTimeout(startExitAnimation, 400);
             return () => clearTimeout(timeout);
         }
-    }, [progress, onComplete]);
+    }, [progress, startExitAnimation]);
 
     const getImageIndex = (offset: number) =>
         (currentIndex + offset + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length;
@@ -64,11 +105,19 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         <motion.div
             className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
             style={{ backgroundColor: '#050505' }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: 'easeInOut' }}
         >
+            {/* Background overlay for fade */}
+            <motion.div
+                className="absolute inset-0"
+                style={{ backgroundColor: '#050505' }}
+                animate={bgControls}
+            />
+
             {/* Background Carousel - 3 images */}
-            <div className="absolute inset-0 flex items-center justify-center gap-4 px-8 opacity-[0.07]">
+            <motion.div
+                className="absolute inset-0 flex items-center justify-center gap-4 px-8 opacity-[0.07]"
+                animate={bgControls}
+            >
                 {/* Left image (small) */}
                 <motion.div
                     className="relative h-[40vh] w-[20vw] flex-shrink-0 overflow-hidden rounded-lg"
@@ -122,30 +171,35 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                         transition={{ duration: 1.5 }}
                     />
                 </motion.div>
-            </div>
+            </motion.div>
 
             {/* Logo */}
             <div className="relative z-10 flex flex-col items-center gap-8">
-                <motion.h1
-                    layoutId="studio-logo"
-                    className="text-4xl tracking-[0.3em] text-white sm:text-5xl md:text-6xl lg:text-7xl"
-                    style={{ fontFamily: 'var(--font-monoton)' }}
+                <motion.div
+                    className="flex flex-col items-center leading-none"
                     initial={{ opacity: 0, scale: 0.8, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    style={{ willChange: 'transform' }}
                 >
-                    MARKOS
-                </motion.h1>
-
-                <motion.p
-                    className="text-sm font-light tracking-[0.5em] text-white/60 uppercase"
-                    style={{ fontFamily: 'var(--font-outfit)' }}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6, duration: 0.8 }}
-                >
-                    STUDIO
-                </motion.p>
+                    <motion.div
+                        className="flex flex-col items-center leading-none"
+                        animate={logoControls}
+                    >
+                        <h1
+                            className="text-4xl tracking-[0.3em] text-white sm:text-5xl md:text-6xl lg:text-7xl"
+                            style={{ fontFamily: 'var(--font-monoton)' }}
+                        >
+                            MARKOS
+                        </h1>
+                        <span
+                            className="text-xs font-light tracking-[0.5em] text-white/60 uppercase sm:text-sm md:text-base"
+                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '6px' }}
+                        >
+                            STUDIO
+                        </span>
+                    </motion.div>
+                </motion.div>
 
                 {/* Progress bar */}
                 <motion.div
@@ -155,10 +209,14 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                     transition={{ delay: 1 }}
                 >
                     <motion.div
-                        className="h-full rounded-full bg-white/50"
-                        style={{ width: `${progress}%` }}
-                        transition={{ ease: 'linear' }}
-                    />
+                        animate={progressBarControls}
+                    >
+                        <motion.div
+                            className="h-[1px] rounded-full bg-white/50"
+                            style={{ width: `${progress}%` }}
+                            transition={{ ease: 'linear' }}
+                        />
+                    </motion.div>
                 </motion.div>
             </div>
         </motion.div>

@@ -11,7 +11,7 @@ const CATEGORY_IMAGES: Record<string, string[]> = {
         'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80',
         'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
     ],
-    Portre: [
+    Portrait: [
         'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80',
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80',
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&q=80',
@@ -259,7 +259,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                         color: 'var(--color-brand)',
                     }}
                 >
-                    Portfolyo
+                    Portfolio
                 </p>
                 <h2
                     className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl"
@@ -268,7 +268,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                         color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                     }}
                 >
-                    Kategoriler
+                    Categories
                 </h2>
             </motion.div>
 

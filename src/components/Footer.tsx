@@ -24,15 +24,27 @@ export default function Footer() {
                 <div className="grid gap-12 md:grid-cols-3">
                     {/* Brand */}
                     <div>
-                        <h3
-                            className="mb-4 text-2xl tracking-[0.15em]"
-                            style={{
-                                fontFamily: 'var(--font-monoton)',
-                                color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
-                            }}
-                        >
-                            MARKOS
-                        </h3>
+                        <div className="mb-4 flex flex-col leading-none">
+                            <h3
+                                className="text-2xl tracking-[0.15em]"
+                                style={{
+                                    fontFamily: 'var(--font-monoton)',
+                                    color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
+                                }}
+                            >
+                                MARKOS
+                            </h3>
+                            <span
+                                className="text-[0.65rem] tracking-[0.4em] uppercase"
+                                style={{
+                                    fontFamily: 'var(--font-outfit)',
+                                    color: theme === 'dark' ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)',
+                                    marginTop: '3px',
+                                }}
+                            >
+                                STUDIO
+                            </span>
+                        </div>
                         <p
                             className="max-w-xs text-sm leading-relaxed"
                             style={{
@@ -43,8 +55,8 @@ export default function Footer() {
                                         : 'rgba(0,0,0,0.4)',
                             }}
                         >
-                            Her karede bir hikaye. Premium fotograf hizmetleri
-                            ile anlarinizi sanata donusturuyoruz.
+                            Every frame a story. Premium photography services
+                            that transform your moments into art.
                         </p>
                     </div>
 
@@ -57,7 +69,7 @@ export default function Footer() {
                                 color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                             }}
                         >
-                            Sosyal Medya
+                            Social Media
                         </h4>
                         <div className="flex flex-col gap-3">
                             {footerLinks.map((link) => (
@@ -88,7 +100,7 @@ export default function Footer() {
                                 color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                             }}
                         >
-                            Tema
+                            Theme
                         </h4>
                         <motion.button
                             onClick={(e) => toggleTheme(e)}
@@ -168,7 +180,7 @@ export default function Footer() {
                                     : 'rgba(0,0,0,0.3)',
                         }}
                     >
-                        &copy; {new Date().getFullYear()} Markos Studio. Tum haklari saklidir.
+                        &copy; {new Date().getFullYear()} Markos Studio. All rights reserved.
                     </p>
                     <p
                         className="text-xs"
@@ -180,7 +192,7 @@ export default function Footer() {
                                     : 'rgba(0,0,0,0.2)',
                         }}
                     >
-                        Istanbul, Turkiye
+                        Istanbul, Turkey
                     </p>
                 </div>
             </div>
