@@ -8,6 +8,13 @@ export default function Hero() {
 
     return (
         <section className="relative flex min-h-[100dvh] items-center justify-center px-6 pb-12 pt-24">
+            {/* Top gradient fade from preloader */}
+            <div
+                className="pointer-events-none absolute top-0 left-0 w-full h-32 z-20"
+                style={{
+                    background: 'linear-gradient(to bottom, #0a0a0a 0%, transparent 100%)',
+                }}
+            />
             {/* Subtle background gradient */}
             <div
                 className="pointer-events-none absolute inset-0"

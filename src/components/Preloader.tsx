@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 // Demo placeholder images for development
 const PLACEHOLDER_IMAGES = [
@@ -17,6 +17,7 @@ export default function Preloader() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [progress, setProgress] = useState(0);
     const [phase, setPhase] = useState<'loading' | 'transforming' | 'scrolling'>('loading');
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     // Carousel: cycle through images
     useEffect(() => {
@@ -57,11 +58,33 @@ export default function Preloader() {
         }
     }, [progress, phase]);
 
+    // After user scrolls past preloader, collapse it so they can't scroll back
+    useEffect(() => {
+        if (phase !== 'scrolling') return;
+
+        const handleScroll = () => {
+            if (sectionRef.current) {
+                const rect = sectionRef.current.getBoundingClientRect();
+                if (rect.bottom < 0) {
+                    sectionRef.current.style.height = '0px';
+                    sectionRef.current.style.minHeight = '0px';
+                    sectionRef.current.style.overflow = 'hidden';
+                    sectionRef.current.style.position = 'absolute';
+                    window.removeEventListener('scroll', handleScroll);
+                }
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [phase]);
+
     const getImageIndex = (offset: number) =>
         (currentIndex + offset + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length;
 
     return (
         <motion.div
+            ref={sectionRef}
             className="relative z-40 flex h-[100vh] w-full items-center justify-center overflow-hidden"
             style={{ backgroundColor: '#050505' }}
         >
@@ -133,7 +156,8 @@ export default function Preloader() {
             {/* Combined Progress / Scroll Indicator */}
             <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 z-10 flex-col items-center justify-center min-h-[80px]">
                 <motion.div
-                    className="relative overflow-hidden rounded-full"
+                    className="relative overflow-hidden"
+                    style={{ borderRadius: '2px' }}
                     initial={{ width: '192px', height: '1px', opacity: 0, backgroundColor: 'rgba(255,255,255,0.10)' }}
                     animate={{
                         opacity: 1,
@@ -154,25 +178,26 @@ export default function Preloader() {
                         transition={{ duration: 0.3 }}
                     />
 
-                    {/* Vertical Scroll Line Indicator */}
+                    {/* Vertical Scroll Line Indicator - pure CSS keyframe animation */}
                     {phase === 'scrolling' && (
-                        <motion.div
-                            className="absolute left-0 top-0 w-full bg-white"
-                            style={{ height: '33.33%' }}
-                            initial={{ y: '-100%', opacity: 0 }}
-                            animate={{ y: ['-100%', '300%'], opacity: 1 }}
-                            transition={{
-                                y: {
-                                    duration: 1.5,
-                                    repeat: Infinity,
-                                    ease: 'linear',
-                                },
-                                opacity: { duration: 0.3 }
+                        <div
+                            className="absolute left-0 top-0 w-full scroll-light-anim"
+                            style={{
+                                height: '33.33%',
+                                backgroundColor: '#ffffff',
                             }}
                         />
                     )}
                 </motion.div>
             </div>
+
+            {/* Bottom gradient fade into next section */}
+            <div
+                className="pointer-events-none absolute bottom-0 left-0 w-full h-32 z-20"
+                style={{
+                    background: 'linear-gradient(to bottom, transparent 0%, #0a0a0a 100%)',
+                }}
+            />
         </motion.div>
     );
 }

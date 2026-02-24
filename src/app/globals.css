@@ -172,3 +172,17 @@ body.light ::-webkit-scrollbar-thumb {
 .theme-transition-overlay.active {
   clip-path: circle(150% at var(--cx, 50%) var(--cy, 50%));
 }
+
+/* Scroll indicator light animation */
+@keyframes scroll-light {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(300%);
+  }
+}
+
+.scroll-light-anim {
+  animation: scroll-light 1.5s linear infinite;
+}
