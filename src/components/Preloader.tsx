@@ -13,17 +13,11 @@ const PLACEHOLDER_IMAGES = [
     'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=800&q=80',
 ];
 
-interface PreloaderProps {
-    onComplete: () => void;
-}
-
-export default function Preloader({ onComplete }: PreloaderProps) {
+export default function Preloader() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [progress, setProgress] = useState(0);
     const [isExiting, setIsExiting] = useState(false);
 
-    const logoControls = useAnimation();
-    const bgControls = useAnimation();
     const progressBarControls = useAnimation();
 
     // Carousel: cycle through images
@@ -64,30 +58,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
             transition: { duration: 0.3, ease: 'easeOut' },
         });
 
-        // Then: simultaneously move logo to navbar position and fade background
-        await Promise.all([
-            // Logo: shrink and move to top-left (navbar position)
-            logoControls.start({
-                scale: 0.333,
-                y: '-40vh',
-                transition: {
-                    duration: 1.4,
-                    ease: [0.76, 0, 0.24, 1],
-                },
-            }),
-            // Background & carousel: fade out
-            bgControls.start({
-                opacity: 0,
-                transition: {
-                    duration: 1.0,
-                    ease: [0.4, 0, 0.2, 1],
-                    delay: 0.4,
-                },
-            }),
-        ]);
-
-        onComplete();
-    }, [isExiting, logoControls, bgControls, progressBarControls, onComplete]);
+    }, [isExiting, progressBarControls]);
 
     // Trigger exit animation when progress reaches 100
     useEffect(() => {
@@ -102,20 +73,18 @@ export default function Preloader({ onComplete }: PreloaderProps) {
 
     return (
         <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+            className="relative z-40 flex h-[100vh] w-full items-center justify-center overflow-hidden"
             style={{ backgroundColor: '#050505' }}
         >
             {/* Background overlay for fade */}
             <motion.div
                 className="absolute inset-0"
                 style={{ backgroundColor: '#050505' }}
-                animate={bgControls}
             />
 
             {/* Background Carousel - 3 images */}
             <motion.div
                 className="absolute inset-0 flex items-center justify-center gap-4 px-8 opacity-[0.07]"
-                animate={bgControls}
             >
                 {/* Left image (small) */}
                 <motion.div
@@ -172,37 +141,8 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                 </motion.div>
             </motion.div>
 
-            {/* Logo */}
-            <div className="relative z-10 flex flex-col items-center gap-8">
-                <motion.div
-                    className="flex flex-col items-center leading-none"
-                    initial={{ opacity: 0, scale: 0.85, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    transition={{ duration: 1.2, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    style={{ willChange: 'transform' }}
-                >
-                    <motion.div
-                        className="flex flex-col items-center leading-none"
-                        animate={logoControls}
-                    >
-                        {/* 3x of navbar sizes: text-xl→text-[3.75rem], text-2xl→text-[4.5rem] */}
-                        <h1
-                            className="text-[3.75rem] tracking-[0.2em] text-white sm:text-[4.5rem]"
-                            style={{ fontFamily: 'var(--font-monoton)' }}
-                        >
-                            MARKOS
-                        </h1>
-                        {/* 3x of navbar STUDIO: text-[0.6rem]→text-[1.8rem], text-[0.75rem]→text-[2.25rem] */}
-                        <span
-                            className="text-[1.8rem] tracking-[0.4em] text-white/60 uppercase sm:text-[2.25rem]"
-                            style={{ fontFamily: 'var(--font-outfit)', marginTop: '9px' }}
-                        >
-                            STUDIO
-                        </span>
-                    </motion.div>
-                </motion.div>
-
-                {/* Progress bar */}
+            {/* Progress bar and other absolute elements */}
+            <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 z-10 flex-col items-center gap-8">
                 <motion.div
                     className="mt-8 h-[1px] w-48 overflow-hidden rounded-full bg-white/10"
                     initial={{ opacity: 0 }}
@@ -220,6 +160,26 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                     </motion.div>
                 </motion.div>
             </div>
+
+            {/* Scroll Indicator */}
+            <motion.div
+                className="absolute bottom-0 left-1/2 flex -translate-x-1/2 flex-col items-center z-10"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 2, duration: 1 }}
+            >
+                <div className="relative h-20 w-[1px] bg-white/20 overflow-hidden">
+                    <motion.div
+                        className="absolute left-0 top-0 w-full h-1/3 bg-white"
+                        animate={{ y: ['-100%', '300%'] }}
+                        transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: 'linear',
+                        }}
+                    />
+                </div>
+            </motion.div>
         </motion.div>
     );
 }

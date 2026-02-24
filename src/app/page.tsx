@@ -12,16 +12,7 @@ import ContactSection from '@/components/ContactSection';
 import Footer from '@/components/Footer';
 
 export default function HomePage() {
-  const [loading, setLoading] = useState(true);
-  const [showNavbar, setShowNavbar] = useState(false);
   const router = useRouter();
-
-  const handlePreloaderComplete = () => {
-    // Preloader logo has already animated to navbar position
-    // Show navbar immediately — logo is already where it should be
-    setLoading(false);
-    setShowNavbar(true);
-  };
 
   const handleCategoryClick = (category: string) => {
     const slug = category
@@ -34,26 +25,17 @@ export default function HomePage() {
 
   return (
     <>
-      <AnimatePresence>
-        {loading && (
-          <Preloader key="preloader" onComplete={handlePreloaderComplete} />
-        )}
-      </AnimatePresence>
+      <Navbar visible={true} />
 
-      {!loading && (
-        <>
-          <Navbar visible={showNavbar} />
+      <main>
+        <Preloader />
+        <Hero />
+        <BentoGrid onCategoryClick={handleCategoryClick} />
+        <FounderSection />
+        <ContactSection />
+      </main>
 
-          <main>
-            <Hero />
-            <BentoGrid onCategoryClick={handleCategoryClick} />
-            <FounderSection />
-            <ContactSection />
-          </main>
-
-          <Footer />
-        </>
-      )}
+      <Footer />
     </>
   );
 }
