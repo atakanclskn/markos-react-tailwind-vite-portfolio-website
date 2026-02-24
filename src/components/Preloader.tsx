@@ -119,26 +119,6 @@ export default function Preloader() {
         };
     }, [phase]);
 
-    // After user scrolls past preloader, collapse it
-    useEffect(() => {
-        if (phase !== 'scrolling') return;
-
-        const handleScroll = () => {
-            if (sectionRef.current) {
-                const rect = sectionRef.current.getBoundingClientRect();
-                if (rect.bottom < 0) {
-                    sectionRef.current.style.height = '0px';
-                    sectionRef.current.style.minHeight = '0px';
-                    sectionRef.current.style.overflow = 'hidden';
-                    sectionRef.current.style.position = 'absolute';
-                    window.removeEventListener('scroll', handleScroll);
-                }
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        return () => window.removeEventListener('scroll', handleScroll);
-    }, [phase]);
 
     // TranslateX for the strip
     const translateX = -(slidingOffset * STEP_VW);
