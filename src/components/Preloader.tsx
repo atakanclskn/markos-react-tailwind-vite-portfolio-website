@@ -82,16 +82,42 @@ export default function Preloader() {
         return () => clearInterval(timer);
     }, []);
 
-    // Handle phase transitions
+    // Handle phase transitions (split to avoid cleanup race)
     useEffect(() => {
         if (progress >= 100 && phase === 'loading') {
             setPhase('transforming');
+        }
+    }, [progress, phase]);
+
+    useEffect(() => {
+        if (phase === 'transforming') {
             const timeout = setTimeout(() => {
                 setPhase('scrolling');
             }, 800);
             return () => clearTimeout(timeout);
         }
-    }, [progress, phase]);
+    }, [phase]);
+
+    // Lock scroll until loading is complete
+    useEffect(() => {
+        if (phase === 'scrolling') return;
+
+        const prevent = (e: Event) => e.preventDefault();
+        const preventKeys = (e: KeyboardEvent) => {
+            const scrollKeys = ['ArrowDown', 'ArrowUp', 'Space', 'PageDown', 'PageUp', 'Home', 'End'];
+            if (scrollKeys.includes(e.key)) e.preventDefault();
+        };
+
+        window.addEventListener('wheel', prevent, { passive: false });
+        window.addEventListener('touchmove', prevent, { passive: false });
+        window.addEventListener('keydown', preventKeys, { passive: false });
+
+        return () => {
+            window.removeEventListener('wheel', prevent);
+            window.removeEventListener('touchmove', prevent);
+            window.removeEventListener('keydown', preventKeys);
+        };
+    }, [phase]);
 
     // After user scrolls past preloader, collapse it
     useEffect(() => {

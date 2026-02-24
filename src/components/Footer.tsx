@@ -192,7 +192,7 @@ export default function Footer() {
                                     : 'rgba(0,0,0,0.2)',
                         }}
                     >
-                        Istanbul, Turkey
+                        Manchester, United Kingdom
                     </p>
                 </div>
             </div>
