@@ -1,7 +1,7 @@
 'use client';
 
-import { motion, useAnimation } from 'framer-motion';
-import { useEffect, useState, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 // Demo placeholder images for development
 const PLACEHOLDER_IMAGES = [
@@ -16,9 +16,7 @@ const PLACEHOLDER_IMAGES = [
 export default function Preloader() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [progress, setProgress] = useState(0);
-    const [isExiting, setIsExiting] = useState(false);
-
-    const progressBarControls = useAnimation();
+    const [phase, setPhase] = useState<'loading' | 'transforming' | 'scrolling'>('loading');
 
     // Carousel: cycle through images
     useEffect(() => {
@@ -48,25 +46,16 @@ export default function Preloader() {
         return () => clearInterval(timer);
     }, []);
 
-    const startExitAnimation = useCallback(async () => {
-        if (isExiting) return;
-        setIsExiting(true);
-
-        // First: fade out the progress bar
-        await progressBarControls.start({
-            opacity: 0,
-            transition: { duration: 0.3, ease: 'easeOut' },
-        });
-
-    }, [isExiting, progressBarControls]);
-
-    // Trigger exit animation when progress reaches 100
+    // Handle phase transitions
     useEffect(() => {
-        if (progress >= 100) {
-            const timeout = setTimeout(startExitAnimation, 400);
+        if (progress >= 100 && phase === 'loading') {
+            setPhase('transforming');
+            const timeout = setTimeout(() => {
+                setPhase('scrolling');
+            }, 800);
             return () => clearTimeout(timeout);
         }
-    }, [progress, startExitAnimation]);
+    }, [progress, phase]);
 
     const getImageIndex = (offset: number) =>
         (currentIndex + offset + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length;
@@ -141,45 +130,49 @@ export default function Preloader() {
                 </motion.div>
             </motion.div>
 
-            {/* Progress bar and other absolute elements */}
-            <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 z-10 flex-col items-center gap-8">
+            {/* Combined Progress / Scroll Indicator */}
+            <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 z-10 flex-col items-center justify-center min-h-[80px]">
                 <motion.div
-                    className="mt-8 h-[1px] w-48 overflow-hidden rounded-full bg-white/10"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
+                    className="relative overflow-hidden rounded-full"
+                    initial={{ width: '192px', height: '1px', opacity: 0, backgroundColor: 'rgba(255,255,255,0.10)' }}
+                    animate={{
+                        opacity: 1,
+                        width: phase === 'loading' ? '192px' : '1px',
+                        height: phase === 'loading' ? '1px' : '80px',
+                        backgroundColor: phase === 'loading' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.20)',
+                    }}
+                    transition={{
+                        default: { duration: 0.8, ease: [0.76, 0, 0.24, 1] },
+                        opacity: { delay: phase === 'loading' ? 1 : 0, duration: 0.5 },
+                    }}
                 >
+                    {/* Horizontal Loading Fill */}
                     <motion.div
-                        animate={progressBarControls}
-                    >
+                        className="absolute left-0 top-0 h-full bg-white/50"
+                        style={{ width: `${progress}%` }}
+                        animate={{ opacity: phase === 'loading' ? 1 : 0 }}
+                        transition={{ duration: 0.3 }}
+                    />
+
+                    {/* Vertical Scroll Line Indicator */}
+                    {phase === 'scrolling' && (
                         <motion.div
-                            className="h-[1px] rounded-full bg-white/50"
-                            style={{ width: `${progress}%` }}
-                            transition={{ ease: 'linear' }}
+                            className="absolute left-0 top-0 w-full bg-white"
+                            style={{ height: '33.33%' }}
+                            initial={{ y: '-100%', opacity: 0 }}
+                            animate={{ y: ['-100%', '300%'], opacity: 1 }}
+                            transition={{
+                                y: {
+                                    duration: 1.5,
+                                    repeat: Infinity,
+                                    ease: 'linear',
+                                },
+                                opacity: { duration: 0.3 }
+                            }}
                         />
-                    </motion.div>
+                    )}
                 </motion.div>
             </div>
-
-            {/* Scroll Indicator */}
-            <motion.div
-                className="absolute bottom-0 left-1/2 flex -translate-x-1/2 flex-col items-center z-10"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 2, duration: 1 }}
-            >
-                <div className="relative h-20 w-[1px] bg-white/20 overflow-hidden">
-                    <motion.div
-                        className="absolute left-0 top-0 w-full h-1/3 bg-white"
-                        animate={{ y: ['-100%', '300%'] }}
-                        transition={{
-                            duration: 1.5,
-                            repeat: Infinity,
-                            ease: 'linear',
-                        }}
-                    />
-                </div>
-            </motion.div>
         </motion.div>
     );
 }
