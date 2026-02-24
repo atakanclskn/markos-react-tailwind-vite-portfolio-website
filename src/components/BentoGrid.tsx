@@ -121,7 +121,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                     <div className="w-24 h-[1px] bg-[var(--color-foreground)] mt-6 opacity-20" />
                 </div>
                 <p className="text-[var(--color-muted)] text-sm md:text-base max-w-sm md:text-right font-light tracking-wide leading-relaxed">
-                    Farklı disiplinlerdeki çalışmalarımızı keşfedin. Her bir kare, kendi içinde bir hikaye barındırır.
+                    Discover our work across different disciplines. Each frame holds its own story.
                 </p>
             </div>
 
