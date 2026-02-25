@@ -90,10 +90,13 @@ export default function ContactSection() {
         }
     };
 
-    // Auto-submit when captcha is solved
+    // Auto-submit when captcha is solved (with delay for success animation)
     useEffect(() => {
         if (captchaToken && showCaptcha && !isSubmitting && !submitted) {
-            processSubmission(captchaToken);
+            const timer = setTimeout(() => {
+                processSubmission(captchaToken);
+            }, 1200);
+            return () => clearTimeout(timer);
         }
     }, [captchaToken]);
 
