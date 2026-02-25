@@ -60,7 +60,10 @@ export default function ContactSection() {
             const verifyData = await verifyRes.json();
 
             if (!verifyData.success) {
-                setErrors(prev => ({ ...prev, captcha: 'Captcha verification failed. Please try again.' }));
+                setErrors(prev => ({
+                    ...prev,
+                    captcha: verifyData.message || 'Captcha verification failed. Please try again.'
+                }));
                 setIsSubmitting(false);
                 setCaptchaToken(null);
                 return;

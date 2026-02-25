@@ -12,7 +12,7 @@ export async function POST(request: Request) {
 
         if (!secretKey) {
             console.error('Turnstile secret key is not configured');
-            return NextResponse.json({ success: false, message: 'Server configuration error' }, { status: 500 });
+            return NextResponse.json({ success: false, message: 'Server configuration error: TURNSTILE_SECRET_KEY is missing' }, { status: 500 });
         }
 
         const formData = new URLSearchParams();
@@ -32,10 +32,11 @@ export async function POST(request: Request) {
         if (data.success) {
             return NextResponse.json({ success: true });
         } else {
-            return NextResponse.json({ success: false, errors: data['error-codes'] }, { status: 400 });
+            console.error('Turnstile verification failed:', data['error-codes']);
+            return NextResponse.json({ success: false, message: 'Cloudflare Validation Failed: ' + (data['error-codes']?.join(', ') || 'Unknown Error') }, { status: 400 });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error verifying captcha:', error);
-        return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ success: false, message: 'Internal server error: ' + error.message }, { status: 500 });
     }
 }
