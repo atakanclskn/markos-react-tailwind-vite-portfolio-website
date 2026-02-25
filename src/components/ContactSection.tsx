@@ -584,7 +584,7 @@ export default function ContactSection() {
                                                     className="flex w-full items-center justify-center rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] py-2"
                                                 >
                                                     <Turnstile
-                                                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
+                                                        siteKey="0x4AAAAAACiLvoD7UqUYwXpz"
                                                         onSuccess={(token) => {
                                                             setCaptchaToken(token);
                                                             if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
