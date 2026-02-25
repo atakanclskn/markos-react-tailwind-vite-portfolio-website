@@ -97,7 +97,7 @@ export default function Navbar({ visible }: NavbarProps) {
                         style={{
                             backgroundColor: theme === 'dark'
                                 ? useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)'])
-                                : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.7)']),
+                                : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)']),
                             backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
                             WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
                             borderBottom: theme === 'dark'

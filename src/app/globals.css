@@ -149,6 +149,11 @@ body.light ::-webkit-scrollbar-thumb {
   color: #000;
 }
 
+/* --- Placeholder Text Styling --- */
+body.light ::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
 /* --- Utility Classes --- */
 .text-gradient-brand {
   background: linear-gradient(135deg, var(--color-brand-light), var(--color-brand));
