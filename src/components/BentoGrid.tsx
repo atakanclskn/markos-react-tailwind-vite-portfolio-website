@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from '@/context/ThemeContext';
 
 // Her kategori için premium crossfade efekti yaratacak çoklu görseller
 const CATEGORIES = [
     { id: "landscape", title: "Landscape", images: ["https://picsum.photos/seed/land1/1200/800", "https://picsum.photos/seed/land2/1200/800", "https://picsum.photos/seed/land3/1200/800"] },
-    { id: "portrait", title: "Portre", images: ["https://picsum.photos/seed/port1/800/1200", "https://picsum.photos/seed/port2/800/1200", "https://picsum.photos/seed/port3/800/1200"] },
+    { id: "portrait", title: "Portrait", images: ["https://picsum.photos/seed/port1/800/1200", "https://picsum.photos/seed/port2/800/1200", "https://picsum.photos/seed/port3/800/1200"] },
     { id: "animal", title: "Animal", images: ["https://picsum.photos/seed/anim1/1000/1000", "https://picsum.photos/seed/anim2/1000/1000", "https://picsum.photos/seed/anim3/1000/1000"] },
     { id: "fashion", title: "Fashion", images: ["https://picsum.photos/seed/fash1/800/1200", "https://picsum.photos/seed/fash2/800/1200", "https://picsum.photos/seed/fash3/800/1200"] },
     { id: "product", title: "Product", images: ["https://picsum.photos/seed/prod1/1000/800", "https://picsum.photos/seed/prod2/1000/800", "https://picsum.photos/seed/prod3/1000/800"] },
@@ -27,7 +28,7 @@ interface BentoGridProps {
     onCategoryClick: (category: string) => void;
 }
 
-function GridItem({ category, weight, onClick }: { category: typeof CATEGORIES[0], weight: number, onClick: (category: string) => void }) {
+function GridItem({ category, weight, onClick, isDark }: { category: typeof CATEGORIES[0], weight: number, onClick: (category: string) => void, isDark: boolean }) {
     const [imgIndex, setImgIndex] = useState(0);
 
     // Görsellerin rastgele aralıklarla, çok yavaş değişmesini sağlayan effect
@@ -45,7 +46,7 @@ function GridItem({ category, weight, onClick }: { category: typeof CATEGORIES[0
             animate={{ flex: weight }}
             transition={{ duration: 4, ease: "easeInOut" }} // Çok daha yavaş ve organik geçiş
             onClick={() => onClick(category.id)}
-            className="relative h-full overflow-hidden group cursor-pointer bg-zinc-900"
+            className={`relative h-full overflow-hidden group cursor-pointer ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`}
         >
             {/* Soft Crossfade Image Swap */}
             <AnimatePresence mode="popLayout">
@@ -80,6 +81,8 @@ function GridItem({ category, weight, onClick }: { category: typeof CATEGORIES[0
 }
 
 export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const [row1Weights, setRow1Weights] = useState(() => getRandomWeights(ROW1.length));
     const [row2Weights, setRow2Weights] = useState(() => getRandomWeights(ROW2.length));
 
@@ -116,7 +119,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
             <div className="mb-16 flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
                 <div>
                     <h2 className="text-4xl md:text-6xl font-bold tracking-tighter">
-                        PORTFOLYO
+                        PORTFOLIO
                     </h2>
                     <div className="w-24 h-[1px] bg-[var(--color-foreground)] mt-6 opacity-20" />
                 </div>
@@ -125,18 +128,19 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 </p>
             </div>
 
-            {/* 16:9 Kusursuz Container */}
-            <div className="w-full aspect-video rounded-3xl overflow-hidden flex flex-col gap-2 bg-black/50 border border-white/5 shadow-2xl">
+            {/* 16:9 Container */}
+            <div className={`w-full aspect-video rounded-3xl overflow-hidden flex flex-col gap-2 shadow-2xl transition-colors duration-500 ${isDark ? 'bg-black/50 border border-white/5' : 'bg-white border border-black/10'
+                }`}>
                 {/* Row 1 */}
                 <div className="flex-1 flex gap-2 w-full">
                     {ROW1.map((cat, i) => (
-                        <GridItem key={cat.id} category={cat} weight={row1Weights[i]} onClick={onCategoryClick} />
+                        <GridItem key={cat.id} category={cat} weight={row1Weights[i]} onClick={onCategoryClick} isDark={isDark} />
                     ))}
                 </div>
                 {/* Row 2 */}
                 <div className="flex-1 flex gap-2 w-full">
                     {ROW2.map((cat, i) => (
-                        <GridItem key={cat.id} category={cat} weight={row2Weights[i]} onClick={onCategoryClick} />
+                        <GridItem key={cat.id} category={cat} weight={row2Weights[i]} onClick={onCategoryClick} isDark={isDark} />
                     ))}
                 </div>
             </div>

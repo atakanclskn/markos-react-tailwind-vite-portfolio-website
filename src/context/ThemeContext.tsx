@@ -30,39 +30,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const toggleTheme = useCallback((event?: React.MouseEvent) => {
         const newTheme: Theme = theme === 'dark' ? 'light' : 'dark';
 
-        // Get click coordinates for circular reveal
-        const cx = event ? `${event.clientX}px` : '50%';
-        const cy = event ? `${event.clientY}px` : '50%';
+        // Apply theme change immediately with a smooth CSS transition
+        // instead of circular reveal which causes white flash
+        document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
 
-        // Create the overlay element for transition
-        const overlay = document.createElement('div');
-        overlay.className = 'theme-transition-overlay';
-        overlay.style.setProperty('--cx', cx);
-        overlay.style.setProperty('--cy', cy);
-        overlay.style.backgroundColor =
-            newTheme === 'dark' ? 'var(--color-surface-dark)' : 'var(--color-surface-light)';
-        document.body.appendChild(overlay);
+        if (newTheme === 'light') {
+            document.body.classList.add('light');
+        } else {
+            document.body.classList.remove('light');
+        }
 
-        // Trigger the expansion animation
-        requestAnimationFrame(() => {
-            overlay.classList.add('active');
-        });
+        setTheme(newTheme);
+        localStorage.setItem('markos-theme', newTheme);
 
-        // Apply the theme after a short delay so the overlay covers the transition
+        // Clean up transition style after animation completes
         setTimeout(() => {
-            if (newTheme === 'light') {
-                document.body.classList.add('light');
-            } else {
-                document.body.classList.remove('light');
-            }
-            setTheme(newTheme);
-            localStorage.setItem('markos-theme', newTheme);
-        }, 400);
-
-        // Remove the overlay after the animation completes
-        setTimeout(() => {
-            overlay.remove();
-        }, 1000);
+            document.body.style.transition = '';
+        }, 600);
     }, [theme]);
 
     return (

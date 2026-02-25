@@ -66,16 +66,18 @@ export default function Navbar({ visible }: NavbarProps) {
     // Center of screen is vh/2. Offset is vh/2 - 40px down.
     const logoY = useTransform(scrollY, [0, scrollEnd], [vh ? (vh / 2) - 40 : 350, 0]);
 
-    // Color transition from white (preloader is dark) to theme color
+    // Color transition from preloader color to theme color
     const darkThemeTextColor = '#f5f5f5';
     const lightThemeTextColor = '#0a0a0a';
     const finalTextColor = theme === 'dark' ? darkThemeTextColor : lightThemeTextColor;
-    const logoColor = useTransform(scrollY, [0, scrollEnd], ['#ffffff', finalTextColor]);
+    const logoStartColor = theme === 'dark' ? '#ffffff' : '#0a0a0a';
+    const logoColor = useTransform(scrollY, [0, scrollEnd], [logoStartColor, finalTextColor]);
 
     const darkThemeSubColor = 'rgba(255,255,255,0.5)';
     const lightThemeSubColor = 'rgba(0,0,0,0.5)';
     const finalSubColor = theme === 'dark' ? darkThemeSubColor : lightThemeSubColor;
-    const logoSubColor = useTransform(scrollY, [0, scrollEnd], ['rgba(255,255,255,0.6)', finalSubColor]);
+    const logoSubStartColor = theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
+    const logoSubColor = useTransform(scrollY, [0, scrollEnd], [logoSubStartColor, finalSubColor]);
 
     // Opacity for nav links and background
     // They start fading in after 25% of viewport scroll and finish at 50%.

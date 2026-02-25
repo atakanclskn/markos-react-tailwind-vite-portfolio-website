@@ -6,7 +6,7 @@ import { useTheme } from '@/context/ThemeContext';
 
 const CATEGORIES = [
     { slug: 'landscape', label: 'Landscape' },
-    { slug: 'portre', label: 'Portre' },
+    { slug: 'portrait', label: 'Portrait' },
     { slug: 'animal', label: 'Animal' },
     { slug: 'fashion', label: 'Fashion' },
     { slug: 'product', label: 'Product' },

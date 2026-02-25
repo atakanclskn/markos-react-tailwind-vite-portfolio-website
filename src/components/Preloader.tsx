@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { useTheme } from '@/context/ThemeContext';
 
 // Demo placeholder images for development
 const IMAGES = [
@@ -32,6 +33,7 @@ function getImg(i: number) {
 
 export default function Preloader() {
     // imageBase tracks which image is shown in the center (slot 2) when at rest
+    const { theme } = useTheme();
     const [imageBase, setImageBase] = useState(0);
     // slidingOffset: 0 = at rest, 1 = sliding one position left
     const [slidingOffset, setSlidingOffset] = useState(0);
@@ -128,14 +130,21 @@ export default function Preloader() {
     // Effective visual position = (i - 2) - slidingOffset
     // isCenter when effective position = 0
 
+    const bgColor = theme === 'dark' ? '#050505' : '#f5f5f5';
+    const indicatorColor = theme === 'dark' ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.10)';
+    const indicatorActiveColor = theme === 'dark' ? 'rgba(255,255,255,0.20)' : 'rgba(0,0,0,0.20)';
+    const fillColor = theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+    const scrollLightColor = theme === 'dark' ? '#ffffff' : '#000000';
+    const fadeTarget = theme === 'dark' ? '#0a0a0a' : '#f5f5f5';
+
     return (
         <motion.div
             ref={sectionRef}
             className="relative z-40 flex h-[100vh] w-full items-center justify-center overflow-hidden"
-            style={{ backgroundColor: '#050505' }}
+            style={{ backgroundColor: bgColor, transition: 'background-color 0.5s ease' }}
         >
             {/* Background overlay */}
-            <div className="absolute inset-0" style={{ backgroundColor: '#050505' }} />
+            <div className="absolute inset-0" style={{ backgroundColor: bgColor, transition: 'background-color 0.5s ease' }} />
 
             {/* Sliding Carousel Strip */}
             <div className="absolute inset-0 flex items-center justify-center overflow-hidden opacity-[0.08]">
@@ -185,14 +194,14 @@ export default function Preloader() {
                 className="pointer-events-none absolute top-0 left-0 h-full z-10"
                 style={{
                     width: '18vw',
-                    background: 'linear-gradient(to right, #050505 0%, #050505 30%, transparent 100%)',
+                    background: `linear-gradient(to right, ${bgColor} 0%, ${bgColor} 30%, transparent 100%)`,
                 }}
             />
             <div
                 className="pointer-events-none absolute top-0 right-0 h-full z-10"
                 style={{
                     width: '18vw',
-                    background: 'linear-gradient(to left, #050505 0%, #050505 30%, transparent 100%)',
+                    background: `linear-gradient(to left, ${bgColor} 0%, ${bgColor} 30%, transparent 100%)`,
                 }}
             />
 
@@ -201,12 +210,12 @@ export default function Preloader() {
                 <motion.div
                     className="relative overflow-hidden"
                     style={{ borderRadius: '2px' }}
-                    initial={{ width: '192px', height: '1px', opacity: 0, backgroundColor: 'rgba(255,255,255,0.10)' }}
+                    initial={{ width: '192px', height: '1px', opacity: 0, backgroundColor: indicatorColor }}
                     animate={{
                         opacity: 1,
                         width: phase === 'loading' ? '192px' : '1px',
                         height: phase === 'loading' ? '1px' : '80px',
-                        backgroundColor: phase === 'loading' ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.20)',
+                        backgroundColor: phase === 'loading' ? indicatorColor : indicatorActiveColor,
                     }}
                     transition={{
                         default: { duration: 0.8, ease: [0.76, 0, 0.24, 1] },
@@ -215,8 +224,8 @@ export default function Preloader() {
                 >
                     {/* Horizontal Loading Fill */}
                     <motion.div
-                        className="absolute left-0 top-0 h-full bg-white/50"
-                        style={{ width: `${progress}%` }}
+                        className="absolute left-0 top-0 h-full"
+                        style={{ width: `${progress}%`, backgroundColor: fillColor }}
                         animate={{ opacity: phase === 'loading' ? 1 : 0 }}
                         transition={{ duration: 0.3 }}
                     />
@@ -227,7 +236,7 @@ export default function Preloader() {
                             className="absolute left-0 top-0 w-full scroll-light-anim"
                             style={{
                                 height: '33.33%',
-                                backgroundColor: '#ffffff',
+                                backgroundColor: scrollLightColor,
                             }}
                         />
                     )}
@@ -238,7 +247,7 @@ export default function Preloader() {
             <div
                 className="pointer-events-none absolute bottom-0 left-0 w-full h-32 z-20"
                 style={{
-                    background: 'linear-gradient(to bottom, transparent 0%, #0a0a0a 100%)',
+                    background: `linear-gradient(to bottom, transparent 0%, ${fadeTarget} 100%)`,
                 }}
             />
         </motion.div>

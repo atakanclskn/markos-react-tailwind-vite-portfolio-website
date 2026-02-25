@@ -117,6 +117,7 @@ body {
 body {
   background-color: var(--color-surface-dark);
   color: var(--color-text-primary-dark);
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 body.light {
@@ -178,6 +179,7 @@ body.light ::-webkit-scrollbar-thumb {
   0% {
     transform: translateY(-100%);
   }
+
   100% {
     transform: translateY(300%);
   }

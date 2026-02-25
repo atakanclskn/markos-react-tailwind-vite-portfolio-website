@@ -15,7 +15,7 @@ const GALLERY_IMAGES: Record<string, string[]> = {
         'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=85',
         'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&q=85',
     ],
-    portre: [
+    portrait: [
         'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1200&q=85',
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=85',
         'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=85',
@@ -61,7 +61,7 @@ const GALLERY_IMAGES: Record<string, string[]> = {
 
 const CATEGORY_LABELS: Record<string, string> = {
     landscape: 'Landscape',
-    portre: 'Portre',
+    portrait: 'Portrait',
     animal: 'Animal',
     fashion: 'Fashion',
     product: 'Product',
