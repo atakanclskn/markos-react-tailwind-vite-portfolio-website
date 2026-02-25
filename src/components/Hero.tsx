@@ -12,7 +12,7 @@ export default function Hero() {
             <div
                 className="pointer-events-none absolute top-0 left-0 w-full h-32 z-20"
                 style={{
-                    background: 'linear-gradient(to bottom, #0a0a0a 0%, transparent 100%)',
+                    background: `linear-gradient(to bottom, ${theme === 'dark' ? '#0a0a0a' : '#f5f5f5'} 0%, transparent 100%)`,
                 }}
             />
             {/* Subtle background gradient */}
