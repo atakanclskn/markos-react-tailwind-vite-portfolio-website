@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import { Turnstile } from '@marsidev/react-turnstile';
@@ -47,23 +47,7 @@ export default function ContactSection() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!validateForm()) return;
-
-        // If captcha is not shown yet, show it and stop submission
-        if (!showCaptcha) {
-            setShowCaptcha(true);
-            return;
-        }
-
-        // If captcha is shown but not solved
-        if (!captchaToken) {
-            setErrors(prev => ({ ...prev, captcha: 'Please complete the captcha.' }));
-            return;
-        }
-
+    const processSubmission = async (token: string) => {
         setIsSubmitting(true);
 
         try {
@@ -71,7 +55,7 @@ export default function ContactSection() {
             const verifyRes = await fetch('/api/verify-captcha', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token: captchaToken }),
+                body: JSON.stringify({ token }),
             });
             const verifyData = await verifyRes.json();
 
@@ -101,6 +85,33 @@ export default function ContactSection() {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Auto-submit when captcha is solved
+    useEffect(() => {
+        if (captchaToken && showCaptcha && !isSubmitting && !submitted) {
+            processSubmission(captchaToken);
+        }
+    }, [captchaToken]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateForm()) return;
+
+        // If captcha is not shown yet, show it and stop submission
+        if (!showCaptcha) {
+            setShowCaptcha(true);
+            return;
+        }
+
+        // If captcha is shown but not solved
+        if (!captchaToken) {
+            setErrors(prev => ({ ...prev, captcha: 'Please complete the captcha.' }));
+            return;
+        }
+
+        await processSubmission(captchaToken);
     };
 
     const inputBaseStyle = {
@@ -574,7 +585,7 @@ export default function ContactSection() {
                                     {/* Submit Area */}
                                     <div className="flex w-full flex-col gap-4">
                                         <AnimatePresence mode="wait">
-                                            {showCaptcha && !captchaToken ? (
+                                            {showCaptcha && !isSubmitting ? (
                                                 <motion.div
                                                     key="captcha-container"
                                                     initial={{ opacity: 0, y: 10 }}
@@ -584,7 +595,7 @@ export default function ContactSection() {
                                                     className="flex w-full items-center justify-center rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] py-2"
                                                 >
                                                     <Turnstile
-                                                        siteKey="0x4AAAAAACiLvoD7UqUYwXpz"
+                                                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
                                                         onSuccess={(token) => {
                                                             setCaptchaToken(token);
                                                             if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
