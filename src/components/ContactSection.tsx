@@ -583,7 +583,7 @@ export default function ContactSection() {
                                                 >
                                                     <div className="w-[300px]">
                                                         <Turnstile
-                                                            siteKey="1x00000000000000000000AA"
+                                                            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA'}
                                                             onSuccess={(token) => {
                                                                 setCaptchaToken(token);
                                                                 if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
