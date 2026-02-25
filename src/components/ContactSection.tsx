@@ -71,7 +71,13 @@ export default function ContactSection() {
 
             // If captcha is successfully verified, save to firebase
             const { submitContactMessage } = await import('@/lib/firestore');
-            await submitContactMessage(formData);
+
+            // Add a timeout to prevent infinite hang if Firebase is unconfigured
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Firebase submission timed out. Check your Firebase environment variables on Vercel.')), 10000);
+            });
+
+            await Promise.race([submitContactMessage(formData), timeoutPromise]);
 
             setSubmitted(true);
             setFormData({ name: '', subject: '', email: '', phone: '', message: '' });
@@ -83,8 +89,14 @@ export default function ContactSection() {
                 setSubmitted(false);
             }, 4000);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting form:', error);
+            setErrors(prev => ({
+                ...prev,
+                captcha: error.message || 'An error occurred while submitting. Please try again later.'
+            }));
+            setCaptchaToken(null);
+            setShowCaptcha(true);
         } finally {
             setIsSubmitting(false);
         }
