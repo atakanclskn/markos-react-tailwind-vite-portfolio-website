@@ -15,6 +15,9 @@ export interface Photo {
     thumbnailUrl: string;
     order: number;
     createdAt: Date;
+    googlePhotosId?: string;
+    width?: number;
+    height?: number;
 }
 
 // --- Contact Message ---
@@ -26,13 +29,16 @@ export interface ContactMessage {
     subject: string;
     message: string;
     read: boolean;
+    starred: boolean;
+    archived: boolean;
     createdAt: Date;
 }
 
 // --- Site Content ---
 export interface HeroContent {
-    slogan: string;
-    welcomeText: string;
+    title: string;
+    subtitle: string;
+    buttonText: string;
 }
 
 export interface ContactInfo {
@@ -40,31 +46,60 @@ export interface ContactInfo {
     description: string;
     email: string;
     phone: string;
-    location: string;
+    address: string;
     statusText: string;
     statusActive: boolean;
 }
 
 export interface FounderInfo {
     name: string;
+    title: string;
     bio: string;
     photoUrl: string;
+    stats: FounderStat[];
+}
+
+export interface FounderStat {
+    value: string;
+    label: string;
 }
 
 export interface FooterContent {
-    links: FooterLink[];
     copyright: string;
+    socialLinks: SocialLink[];
 }
 
-export interface FooterLink {
-    label: string;
+export interface SocialLink {
+    iconName: string;
     url: string;
 }
 
-// --- Settings ---
+// --- SEO Settings ---
+export interface SEOSettings {
+    metaTitle: string;
+    metaDescription: string;
+    keywords: string;
+}
+
+// --- Site Settings ---
 export interface SiteSettings {
-    googlePhotosToken?: string;
-    lastSyncAt?: Date;
+    seo: SEOSettings;
+    footer: FooterContent;
+}
+
+// --- Google Photos ---
+export interface GooglePhotosAlbum {
+    id: string;
+    title: string;
+    mediaItemsCount: string;
+    coverPhotoBaseUrl: string;
+}
+
+export interface SyncProgress {
+    status: 'idle' | 'syncing' | 'complete' | 'error';
+    total: number;
+    current: number;
+    message: string;
 }
 
 // --- Theme ---

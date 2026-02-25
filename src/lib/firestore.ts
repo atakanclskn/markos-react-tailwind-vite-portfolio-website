@@ -3,6 +3,7 @@ import {
     doc,
     getDocs,
     getDoc,
+    setDoc,
     addDoc,
     updateDoc,
     deleteDoc,
@@ -11,6 +12,7 @@ import {
     orderBy,
     serverTimestamp,
     DocumentData,
+    getCountFromServer,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type {
@@ -21,6 +23,7 @@ import type {
     ContactInfo,
     FounderInfo,
     FooterContent,
+    SEOSettings,
 } from '@/types';
 
 // --- Categories ---
@@ -76,11 +79,13 @@ export async function getAllPhotos(): Promise<Photo[]> {
 
 // --- Messages ---
 export async function submitContactMessage(
-    data: Omit<ContactMessage, 'id' | 'read' | 'createdAt'>
+    data: Omit<ContactMessage, 'id' | 'read' | 'starred' | 'archived' | 'createdAt'>
 ) {
     return addDoc(collection(db, 'messages'), {
         ...data,
         read: false,
+        starred: false,
+        archived: false,
         createdAt: serverTimestamp(),
     });
 }
@@ -91,12 +96,22 @@ export async function getMessages(): Promise<ContactMessage[]> {
     return snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
+        starred: doc.data().starred ?? false,
+        archived: doc.data().archived ?? false,
         createdAt: doc.data().createdAt?.toDate(),
     })) as ContactMessage[];
 }
 
 export async function markMessageRead(id: string) {
     return updateDoc(doc(db, 'messages', id), { read: true });
+}
+
+export async function toggleMessageStarred(id: string, starred: boolean) {
+    return updateDoc(doc(db, 'messages', id), { starred });
+}
+
+export async function toggleMessageArchived(id: string, archived: boolean) {
+    return updateDoc(doc(db, 'messages', id), { archived });
 }
 
 export async function deleteMessage(id: string) {
@@ -110,7 +125,7 @@ export async function getHeroContent(): Promise<HeroContent | null> {
 }
 
 export async function updateHeroContent(data: HeroContent) {
-    return updateDoc(doc(db, 'siteContent', 'hero'), data as DocumentData);
+    return setDoc(doc(db, 'siteContent', 'hero'), data as DocumentData, { merge: true });
 }
 
 export async function getContactInfo(): Promise<ContactInfo | null> {
@@ -119,7 +134,7 @@ export async function getContactInfo(): Promise<ContactInfo | null> {
 }
 
 export async function updateContactInfo(data: ContactInfo) {
-    return updateDoc(doc(db, 'siteContent', 'contact'), data as DocumentData);
+    return setDoc(doc(db, 'siteContent', 'contact'), data as DocumentData, { merge: true });
 }
 
 export async function getFounderInfo(): Promise<FounderInfo | null> {
@@ -128,7 +143,7 @@ export async function getFounderInfo(): Promise<FounderInfo | null> {
 }
 
 export async function updateFounderInfo(data: Partial<FounderInfo>) {
-    return updateDoc(doc(db, 'siteContent', 'founder'), data as DocumentData);
+    return setDoc(doc(db, 'siteContent', 'founder'), data as DocumentData, { merge: true });
 }
 
 export async function getFooterContent(): Promise<FooterContent | null> {
@@ -137,5 +152,44 @@ export async function getFooterContent(): Promise<FooterContent | null> {
 }
 
 export async function updateFooterContent(data: FooterContent) {
-    return updateDoc(doc(db, 'siteContent', 'footer'), data as DocumentData);
+    return setDoc(doc(db, 'siteContent', 'footer'), data as DocumentData, { merge: true });
+}
+
+// --- Photos (Admin) ---
+export async function addPhoto(data: Omit<Photo, 'id' | 'createdAt'>) {
+    return addDoc(collection(db, 'photos'), {
+        ...data,
+        createdAt: serverTimestamp(),
+    });
+}
+
+export async function updatePhoto(id: string, data: Partial<Photo>) {
+    return updateDoc(doc(db, 'photos', id), data as DocumentData);
+}
+
+export async function deletePhoto(id: string) {
+    return deleteDoc(doc(db, 'photos', id));
+}
+
+// --- SEO Settings ---
+export async function getSEOSettings(): Promise<SEOSettings | null> {
+    const snap = await getDoc(doc(db, 'siteContent', 'seo'));
+    return snap.exists() ? (snap.data() as SEOSettings) : null;
+}
+
+export async function updateSEOSettings(data: SEOSettings) {
+    return setDoc(doc(db, 'siteContent', 'seo'), data as DocumentData, { merge: true });
+}
+
+// --- Counts (Dashboard) ---
+export async function getCollectionCount(collectionName: string): Promise<number> {
+    const coll = collection(db, collectionName);
+    const snapshot = await getCountFromServer(coll);
+    return snapshot.data().count;
+}
+
+export async function getUnreadMessageCount(): Promise<number> {
+    const q = query(collection(db, 'messages'), where('read', '==', false));
+    const snapshot = await getCountFromServer(q);
+    return snapshot.data().count;
 }
