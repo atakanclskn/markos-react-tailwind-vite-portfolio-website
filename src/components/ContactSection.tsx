@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 const SUBJECT_OPTIONS = [
     'General Inquiry',
@@ -28,6 +29,8 @@ export default function ContactSection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [showCaptcha, setShowCaptcha] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -49,14 +52,49 @@ export default function ContactSection() {
 
         if (!validateForm()) return;
 
+        // If captcha is not shown yet, show it and stop submission
+        if (!showCaptcha) {
+            setShowCaptcha(true);
+            return;
+        }
+
+        // If captcha is shown but not solved
+        if (!captchaToken) {
+            setErrors(prev => ({ ...prev, captcha: 'Please complete the captcha.' }));
+            return;
+        }
+
         setIsSubmitting(true);
 
         try {
-            // Dynamic import to avoid loading firebase on initial page load
+            // Verify captcha with backend
+            const verifyRes = await fetch('/api/verify-captcha', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: captchaToken }),
+            });
+            const verifyData = await verifyRes.json();
+
+            if (!verifyData.success) {
+                setErrors(prev => ({ ...prev, captcha: 'Captcha verification failed. Please try again.' }));
+                setIsSubmitting(false);
+                return;
+            }
+
+            // If captcha is successfully verified, save to firebase
             const { submitContactMessage } = await import('@/lib/firestore');
             await submitContactMessage(formData);
+
             setSubmitted(true);
             setFormData({ name: '', subject: '', email: '', phone: '', message: '' });
+            setShowCaptcha(false);
+            setCaptchaToken(null);
+
+            // Auto-reset form after 4 seconds
+            setTimeout(() => {
+                setSubmitted(false);
+            }, 4000);
+
         } catch (error) {
             console.error('Error submitting form:', error);
         } finally {
@@ -282,259 +320,325 @@ export default function ContactSection() {
                         viewport={{ once: true }}
                         transition={{ duration: 0.8, delay: 0.2 }}
                     >
-                        {submitted ? (
-                            <motion.div
-                                className="flex h-full flex-col items-center justify-center rounded-2xl p-12 text-center"
-                                style={{
-                                    backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                                }}
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                            >
-                                <div
-                                    className="mb-4 flex h-16 w-16 items-center justify-center rounded-full"
-                                    style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)' }}
-                                >
-                                    <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                <h4
-                                    className="mb-2 text-xl font-bold"
+                        <AnimatePresence mode="wait">
+                            {submitted ? (
+                                <motion.div
+                                    key="success-message"
+                                    className="flex h-full flex-col items-center justify-center rounded-2xl p-12 text-center"
                                     style={{
-                                        fontFamily: 'var(--font-outfit)',
-                                        color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
+                                        backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                                        border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
                                     }}
+                                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -20 }}
+                                    transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
                                 >
-                                    Message Sent
-                                </h4>
-                                <p
-                                    className="text-sm"
-                                    style={{
-                                        fontFamily: 'var(--font-outfit)',
-                                        color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                                    }}
-                                >
-                                    We&apos;ll get back to you shortly.
-                                </p>
-                                <button
-                                    className="mt-6 text-sm font-medium underline transition-colors duration-300"
-                                    style={{
-                                        fontFamily: 'var(--font-outfit)',
-                                        color: 'var(--color-brand)',
-                                    }}
-                                    onClick={() => setSubmitted(false)}
-                                >
-                                    Send another message
-                                </button>
-                            </motion.div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                                {/* Name */}
-                                <div>
-                                    <input
-                                        type="text"
-                                        placeholder="Your Name"
-                                        value={formData.name}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, name: e.target.value });
-                                            if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
-                                        }}
-                                        className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={{ ...inputBaseStyle, borderColor: errors.name ? '#ef4444' : inputBaseStyle.borderColor }}
-                                    />
-                                    <AnimatePresence>
-                                        {errors.name && (
-                                            <motion.p
-                                                initial={{ opacity: 0, height: 0, y: -10 }}
-                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                                exit={{ opacity: 0, height: 0, y: -10 }}
-                                                className="mt-1 text-xs text-red-500"
-                                            >
-                                                {errors.name}
-                                            </motion.p>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-
-                                {/* Subject */}
-                                <div className="relative">
-                                    <div
-                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                        className="flex w-full cursor-pointer items-center justify-between rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300"
-                                        style={{
-                                            ...inputBaseStyle,
-                                            borderColor: errors.subject ? '#ef4444' : (isDropdownOpen ? 'var(--color-brand)' : inputBaseStyle.borderColor),
-                                            color: formData.subject ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a') : 'rgba(0,0,0,0.5)'
-                                        }}
+                                    <motion.div
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        transition={{ type: 'spring', stiffness: 200, damping: 20, delay: 0.2 }}
+                                        className="mb-6 flex h-20 w-20 items-center justify-center rounded-full"
+                                        style={{ backgroundColor: 'rgba(200,169,110,0.1)' }}
                                     >
-                                        <span style={{
-                                            color: formData.subject
-                                                ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a')
-                                                : (theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')
-                                        }}>
-                                            {formData.subject || 'Select Subject'}
-                                        </span>
                                         <svg
-                                            className={`h-5 w-5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                            className="h-10 w-10"
                                             style={{ color: 'var(--color-brand)' }}
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            strokeWidth={2}
                                         >
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                         </svg>
+                                    </motion.div>
+                                    <motion.h4
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.4, delay: 0.4 }}
+                                        className="mb-3 text-2xl font-bold tracking-tight md:text-3xl"
+                                        style={{ fontFamily: 'var(--font-outfit)', color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
+                                    >
+                                        Message Sent
+                                    </motion.h4>
+                                    <motion.p
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.4, delay: 0.5 }}
+                                        className="text-base font-light leading-relaxed"
+                                        style={{ fontFamily: 'var(--font-outfit)', color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+                                    >
+                                        Thank you for reaching out. <br className="hidden sm:block" />
+                                        We will get back to you shortly.
+                                    </motion.p>
+                                </motion.div>
+                            ) : (
+                                <motion.form
+                                    key="contact-form"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    transition={{ duration: 0.4 }}
+                                    onSubmit={handleSubmit}
+                                    className="space-y-5"
+                                    noValidate
+                                >
+                                    {/* Name */}
+                                    <div>
+                                        <input
+                                            type="text"
+                                            placeholder="Your Name"
+                                            value={formData.name}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, name: e.target.value });
+                                                if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
+                                            }}
+                                            className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
+                                            style={{ ...inputBaseStyle, borderColor: errors.name ? '#ef4444' : inputBaseStyle.borderColor }}
+                                        />
+                                        <AnimatePresence>
+                                            {errors.name && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, height: 0, y: -10 }}
+                                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                    exit={{ opacity: 0, height: 0, y: -10 }}
+                                                    className="mt-1 text-xs text-red-500"
+                                                >
+                                                    {errors.name}
+                                                </motion.p>
+                                            )}
+                                        </AnimatePresence>
                                     </div>
 
-                                    <AnimatePresence>
-                                        {isDropdownOpen && (
-                                            <motion.div
-                                                initial={{ opacity: 0, scaleY: 0.9, y: 5 }}
-                                                animate={{ opacity: 1, scaleY: 1, y: 0 }}
-                                                exit={{ opacity: 0, scaleY: 0.9, y: 5 }}
-                                                transition={{ duration: 0.2 }}
-                                                className="absolute z-20 mt-2 w-full origin-top cursor-pointer overflow-hidden rounded-lg border shadow-lg"
-                                                style={{
-                                                    backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
-                                                    borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
-                                                }}
+                                    {/* Subject */}
+                                    <div className="relative">
+                                        <div
+                                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                            className="flex w-full cursor-pointer items-center justify-between rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300"
+                                            style={{
+                                                ...inputBaseStyle,
+                                                borderColor: errors.subject ? '#ef4444' : (isDropdownOpen ? 'var(--color-brand)' : inputBaseStyle.borderColor),
+                                                color: formData.subject ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a') : 'rgba(0,0,0,0.5)'
+                                            }}
+                                        >
+                                            <span style={{
+                                                color: formData.subject
+                                                    ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a')
+                                                    : (theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')
+                                            }}>
+                                                {formData.subject || 'Select Subject'}
+                                            </span>
+                                            <svg
+                                                className={`h-5 w-5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                                style={{ color: 'var(--color-brand)' }}
+                                                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                                             >
-                                                {SUBJECT_OPTIONS.map((opt) => (
-                                                    <div
-                                                        key={opt}
-                                                        onClick={() => {
-                                                            setFormData({ ...formData, subject: opt });
-                                                            if (errors.subject) setErrors((prev) => ({ ...prev, subject: '' }));
-                                                            setIsDropdownOpen(false);
-                                                        }}
-                                                        className="px-4 py-3 text-sm transition-colors duration-200"
-                                                        style={{
-                                                            fontFamily: 'var(--font-outfit)',
-                                                            color: formData.subject === opt
-                                                                ? 'var(--color-brand)'
-                                                                : (theme === 'dark' ? '#f5f5f5' : '#0a0a0a'),
-                                                            backgroundColor: formData.subject === opt
-                                                                ? (theme === 'dark' ? 'rgba(200,169,110,0.1)' : 'rgba(200,169,110,0.1)')
-                                                                : 'transparent',
-                                                        }}
-                                                        onMouseEnter={(e) => {
-                                                            if (formData.subject !== opt) {
-                                                                e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
-                                                            }
-                                                        }}
-                                                        onMouseLeave={(e) => {
-                                                            if (formData.subject !== opt) {
-                                                                e.currentTarget.style.backgroundColor = 'transparent';
-                                                            }
-                                                        }}
-                                                    >
-                                                        {opt}
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </div>
+
+                                        <AnimatePresence>
+                                            {isDropdownOpen && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, scaleY: 0.9, y: 5 }}
+                                                    animate={{ opacity: 1, scaleY: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scaleY: 0.9, y: 5 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="absolute z-20 mt-2 w-full origin-top cursor-pointer overflow-hidden rounded-lg border shadow-lg"
+                                                    style={{
+                                                        backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
+                                                        borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
+                                                    }}
+                                                >
+                                                    {SUBJECT_OPTIONS.map((opt) => (
+                                                        <div
+                                                            key={opt}
+                                                            onClick={() => {
+                                                                setFormData({ ...formData, subject: opt });
+                                                                if (errors.subject) setErrors((prev) => ({ ...prev, subject: '' }));
+                                                                setIsDropdownOpen(false);
+                                                            }}
+                                                            className="px-4 py-3 text-sm transition-colors duration-200"
+                                                            style={{
+                                                                fontFamily: 'var(--font-outfit)',
+                                                                color: formData.subject === opt
+                                                                    ? 'var(--color-brand)'
+                                                                    : (theme === 'dark' ? '#f5f5f5' : '#0a0a0a'),
+                                                                backgroundColor: formData.subject === opt
+                                                                    ? (theme === 'dark' ? 'rgba(200,169,110,0.1)' : 'rgba(200,169,110,0.1)')
+                                                                    : 'transparent',
+                                                            }}
+                                                            onMouseEnter={(e) => {
+                                                                if (formData.subject !== opt) {
+                                                                    e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                                                                }
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                                if (formData.subject !== opt) {
+                                                                    e.currentTarget.style.backgroundColor = 'transparent';
+                                                                }
+                                                            }}
+                                                        >
+                                                            {opt}
+                                                        </div>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+
+                                        <AnimatePresence>
+                                            {errors.subject && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, height: 0, y: -10 }}
+                                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                    exit={{ opacity: 0, height: 0, y: -10 }}
+                                                    className="mt-1 text-xs text-red-500"
+                                                >
+                                                    {errors.subject}
+                                                </motion.p>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Email */}
+                                    <div>
+                                        <input
+                                            type="email"
+                                            placeholder="Your Email"
+                                            value={formData.email}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, email: e.target.value });
+                                                if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
+                                            }}
+                                            className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
+                                            style={{ ...inputBaseStyle, borderColor: errors.email ? '#ef4444' : inputBaseStyle.borderColor }}
+                                        />
+                                        <AnimatePresence>
+                                            {errors.email && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, height: 0, y: -10 }}
+                                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                    exit={{ opacity: 0, height: 0, y: -10 }}
+                                                    className="mt-1 text-xs text-red-500"
+                                                >
+                                                    {errors.email}
+                                                </motion.p>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div>
+                                        <input
+                                            type="tel"
+                                            placeholder="Your Phone Number"
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
+                                            style={inputBaseStyle}
+                                        />
+                                    </div>
+
+                                    {/* Message */}
+                                    <div>
+                                        <textarea
+                                            placeholder="Your Message"
+                                            rows={5}
+                                            value={formData.message}
+                                            onChange={(e) => {
+                                                setFormData({ ...formData, message: e.target.value });
+                                                if (errors.message) setErrors((prev) => ({ ...prev, message: '' }));
+                                            }}
+                                            className="w-full resize-none rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
+                                            style={{
+                                                ...inputBaseStyle,
+                                                borderColor: errors.message ? '#ef4444' : inputBaseStyle.borderColor,
+                                                backgroundColor: inputBaseStyle.backgroundColor
+                                            }}
+                                        />
+                                        <AnimatePresence>
+                                            {errors.message && (
+                                                <motion.p
+                                                    initial={{ opacity: 0, height: 0, y: -10 }}
+                                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                    exit={{ opacity: 0, height: 0, y: -10 }}
+                                                    className="mt-1 text-xs text-red-500"
+                                                >
+                                                    {errors.message}
+                                                </motion.p>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+
+                                    {/* Submit Area */}
+                                    <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
+                                        <AnimatePresence>
+                                            {showCaptcha && (
+                                                <motion.div
+                                                    initial={{ width: 0, opacity: 0 }}
+                                                    animate={{ width: 300, opacity: 1 }}
+                                                    exit={{ width: 0, opacity: 0 }}
+                                                    transition={{ duration: 0.4 }}
+                                                    className="overflow-hidden flex-shrink-0"
+                                                >
+                                                    <div className="w-[300px]">
+                                                        <Turnstile
+                                                            siteKey="1x00000000000000000000AA"
+                                                            onSuccess={(token) => {
+                                                                setCaptchaToken(token);
+                                                                if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
+                                                            }}
+                                                            options={{ theme: theme as 'light' | 'dark' }}
+                                                        />
                                                     </div>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
 
-                                    <AnimatePresence>
-                                        {errors.subject && (
-                                            <motion.p
-                                                initial={{ opacity: 0, height: 0, y: -10 }}
-                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                                exit={{ opacity: 0, height: 0, y: -10 }}
-                                                className="mt-1 text-xs text-red-500"
+                                        <div className="flex flex-1 flex-col">
+                                            <motion.button
+                                                type="submit"
+                                                disabled={isSubmitting || (showCaptcha && !captchaToken)}
+                                                className="w-full flex-1 rounded-lg px-8 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
+                                                style={{
+                                                    fontFamily: 'var(--font-outfit)',
+                                                    backgroundColor: 'var(--color-brand)',
+                                                    color: '#000',
+                                                }}
+                                                whileHover={{ scale: (isSubmitting || (showCaptcha && !captchaToken)) ? 1 : 1.01 }}
+                                                whileTap={{ scale: (isSubmitting || (showCaptcha && !captchaToken)) ? 1 : 0.99 }}
                                             >
-                                                {errors.subject}
-                                            </motion.p>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
+                                                <AnimatePresence mode="wait">
+                                                    <motion.span
+                                                        key={isSubmitting ? 'sending' : (showCaptcha ? (!captchaToken ? 'verify' : 'send') : 'initial')}
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        exit={{ opacity: 0, y: -10 }}
+                                                        transition={{ duration: 0.2 }}
+                                                        className="block"
+                                                    >
+                                                        {isSubmitting ? 'Sending...' : (showCaptcha ? (!captchaToken ? 'Verify Captcha' : 'Send Message') : 'Send Message')}
+                                                    </motion.span>
+                                                </AnimatePresence>
+                                            </motion.button>
 
-                                {/* Email */}
-                                <div>
-                                    <input
-                                        type="email"
-                                        placeholder="Your Email"
-                                        value={formData.email}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, email: e.target.value });
-                                            if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
-                                        }}
-                                        className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={{ ...inputBaseStyle, borderColor: errors.email ? '#ef4444' : inputBaseStyle.borderColor }}
-                                    />
-                                    <AnimatePresence>
-                                        {errors.email && (
-                                            <motion.p
-                                                initial={{ opacity: 0, height: 0, y: -10 }}
-                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                                exit={{ opacity: 0, height: 0, y: -10 }}
-                                                className="mt-1 text-xs text-red-500"
-                                            >
-                                                {errors.email}
-                                            </motion.p>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-
-                                {/* Phone */}
-                                <div>
-                                    <input
-                                        type="tel"
-                                        placeholder="Your Phone Number"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={inputBaseStyle}
-                                    />
-                                </div>
-
-                                {/* Message */}
-                                <div>
-                                    <textarea
-                                        placeholder="Your Message"
-                                        rows={5}
-                                        value={formData.message}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, message: e.target.value });
-                                            if (errors.message) setErrors((prev) => ({ ...prev, message: '' }));
-                                        }}
-                                        className="w-full resize-none rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={{
-                                            ...inputBaseStyle,
-                                            borderColor: errors.message ? '#ef4444' : inputBaseStyle.borderColor,
-                                            backgroundColor: inputBaseStyle.backgroundColor
-                                        }}
-                                    />
-                                    <AnimatePresence>
-                                        {errors.message && (
-                                            <motion.p
-                                                initial={{ opacity: 0, height: 0, y: -10 }}
-                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
-                                                exit={{ opacity: 0, height: 0, y: -10 }}
-                                                className="mt-1 text-xs text-red-500"
-                                            >
-                                                {errors.message}
-                                            </motion.p>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-
-                                {/* Submit */}
-                                <motion.button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300"
-                                    style={{
-                                        fontFamily: 'var(--font-outfit)',
-                                        backgroundColor: 'var(--color-brand)',
-                                        color: '#000',
-                                    }}
-                                    whileHover={{ scale: 1.01 }}
-                                    whileTap={{ scale: 0.99 }}
-                                >
-                                    {isSubmitting ? 'Sending...' : 'Send Message'}
-                                </motion.button>
-                            </form>
-                        )}
+                                            <AnimatePresence>
+                                                {showCaptcha && errors.captcha && (
+                                                    <motion.p
+                                                        initial={{ opacity: 0, height: 0, y: -10 }}
+                                                        animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                        exit={{ opacity: 0, height: 0, y: -10 }}
+                                                        className="mt-2 text-center text-xs text-red-500 sm:text-left"
+                                                    >
+                                                        {errors.captcha}
+                                                    </motion.p>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
+                                </motion.form>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 </div>
             </div>
