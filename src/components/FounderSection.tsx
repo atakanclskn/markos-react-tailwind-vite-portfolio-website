@@ -50,7 +50,7 @@ export default function FounderSection() {
                         <div className="relative overflow-hidden rounded-2xl">
                             <img
                                 src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80"
-                                alt="Onur Satici - Markos Studio Founder"
+                                alt="Onur Satıcı - Markos Studio Founder"
                                 className="aspect-[3/4] w-full object-cover"
                             />
                             <div
@@ -83,7 +83,7 @@ export default function FounderSection() {
                                 color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                             }}
                         >
-                            Onur Satici
+                            Onur Satıcı
                         </h3>
                         <p
                             className="mb-6 text-sm font-medium tracking-[0.2em] uppercase"
