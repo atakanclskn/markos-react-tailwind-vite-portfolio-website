@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 
 const SUBJECT_OPTIONS = [
@@ -23,11 +23,32 @@ export default function ContactSection() {
         phone: '',
         message: '',
     });
+
+    const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const validateForm = () => {
+        const newErrors: Record<string, string> = {};
+        if (!formData.name.trim()) newErrors.name = 'Please enter your name.';
+        if (!formData.subject) newErrors.subject = 'Please select a subject.';
+        if (!formData.email.trim()) {
+            newErrors.email = 'Please enter your email.';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email address.';
+        }
+        if (!formData.message.trim()) newErrors.message = 'Please enter your message.';
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateForm()) return;
+
         setIsSubmitting(true);
 
         try {
@@ -51,7 +72,7 @@ export default function ContactSection() {
     };
 
     return (
-        <section id="contact" className="px-6 py-24 md:px-12 lg:px-20">
+        <section id="contact" className="px-6 py-24 md:px-12 lg:px-20" >
             <div className="mx-auto max-w-6xl">
                 {/* Section header */}
                 <motion.div
@@ -117,8 +138,9 @@ export default function ContactSection() {
                         <div className="space-y-6">
                             {/* Email */}
                             <div className="flex items-start gap-4">
-                                <div
-                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+                                <a
+                                    href="mailto:info@markosstudio.com"
+                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
                                     style={{
                                         backgroundColor: theme === 'dark' ? 'rgba(200,169,110,0.1)' : 'rgba(200,169,110,0.1)',
                                     }}
@@ -126,7 +148,7 @@ export default function ContactSection() {
                                     <svg className="h-5 w-5" style={{ color: 'var(--color-brand)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
                                     </svg>
-                                </div>
+                                </a>
                                 <div>
                                     <p
                                         className="text-sm font-medium"
@@ -137,22 +159,24 @@ export default function ContactSection() {
                                     >
                                         Email
                                     </p>
-                                    <p
-                                        className="text-sm"
+                                    <a
+                                        href="mailto:info@markosstudio.com"
+                                        className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                         style={{
                                             fontFamily: 'var(--font-outfit)',
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
                                         info@markosstudio.com
-                                    </p>
+                                    </a>
                                 </div>
                             </div>
 
                             {/* Phone */}
                             <div className="flex items-start gap-4">
-                                <div
-                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+                                <a
+                                    href="tel:+447473846666"
+                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
                                     style={{
                                         backgroundColor: 'rgba(200,169,110,0.1)',
                                     }}
@@ -160,7 +184,7 @@ export default function ContactSection() {
                                     <svg className="h-5 w-5" style={{ color: 'var(--color-brand)' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
                                     </svg>
-                                </div>
+                                </a>
                                 <div>
                                     <p
                                         className="text-sm font-medium"
@@ -171,22 +195,26 @@ export default function ContactSection() {
                                     >
                                         Phone
                                     </p>
-                                    <p
-                                        className="text-sm"
+                                    <a
+                                        href="tel:+447473846666"
+                                        className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                         style={{
                                             fontFamily: 'var(--font-outfit)',
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
                                         +44 747 384 6666
-                                    </p>
+                                    </a>
                                 </div>
                             </div>
 
                             {/* Location */}
                             <div className="flex items-start gap-4">
-                                <div
-                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg"
+                                <a
+                                    href="https://maps.google.com/?q=Manchester,+United+Kingdom"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
                                     style={{
                                         backgroundColor: 'rgba(200,169,110,0.1)',
                                     }}
@@ -195,7 +223,7 @@ export default function ContactSection() {
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
                                     </svg>
-                                </div>
+                                </a>
                                 <div>
                                     <p
                                         className="text-sm font-medium"
@@ -206,17 +234,21 @@ export default function ContactSection() {
                                     >
                                         Location
                                     </p>
-                                    <p
-                                        className="text-sm"
+                                    <a
+                                        href="https://maps.google.com/?q=Manchester,+United+Kingdom"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                         style={{
                                             fontFamily: 'var(--font-outfit)',
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
                                         Manchester, United Kingdom
-                                    </p>
+                                    </a>
                                 </div>
                             </div>
+
                         </div>
 
                         {/* Availability status */}
@@ -298,38 +330,122 @@ export default function ContactSection() {
                                 </button>
                             </motion.div>
                         ) : (
-                            <form onSubmit={handleSubmit} className="space-y-5">
+                            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
                                 {/* Name */}
                                 <div>
                                     <input
                                         type="text"
                                         placeholder="Your Name"
-                                        required
                                         value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, name: e.target.value });
+                                            if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
+                                        }}
                                         className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={inputBaseStyle}
+                                        style={{ ...inputBaseStyle, borderColor: errors.name ? '#ef4444' : inputBaseStyle.borderColor }}
                                     />
+                                    <AnimatePresence>
+                                        {errors.name && (
+                                            <motion.p
+                                                initial={{ opacity: 0, height: 0, y: -10 }}
+                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                exit={{ opacity: 0, height: 0, y: -10 }}
+                                                className="mt-1 text-xs text-red-500"
+                                            >
+                                                {errors.name}
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Subject */}
-                                <div>
-                                    <select
-                                        required
-                                        value={formData.subject}
-                                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                                        className="w-full cursor-pointer appearance-none rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={inputBaseStyle}
+                                <div className="relative">
+                                    <div
+                                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                        className="flex w-full cursor-pointer items-center justify-between rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300"
+                                        style={{
+                                            ...inputBaseStyle,
+                                            borderColor: errors.subject ? '#ef4444' : (isDropdownOpen ? 'var(--color-brand)' : inputBaseStyle.borderColor),
+                                            color: formData.subject ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a') : 'rgba(0,0,0,0.5)'
+                                        }}
                                     >
-                                        <option value="" disabled>
-                                            Select Subject
-                                        </option>
-                                        {SUBJECT_OPTIONS.map((opt) => (
-                                            <option key={opt} value={opt}>
-                                                {opt}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        <span style={{
+                                            color: formData.subject
+                                                ? (theme === 'dark' ? '#f5f5f5' : '#0a0a0a')
+                                                : (theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')
+                                        }}>
+                                            {formData.subject || 'Select Subject'}
+                                        </span>
+                                        <svg
+                                            className={`h-5 w-5 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180' : ''}`}
+                                            style={{ color: 'var(--color-brand)' }}
+                                            fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+
+                                    <AnimatePresence>
+                                        {isDropdownOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scaleY: 0.9, y: 5 }}
+                                                animate={{ opacity: 1, scaleY: 1, y: 0 }}
+                                                exit={{ opacity: 0, scaleY: 0.9, y: 5 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute z-20 mt-2 w-full origin-top cursor-pointer overflow-hidden rounded-lg border shadow-lg"
+                                                style={{
+                                                    backgroundColor: theme === 'dark' ? '#121212' : '#ffffff',
+                                                    borderColor: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)',
+                                                }}
+                                            >
+                                                {SUBJECT_OPTIONS.map((opt) => (
+                                                    <div
+                                                        key={opt}
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, subject: opt });
+                                                            if (errors.subject) setErrors((prev) => ({ ...prev, subject: '' }));
+                                                            setIsDropdownOpen(false);
+                                                        }}
+                                                        className="px-4 py-3 text-sm transition-colors duration-200"
+                                                        style={{
+                                                            fontFamily: 'var(--font-outfit)',
+                                                            color: formData.subject === opt
+                                                                ? 'var(--color-brand)'
+                                                                : (theme === 'dark' ? '#f5f5f5' : '#0a0a0a'),
+                                                            backgroundColor: formData.subject === opt
+                                                                ? (theme === 'dark' ? 'rgba(200,169,110,0.1)' : 'rgba(200,169,110,0.1)')
+                                                                : 'transparent',
+                                                        }}
+                                                        onMouseEnter={(e) => {
+                                                            if (formData.subject !== opt) {
+                                                                e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+                                                            }
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            if (formData.subject !== opt) {
+                                                                e.currentTarget.style.backgroundColor = 'transparent';
+                                                            }
+                                                        }}
+                                                    >
+                                                        {opt}
+                                                    </div>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+
+                                    <AnimatePresence>
+                                        {errors.subject && (
+                                            <motion.p
+                                                initial={{ opacity: 0, height: 0, y: -10 }}
+                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                exit={{ opacity: 0, height: 0, y: -10 }}
+                                                className="mt-1 text-xs text-red-500"
+                                            >
+                                                {errors.subject}
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Email */}
@@ -337,12 +453,26 @@ export default function ContactSection() {
                                     <input
                                         type="email"
                                         placeholder="Your Email"
-                                        required
                                         value={formData.email}
-                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, email: e.target.value });
+                                            if (errors.email) setErrors((prev) => ({ ...prev, email: '' }));
+                                        }}
                                         className="w-full rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={inputBaseStyle}
+                                        style={{ ...inputBaseStyle, borderColor: errors.email ? '#ef4444' : inputBaseStyle.borderColor }}
                                     />
+                                    <AnimatePresence>
+                                        {errors.email && (
+                                            <motion.p
+                                                initial={{ opacity: 0, height: 0, y: -10 }}
+                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                exit={{ opacity: 0, height: 0, y: -10 }}
+                                                className="mt-1 text-xs text-red-500"
+                                            >
+                                                {errors.email}
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Phone */}
@@ -361,13 +491,31 @@ export default function ContactSection() {
                                 <div>
                                     <textarea
                                         placeholder="Your Message"
-                                        required
                                         rows={5}
                                         value={formData.message}
-                                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                                        onChange={(e) => {
+                                            setFormData({ ...formData, message: e.target.value });
+                                            if (errors.message) setErrors((prev) => ({ ...prev, message: '' }));
+                                        }}
                                         className="w-full resize-none rounded-lg border px-4 py-3.5 text-sm outline-none transition-colors duration-300 focus:border-[var(--color-brand)]"
-                                        style={inputBaseStyle}
+                                        style={{
+                                            ...inputBaseStyle,
+                                            borderColor: errors.message ? '#ef4444' : inputBaseStyle.borderColor,
+                                            backgroundColor: inputBaseStyle.backgroundColor
+                                        }}
                                     />
+                                    <AnimatePresence>
+                                        {errors.message && (
+                                            <motion.p
+                                                initial={{ opacity: 0, height: 0, y: -10 }}
+                                                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                                exit={{ opacity: 0, height: 0, y: -10 }}
+                                                className="mt-1 text-xs text-red-500"
+                                            >
+                                                {errors.message}
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
 
                                 {/* Submit */}
@@ -390,6 +538,6 @@ export default function ContactSection() {
                     </motion.div>
                 </div>
             </div>
-        </section>
+        </section >
     );
 }

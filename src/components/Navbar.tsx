@@ -10,7 +10,7 @@ interface NavbarProps {
 }
 
 const LEFT_LINKS = [
-    { label: 'About Us', href: '#founder' },
+    { label: 'About Us', href: '#hero' },
     { label: 'Categories', href: '#categories' },
 ];
 

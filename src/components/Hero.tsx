@@ -7,7 +7,7 @@ export default function Hero() {
     const { theme } = useTheme();
 
     return (
-        <section className="relative flex min-h-[100dvh] items-center justify-center px-6 pb-12 pt-24">
+        <section id="hero" className="relative flex min-h-[100dvh] items-center justify-center px-6 pb-12 pt-24">
             {/* Top gradient fade from preloader */}
             <div
                 className="pointer-events-none absolute top-0 left-0 w-full h-32 z-20"
