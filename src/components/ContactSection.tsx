@@ -178,7 +178,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        +90 (555) 123 4567
+                                        +44 747 384 6666
                                     </p>
                                 </div>
                             </div>
@@ -213,7 +213,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        Istanbul, Turkey
+                                        Manchester, United Kingdom
                                     </p>
                                 </div>
                             </div>
