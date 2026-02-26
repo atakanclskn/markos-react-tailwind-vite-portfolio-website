@@ -158,38 +158,29 @@ export default function ContactSection() {
         setIsSubmitting(true);
 
         try {
-            // Verify captcha with backend (skip if no real token)
-            if (token && token !== 'skip') {
-                const verifyRes = await fetch('/api/verify-captcha', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token }),
-                });
-                const verifyData = await verifyRes.json();
-
-                if (!verifyData.success && !verifyData.skipCaptcha) {
-                    setErrors(prev => ({
-                        ...prev,
-                        captcha: verifyData.message || 'Captcha verification failed. Please try again.'
-                    }));
-                    setIsSubmitting(false);
-                    setCaptchaToken(null);
-                    // Reset widget for retry
-                    if (turnstileWidgetId.current && window.turnstile) {
-                        window.turnstile.reset(turnstileWidgetId.current);
-                    }
-                    return;
-                }
-            }
-
-            // Save to firebase
-            const { submitContactMessage } = await import('@/lib/firestore');
-
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Submission timed out. Please try again.')), 10000);
+            // Send everything to the server API route (captcha + message in one call)
+            const res = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...formData,
+                    captchaToken: token !== 'skip' ? token : undefined,
+                }),
             });
 
-            await Promise.race([submitContactMessage(formData), timeoutPromise]);
+            const data = await res.json();
+
+            if (!data.success) {
+                setErrors(prev => ({
+                    ...prev,
+                    captcha: data.message || 'Failed to send message. Please try again.'
+                }));
+                setCaptchaToken(null);
+                if (turnstileWidgetId.current && window.turnstile) {
+                    window.turnstile.reset(turnstileWidgetId.current);
+                }
+                return;
+            }
 
             setSubmitted(true);
             setFormData({ name: '', subject: '', email: '', phone: '', message: '' });
@@ -206,14 +197,13 @@ export default function ContactSection() {
                 setSubmitted(false);
             }, 4000);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Error submitting form:', error);
             setErrors(prev => ({
                 ...prev,
-                captcha: error.message || 'An error occurred. Please try again.'
+                captcha: 'An error occurred. Please try again.'
             }));
             setCaptchaToken(null);
-            // Reset widget for retry
             if (turnstileWidgetId.current && window.turnstile) {
                 window.turnstile.reset(turnstileWidgetId.current);
             }
