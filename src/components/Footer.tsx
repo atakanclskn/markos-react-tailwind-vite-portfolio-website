@@ -1,17 +1,31 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { getFooterContent } from '@/lib/firestore';
+import type { FooterContent } from '@/types';
 
 export default function Footer() {
     const { theme, toggleTheme } = useTheme();
+    const [footer, setFooter] = useState<FooterContent | null>(null);
 
-    const footerLinks = [
-        { label: 'Instagram', href: '#' },
-        { label: 'Twitter', href: '#' },
-        { label: 'Behance', href: '#' },
-        { label: 'LinkedIn', href: '#' },
-    ];
+    useEffect(() => {
+        getFooterContent().then((data) => {
+            if (data) setFooter(data);
+        });
+    }, []);
+
+    const footerLinks = footer?.socialLinks && footer.socialLinks.length > 0
+        ? footer.socialLinks.map(l => ({ label: l.iconName, href: l.url }))
+        : [
+            { label: 'Instagram', href: '#' },
+            { label: 'Twitter', href: '#' },
+            { label: 'Behance', href: '#' },
+            { label: 'LinkedIn', href: '#' },
+        ];
+
+    const copyright = footer?.copyright || `© ${new Date().getFullYear()} Markos Studio. All rights reserved.`;
 
     return (
         <footer
@@ -76,6 +90,8 @@ export default function Footer() {
                                 <a
                                     key={link.label}
                                     href={link.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                     style={{
                                         fontFamily: 'var(--font-outfit)',
@@ -175,7 +191,7 @@ export default function Footer() {
                                     : 'rgba(0,0,0,0.3)',
                         }}
                     >
-                        &copy; {new Date().getFullYear()} Markos Studio. All rights reserved.
+                        {copyright}
                     </p>
                     <p
                         className="text-xs"

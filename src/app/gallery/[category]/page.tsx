@@ -1,81 +1,49 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import GalleryDock from '@/components/GalleryDock';
-
-// Placeholder gallery images per category for development
-const GALLERY_IMAGES: Record<string, string[]> = {
-    landscape: [
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=85',
-        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=85',
-        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=85',
-        'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&q=85',
-        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200&q=85',
-        'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200&q=85',
-    ],
-    portrait: [
-        'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=1200&q=85',
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=85',
-        'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=1200&q=85',
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=1200&q=85',
-        'https://images.unsplash.com/photo-1521119989659-a83eee488004?w=1200&q=85',
-    ],
-    animal: [
-        'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=1200&q=85',
-        'https://images.unsplash.com/photo-1474511320723-9a56873571b7?w=1200&q=85',
-        'https://images.unsplash.com/photo-1437622368342-7a3d73a34c8f?w=1200&q=85',
-        'https://images.unsplash.com/photo-1425082661507-6d4d3f25f7da?w=1200&q=85',
-        'https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=1200&q=85',
-    ],
-    fashion: [
-        'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&q=85',
-        'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=1200&q=85',
-        'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=1200&q=85',
-        'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=1200&q=85',
-        'https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=1200&q=85',
-    ],
-    product: [
-        'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1200&q=85',
-        'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1200&q=85',
-        'https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=1200&q=85',
-        'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1200&q=85',
-        'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=1200&q=85',
-    ],
-    'party-wedding': [
-        'https://images.unsplash.com/photo-1519741497674-611481863552?w=1200&q=85',
-        'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=1200&q=85',
-        'https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=1200&q=85',
-        'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&q=85',
-        'https://images.unsplash.com/photo-1504196606672-aef5c9cefc92?w=1200&q=85',
-    ],
-    'b-w': [
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&q=85',
-        'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=1200&q=85',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=85',
-        'https://images.unsplash.com/photo-1494548162494-384bba4ab999?w=1200&q=85',
-        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&q=85',
-    ],
-};
-
-const CATEGORY_LABELS: Record<string, string> = {
-    landscape: 'Landscape',
-    portrait: 'Portrait',
-    animal: 'Animal',
-    fashion: 'Fashion',
-    product: 'Product',
-    'party-wedding': 'Party & Wedding',
-    'b-w': 'B&W',
-};
+import { getCategories, getPhotosByCategory } from '@/lib/firestore';
+import type { Photo, Category } from '@/types';
 
 export default function GalleryPage() {
     const params = useParams();
     const router = useRouter();
     const { theme } = useTheme();
     const categorySlug = params.category as string;
-    const categoryLabel = CATEGORY_LABELS[categorySlug] || categorySlug;
-    const images = GALLERY_IMAGES[categorySlug] || [];
+
+    const [categoryLabel, setCategoryLabel] = useState(categorySlug);
+    const [images, setImages] = useState<Photo[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                // Get all categories to find current one and its label
+                const cats = await getCategories();
+                const currentCat = cats.find(c => c.slug === categorySlug);
+                if (currentCat) {
+                    setCategoryLabel(currentCat.name);
+                    const photos = await getPhotosByCategory(currentCat.id!);
+                    setImages(photos);
+                }
+            } catch (e) {
+                console.error('Error fetching gallery photos:', e);
+            } finally {
+                setLoading(false);
+            }
+        })();
+    }, [categorySlug]);
+
+    if (loading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
+            </div>
+        );
+    }
 
     if (!images.length) {
         return (
@@ -87,7 +55,7 @@ export default function GalleryPage() {
                         color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                     }}
                 >
-                    Kategori bulunamadi
+                    No photos in this category yet
                 </p>
             </div>
         );
@@ -143,9 +111,9 @@ export default function GalleryPage() {
 
             {/* Immersive photo feed */}
             <div className="mx-auto max-w-5xl px-4 pt-24 sm:px-6">
-                {images.map((src, index) => (
+                {images.map((photo, index) => (
                     <motion.div
-                        key={index}
+                        key={photo.id || index}
                         className="mb-6 overflow-hidden rounded-xl sm:mb-8"
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -153,7 +121,7 @@ export default function GalleryPage() {
                         transition={{ duration: 0.8, delay: index * 0.05 }}
                     >
                         <motion.img
-                            src={src}
+                            src={photo.storageUrl}
                             alt={`${categoryLabel} - ${index + 1}`}
                             className="w-full object-cover"
                             style={{

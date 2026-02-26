@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { getContactInfo } from '@/lib/firestore';
+import type { ContactInfo } from '@/types';
 
 const SUBJECT_OPTIONS = [
     'General Inquiry',
@@ -17,6 +19,20 @@ const SUBJECT_OPTIONS = [
 
 export default function ContactSection() {
     const { theme } = useTheme();
+    const [contactInfo, setContactInfoState] = useState<ContactInfo | null>(null);
+
+    useEffect(() => {
+        getContactInfo().then((data) => {
+            if (data) setContactInfoState(data);
+        });
+    }, []);
+
+    const email = contactInfo?.email || 'info@markosstudio.com';
+    const phone = contactInfo?.phone || '+44 747 384 6666';
+    const address = contactInfo?.address || 'Manchester, United Kingdom';
+    const statusText = contactInfo?.statusText || 'Currently available for new projects';
+    const statusActive = contactInfo?.statusActive ?? true;
+
     const [formData, setFormData] = useState({
         name: '',
         subject: '',
@@ -207,7 +223,7 @@ export default function ContactSection() {
                             {/* Email */}
                             <div className="flex items-start gap-4">
                                 <a
-                                    href="mailto:info@markosstudio.com"
+                                    href={`mailto:${email}`}
                                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
                                     style={{
                                         backgroundColor: theme === 'dark' ? 'rgba(200,169,110,0.1)' : 'rgba(200,169,110,0.1)',
@@ -228,14 +244,14 @@ export default function ContactSection() {
                                         Email
                                     </p>
                                     <a
-                                        href="mailto:info@markosstudio.com"
+                                        href={`mailto:${email}`}
                                         className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                         style={{
                                             fontFamily: 'var(--font-outfit)',
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        info@markosstudio.com
+                                        {email}
                                     </a>
                                 </div>
                             </div>
@@ -243,7 +259,7 @@ export default function ContactSection() {
                             {/* Phone */}
                             <div className="flex items-start gap-4">
                                 <a
-                                    href="tel:+447473846666"
+                                    href={`tel:${phone.replace(/\s/g, '')}`}
                                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
                                     style={{
                                         backgroundColor: 'rgba(200,169,110,0.1)',
@@ -264,14 +280,14 @@ export default function ContactSection() {
                                         Phone
                                     </p>
                                     <a
-                                        href="tel:+447473846666"
+                                        href={`tel:${phone.replace(/\s/g, '')}`}
                                         className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
                                         style={{
                                             fontFamily: 'var(--font-outfit)',
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        +44 747 384 6666
+                                        {phone}
                                     </a>
                                 </div>
                             </div>
@@ -279,7 +295,7 @@ export default function ContactSection() {
                             {/* Location */}
                             <div className="flex items-start gap-4">
                                 <a
-                                    href="https://maps.google.com/?q=Manchester,+United+Kingdom"
+                                    href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg transition-colors duration-300 hover:bg-[rgba(200,169,110,0.2)]"
@@ -303,7 +319,7 @@ export default function ContactSection() {
                                         Location
                                     </p>
                                     <a
-                                        href="https://maps.google.com/?q=Manchester,+United+Kingdom"
+                                        href={`https://maps.google.com/?q=${encodeURIComponent(address)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
@@ -312,7 +328,7 @@ export default function ContactSection() {
                                             color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                                         }}
                                     >
-                                        Manchester, United Kingdom
+                                        {address}
                                     </a>
                                 </div>
                             </div>
@@ -323,13 +339,18 @@ export default function ContactSection() {
                         <div
                             className="mt-10 inline-flex items-center gap-3 rounded-full px-5 py-3"
                             style={{
-                                backgroundColor: theme === 'dark' ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.08)',
-                                border: `1px solid ${theme === 'dark' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.2)'}`,
+                                backgroundColor: statusActive
+                                    ? (theme === 'dark' ? 'rgba(34, 197, 94, 0.08)' : 'rgba(34, 197, 94, 0.08)')
+                                    : (theme === 'dark' ? 'rgba(239, 68, 68, 0.08)' : 'rgba(239, 68, 68, 0.08)'),
+                                border: `1px solid ${statusActive
+                                    ? (theme === 'dark' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.2)')
+                                    : (theme === 'dark' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.2)')
+                                }`,
                             }}
                         >
                             <span className="relative flex h-2.5 w-2.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
-                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500" />
+                                <span className={`absolute inline-flex h-full w-full animate-ping rounded-full ${statusActive ? 'bg-green-400' : 'bg-red-400'} opacity-75`} />
+                                <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${statusActive ? 'bg-green-500' : 'bg-red-500'}`} />
                             </span>
                             <span
                                 className="text-sm font-medium"
@@ -338,7 +359,7 @@ export default function ContactSection() {
                                     color: theme === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                                 }}
                             >
-                                Currently available for new projects
+                                {statusText}
                             </span>
                         </div>
                     </motion.div>

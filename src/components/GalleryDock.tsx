@@ -1,10 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { getCategories } from '@/lib/firestore';
 
-const CATEGORIES = [
+const FALLBACK_CATEGORIES = [
     { slug: 'landscape', label: 'Landscape' },
     { slug: 'portrait', label: 'Portrait' },
     { slug: 'animal', label: 'Animal' },
@@ -21,6 +23,15 @@ interface GalleryDockProps {
 export default function GalleryDock({ activeCategory }: GalleryDockProps) {
     const router = useRouter();
     const { theme } = useTheme();
+    const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+
+    useEffect(() => {
+        getCategories().then((cats) => {
+            if (cats.length > 0) {
+                setCategories(cats.map(c => ({ slug: c.slug, label: c.name })));
+            }
+        });
+    }, []);
 
     return (
         <motion.div
@@ -43,7 +54,7 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
                         : '0 25px 50px -12px rgba(0,0,0,0.15)',
                 }}
             >
-                {CATEGORIES.map((cat) => {
+                {categories.map((cat) => {
                     const isActive = cat.slug === activeCategory;
                     return (
                         <button

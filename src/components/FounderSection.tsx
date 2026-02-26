@@ -1,10 +1,32 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { getFounderInfo } from '@/lib/firestore';
+import type { FounderInfo } from '@/types';
 
 export default function FounderSection() {
     const { theme } = useTheme();
+    const [founder, setFounder] = useState<FounderInfo | null>(null);
+
+    useEffect(() => {
+        getFounderInfo().then((data) => {
+            if (data) setFounder(data);
+        });
+    }, []);
+
+    const name = founder?.name || 'Onur Satici';
+    const title = founder?.title || 'Founder & Photography Artist';
+    const bio = founder?.bio || 'The creative force behind Markos Studio with over 10 years of experience. As a master of natural light and composition, he brings a unique perspective to every project. Working in and around Istanbul, he creates unforgettable visuals for brands and individuals alike.';
+    const photoUrl = founder?.photoUrl || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80';
+    const stats = founder?.stats?.length
+        ? founder.stats
+        : [
+              { value: '10+', label: 'Years Experience' },
+              { value: '500+', label: 'Projects' },
+              { value: '50+', label: 'Brands' },
+          ];
 
     return (
         <section id="founder" className="px-6 py-24 md:px-12 lg:px-20">
@@ -49,8 +71,8 @@ export default function FounderSection() {
                     >
                         <div className="relative overflow-hidden rounded-2xl">
                             <img
-                                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80"
-                                alt="Onur Satıcı - Markos Studio Founder"
+                                src={photoUrl}
+                                alt={`${name} - Markos Studio Founder`}
                                 className="aspect-[3/4] w-full object-cover"
                             />
                             <div
@@ -83,7 +105,7 @@ export default function FounderSection() {
                                 color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                             }}
                         >
-                            Onur Satıcı
+                            {name}
                         </h3>
                         <p
                             className="mb-6 text-sm font-medium tracking-[0.2em] uppercase"
@@ -92,10 +114,10 @@ export default function FounderSection() {
                                 color: 'var(--color-brand)',
                             }}
                         >
-                            Founder & Photography Artist
+                            {title}
                         </p>
                         <p
-                            className="mb-6 text-base leading-relaxed"
+                            className="text-base leading-relaxed whitespace-pre-line"
                             style={{
                                 fontFamily: 'var(--font-outfit)',
                                 color:
@@ -104,34 +126,12 @@ export default function FounderSection() {
                                         : 'rgba(0,0,0,0.6)',
                             }}
                         >
-                            The creative force behind Markos Studio with over 10 years of experience.
-                            As a master of natural light and composition, he brings a unique perspective
-                            to every project. Working in and around Istanbul, he creates unforgettable
-                            visuals for brands and individuals alike.
-                        </p>
-                        <p
-                            className="text-base leading-relaxed"
-                            style={{
-                                fontFamily: 'var(--font-outfit)',
-                                color:
-                                    theme === 'dark'
-                                        ? 'rgba(255,255,255,0.6)'
-                                        : 'rgba(0,0,0,0.6)',
-                            }}
-                        >
-                            His passion for landscape photography has taken him around the world,
-                            with his work featured in international exhibitions.
-                            At Markos Studio, our focus is telling your story in the most
-                            compelling way possible.
+                            {bio}
                         </p>
 
                         {/* Stats */}
                         <div className="mt-10 grid grid-cols-3 gap-6">
-                            {[
-                                { value: '10+', label: 'Years Experience' },
-                                { value: '500+', label: 'Projects' },
-                                { value: '50+', label: 'Brands' },
-                            ].map((stat) => (
+                            {stats.map((stat) => (
                                 <div key={stat.label}>
                                     <p
                                         className="text-2xl font-bold sm:text-3xl"

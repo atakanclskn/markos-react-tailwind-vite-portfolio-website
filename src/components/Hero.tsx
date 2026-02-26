@@ -1,10 +1,30 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { getHeroContent } from '@/lib/firestore';
+import type { HeroContent } from '@/types';
 
 export default function Hero() {
     const { theme } = useTheme();
+    const [content, setContent] = useState<HeroContent | null>(null);
+
+    useEffect(() => {
+        getHeroContent().then((data) => {
+            if (data) setContent(data);
+        });
+    }, []);
+
+    // Fallback defaults while loading or if Firestore is empty
+    const title = content?.title || 'Every Frame a Story';
+    const subtitle = content?.subtitle || 'At Markos Studio, we transform your moments into timeless art. From nature to fashion, portraits to products, we provide professional photography services across every field.';
+    const buttonText = content?.buttonText || 'Explore Our Portfolio';
+
+    // Split title to apply gradient on last word
+    const titleWords = title.split(' ');
+    const lastWord = titleWords.pop();
+    const firstPart = titleWords.join(' ');
 
     return (
         <section id="hero" className="relative flex min-h-[100dvh] items-center justify-center px-6 pb-12 pt-24">
@@ -52,8 +72,8 @@ export default function Hero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, delay: 0.4 }}
                 >
-                    Every Frame a{' '}
-                    <span className="text-gradient-brand">Story</span>
+                    {firstPart}{firstPart ? ' ' : ''}
+                    <span className="text-gradient-brand">{lastWord}</span>
                 </motion.h2>
 
                 {/* Subtitle */}
@@ -70,9 +90,7 @@ export default function Hero() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, delay: 0.7 }}
                 >
-                    At Markos Studio, we transform your moments into timeless art.
-                    From nature to fashion, portraits to products, we provide professional
-                    photography services across every field.
+                    {subtitle}
                 </motion.p>
 
                 {/* CTA button */}
@@ -98,7 +116,7 @@ export default function Hero() {
                             color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a',
                         }}
                     >
-                        <span className="relative z-10">Explore Our Portfolio</span>
+                        <span className="relative z-10">{buttonText}</span>
                         <svg
                             className="relative z-10 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
                             fill="none"

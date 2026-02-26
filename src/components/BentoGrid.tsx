@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from '@/context/ThemeContext';
+import { getCategories, getPhotosByCategory } from '@/lib/firestore';
+import type { Category, Photo } from '@/types';
 
-// Her kategori için premium crossfade efekti yaratacak çoklu görseller
-const CATEGORIES = [
+// Fallback categories when Firestore is empty
+const FALLBACK_CATEGORIES = [
     { id: "landscape", title: "Landscape", images: ["https://picsum.photos/seed/land1/1200/800", "https://picsum.photos/seed/land2/1200/800", "https://picsum.photos/seed/land3/1200/800"] },
     { id: "portrait", title: "Portrait", images: ["https://picsum.photos/seed/port1/800/1200", "https://picsum.photos/seed/port2/800/1200", "https://picsum.photos/seed/port3/800/1200"] },
     { id: "animal", title: "Animal", images: ["https://picsum.photos/seed/anim1/1000/1000", "https://picsum.photos/seed/anim2/1000/1000", "https://picsum.photos/seed/anim3/1000/1000"] },
@@ -15,9 +17,7 @@ const CATEGORIES = [
     { id: "bw", title: "B&W", images: ["https://picsum.photos/seed/bw1/1000/1000", "https://picsum.photos/seed/bw2/1000/1000", "https://picsum.photos/seed/bw3/1000/1000"] },
 ];
 
-// Grid'i 2 satıra bölüyoruz (3 üstte, 4 altta)
-const ROW1 = CATEGORIES.slice(0, 3);
-const ROW2 = CATEGORIES.slice(3, 7);
+type CategoryWithImages = { id: string; title: string; images: string[] };
 
 // Rastgele flex ağırlıkları üreten yardımcı fonksiyon
 const getRandomWeights = (count: number) => {
@@ -28,7 +28,7 @@ interface BentoGridProps {
     onCategoryClick: (category: string) => void;
 }
 
-function GridItem({ category, weight, onClick, isDark }: { category: typeof CATEGORIES[0], weight: number, onClick: (category: string) => void, isDark: boolean }) {
+function GridItem({ category, weight, onClick, isDark }: { category: CategoryWithImages, weight: number, onClick: (category: string) => void, isDark: boolean }) {
     const [imgIndex, setImgIndex] = useState(0);
 
     // Görsellerin rastgele aralıklarla, çok yavaş değişmesini sağlayan effect
@@ -83,12 +83,50 @@ function GridItem({ category, weight, onClick, isDark }: { category: typeof CATE
 export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const [row1Weights, setRow1Weights] = useState(() => getRandomWeights(ROW1.length));
-    const [row2Weights, setRow2Weights] = useState(() => getRandomWeights(ROW2.length));
+    const [categories, setCategories] = useState<CategoryWithImages[]>(FALLBACK_CATEGORIES);
+    const [row1Weights, setRow1Weights] = useState(() => getRandomWeights(3));
+    const [row2Weights, setRow2Weights] = useState(() => getRandomWeights(4));
+
+    // Fetch categories and their photos from Firestore
+    useEffect(() => {
+        (async () => {
+            try {
+                const cats = await getCategories();
+                if (cats.length === 0) return;
+
+                const withImages: CategoryWithImages[] = await Promise.all(
+                    cats.map(async (cat) => {
+                        const photos = await getPhotosByCategory(cat.id!);
+                        const images = photos.slice(0, 3).map(p => p.storageUrl);
+                        // If category has no photos, use placeholder
+                        if (images.length === 0) {
+                            images.push(`https://picsum.photos/seed/${cat.slug}1/1200/800`);
+                            images.push(`https://picsum.photos/seed/${cat.slug}2/1200/800`);
+                            images.push(`https://picsum.photos/seed/${cat.slug}3/1200/800`);
+                        }
+                        return { id: cat.slug, title: cat.name, images };
+                    })
+                );
+
+                setCategories(withImages);
+                // Reset weights for the new row sizes
+                const mid = Math.ceil(withImages.length / 2);
+                setRow1Weights(getRandomWeights(mid));
+                setRow2Weights(getRandomWeights(withImages.length - mid));
+            } catch (e) {
+                console.error('Error fetching categories for BentoGrid:', e);
+            }
+        })();
+    }, []);
+
+    // Dynamically split into two rows
+    const midpoint = Math.ceil(categories.length / 2);
+    const ROW1 = categories.slice(0, midpoint);
+    const ROW2 = categories.slice(midpoint);
 
     // Grid karelerinin boyutlarını asenkron ve tek tek değiştiren effect
     useEffect(() => {
-        // Üst satır için bağımsız döngü: Her 3.5 saniyede sadece RASTGELE BİR kutunun boyutu değişir
+        // Üst satır için bağımsız döngü
         const timer1 = setInterval(() => {
             setRow1Weights((prev) => {
                 const next = [...prev];
@@ -98,7 +136,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
             });
         }, 3500);
 
-        // Alt satır için bağımsız döngü: Her 4.8 saniyede sadece RASTGELE BİR kutunun boyutu değişir
+        // Alt satır için bağımsız döngü
         const timer2 = setInterval(() => {
             setRow2Weights((prev) => {
                 const next = [...prev];
@@ -112,7 +150,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
             clearInterval(timer1);
             clearInterval(timer2);
         };
-    }, []);
+    }, [categories]);
 
     return (
         <section id="categories" className="py-32 px-4 md:px-12 max-w-[1600px] mx-auto">
