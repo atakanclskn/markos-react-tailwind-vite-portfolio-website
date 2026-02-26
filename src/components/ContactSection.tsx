@@ -32,8 +32,8 @@ export default function ContactSection() {
     const address = contactInfo?.address || 'Manchester, United Kingdom';
     const statusActive = contactInfo?.statusActive ?? true;
     const statusText = statusActive
-        ? (contactInfo?.statusText || 'Currently available for new projects')
-        : (contactInfo?.statusText || 'Currently NOT available for new projects');
+        ? 'Currently available for new projects'
+        : 'Currently not available for new projects';
 
     const [formData, setFormData] = useState({
         name: '',

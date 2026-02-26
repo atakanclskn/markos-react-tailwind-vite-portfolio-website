@@ -57,7 +57,7 @@ export default function SectionsPage() {
         email: '',
         phone: '',
         address: '',
-        statusText: '',
+        statusText: 'Currently available for new projects',
         statusActive: true,
     });
     const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -387,13 +387,6 @@ export default function SectionsPage() {
                                     />
                                 </button>
                             </div>
-
-                            <InputField
-                                label="Status Text"
-                                value={contactForm.statusText}
-                                onChange={(v) => setContactForm({ ...contactForm, statusText: v })}
-                                placeholder="e.g. Available for bookings"
-                            />
 
                             <SaveButton onClick={handleSaveContact} loading={saving === 'contact'} />
                         </div>
