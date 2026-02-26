@@ -623,62 +623,53 @@ export default function ContactSection() {
 
                                     {/* Submit Area */}
                                     <div className="flex w-full flex-col gap-4">
-                                        <AnimatePresence mode="wait">
-                                            {showCaptcha && !isSubmitting ? (
-                                                <motion.div
-                                                    key="captcha-container"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    className="flex w-full items-center justify-center rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] py-2"
-                                                >
-                                                    <Turnstile
-                                                        siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                                                        onSuccess={(token) => {
-                                                            setCaptchaToken(token);
-                                                            if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
-                                                        }}
-                                                        options={{ theme: theme as 'light' | 'dark' }}
-                                                    />
-                                                </motion.div>
-                                            ) : (
-                                                <motion.div
-                                                    key="submit-button-container"
-                                                    initial={{ opacity: 0, y: 10 }}
-                                                    animate={{ opacity: 1, y: 0 }}
-                                                    exit={{ opacity: 0, y: -10 }}
-                                                    transition={{ duration: 0.3 }}
-                                                    className="w-full flex flex-col"
-                                                >
-                                                    <motion.button
-                                                        type="submit"
-                                                        disabled={isSubmitting}
-                                                        className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50"
-                                                        style={{
-                                                            fontFamily: 'var(--font-outfit)',
-                                                            backgroundColor: 'var(--color-brand)',
-                                                            color: '#000',
-                                                        }}
-                                                        whileHover={{ scale: isSubmitting ? 1 : 1.01 }}
-                                                        whileTap={{ scale: isSubmitting ? 1 : 0.99 }}
-                                                    >
-                                                        <AnimatePresence mode="wait">
-                                                            <motion.span
-                                                                key={isSubmitting ? 'sending' : 'send'}
-                                                                initial={{ opacity: 0, y: 10 }}
-                                                                animate={{ opacity: 1, y: 0 }}
-                                                                exit={{ opacity: 0, y: -10 }}
-                                                                transition={{ duration: 0.2 }}
-                                                                className="block"
-                                                            >
-                                                                {isSubmitting ? 'Sending...' : 'Send Message'}
-                                                            </motion.span>
-                                                        </AnimatePresence>
-                                                    </motion.button>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
+                                        {showCaptcha && !captchaToken && !isSubmitting && (
+                                            <motion.div
+                                                key="captcha-container"
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ duration: 0.3 }}
+                                                className="flex w-full items-center justify-center rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] py-2"
+                                            >
+                                                <Turnstile
+                                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+                                                    onSuccess={(token) => {
+                                                        setCaptchaToken(token);
+                                                        if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
+                                                    }}
+                                                    options={{ theme: theme as 'light' | 'dark' }}
+                                                />
+                                            </motion.div>
+                                        )}
+
+                                        {isSubmitting && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className="flex w-full items-center justify-center py-4"
+                                            >
+                                                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
+                                                <span className="ml-3 text-sm" style={{ fontFamily: 'var(--font-outfit)', color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                                                    Sending...
+                                                </span>
+                                            </motion.div>
+                                        )}
+
+                                        {!showCaptcha && !isSubmitting && (
+                                            <motion.button
+                                                type="submit"
+                                                className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300"
+                                                style={{
+                                                    fontFamily: 'var(--font-outfit)',
+                                                    backgroundColor: 'var(--color-brand)',
+                                                    color: '#000',
+                                                }}
+                                                whileHover={{ scale: 1.01 }}
+                                                whileTap={{ scale: 0.99 }}
+                                            >
+                                                Send Message
+                                            </motion.button>
+                                        )}
 
                                         <AnimatePresence>
                                             {showCaptcha && errors.captcha && (
