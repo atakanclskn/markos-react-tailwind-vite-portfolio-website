@@ -38,6 +38,12 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Monoton&family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
           rel="stylesheet"
         />
+        <link rel="preconnect" href="https://challenges.cloudflare.com" />
+        <script
+          src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit"
+          async
+          defer
+        />
       </head>
       <body>
         <ThemeProvider>{children}</ThemeProvider>

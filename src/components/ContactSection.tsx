@@ -1,11 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { Turnstile } from '@marsidev/react-turnstile';
 import { getContactInfo } from '@/lib/firestore';
 import type { ContactInfo } from '@/types';
+
+// Declare Turnstile global type
+declare global {
+    interface Window {
+        turnstile?: {
+            render: (container: string | HTMLElement, options: Record<string, unknown>) => string;
+            reset: (widgetId: string) => void;
+            remove: (widgetId: string) => void;
+            getResponse: (widgetId: string) => string | undefined;
+            isExpired: (widgetId: string) => boolean;
+        };
+    }
+}
 
 const SUBJECT_OPTIONS = [
     'General Inquiry',
@@ -49,6 +61,8 @@ export default function ContactSection() {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [showCaptcha, setShowCaptcha] = useState(false);
     const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+    const turnstileContainerRef = useRef<HTMLDivElement>(null);
+    const turnstileWidgetId = useRef<string | null>(null);
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -65,12 +79,87 @@ export default function ContactSection() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const processSubmission = async (token?: string) => {
+    // Render Turnstile widget when captcha area becomes visible
+    useEffect(() => {
+        if (!showCaptcha || captchaToken || !turnstileContainerRef.current) return;
+
+        const renderWidget = () => {
+            if (!window.turnstile || !turnstileContainerRef.current) return;
+
+            // Clean up any existing widget
+            if (turnstileWidgetId.current) {
+                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
+                turnstileWidgetId.current = null;
+            }
+
+            // Clear container
+            turnstileContainerRef.current.innerHTML = '';
+
+            const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+            if (!siteKey) {
+                console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set');
+                // Submit without captcha
+                setCaptchaToken('skip');
+                return;
+            }
+
+            turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
+                sitekey: siteKey,
+                theme: theme === 'dark' ? 'dark' : 'light',
+                callback: (token: string) => {
+                    setCaptchaToken(token);
+                    if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
+                },
+                'error-callback': () => {
+                    setErrors(prev => ({ ...prev, captcha: 'Captcha failed. Please try again.' }));
+                },
+                'expired-callback': () => {
+                    setCaptchaToken(null);
+                    setErrors(prev => ({ ...prev, captcha: 'Captcha expired. Please verify again.' }));
+                },
+            });
+        };
+
+        // Wait for Turnstile script to load
+        if (window.turnstile) {
+            renderWidget();
+        } else {
+            const interval = setInterval(() => {
+                if (window.turnstile) {
+                    clearInterval(interval);
+                    renderWidget();
+                }
+            }, 200);
+            // Timeout after 10 seconds
+            const timeout = setTimeout(() => {
+                clearInterval(interval);
+                if (!window.turnstile) {
+                    console.error('Turnstile script failed to load');
+                    setCaptchaToken('skip');
+                }
+            }, 10000);
+            return () => {
+                clearInterval(interval);
+                clearTimeout(timeout);
+            };
+        }
+    }, [showCaptcha, captchaToken, theme]);
+
+    // Cleanup widget on unmount
+    useEffect(() => {
+        return () => {
+            if (turnstileWidgetId.current && window.turnstile) {
+                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
+            }
+        };
+    }, []);
+
+    const processSubmission = async (token: string) => {
         setIsSubmitting(true);
 
         try {
-            // Verify captcha with backend (if token exists)
-            if (token) {
+            // Verify captcha with backend (skip if no real token)
+            if (token && token !== 'skip') {
                 const verifyRes = await fetch('/api/verify-captcha', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -78,7 +167,6 @@ export default function ContactSection() {
                 });
                 const verifyData = await verifyRes.json();
 
-                // If captcha is configured but verification failed
                 if (!verifyData.success && !verifyData.skipCaptcha) {
                     setErrors(prev => ({
                         ...prev,
@@ -86,6 +174,10 @@ export default function ContactSection() {
                     }));
                     setIsSubmitting(false);
                     setCaptchaToken(null);
+                    // Reset widget for retry
+                    if (turnstileWidgetId.current && window.turnstile) {
+                        window.turnstile.reset(turnstileWidgetId.current);
+                    }
                     return;
                 }
             }
@@ -93,9 +185,8 @@ export default function ContactSection() {
             // Save to firebase
             const { submitContactMessage } = await import('@/lib/firestore');
 
-            // Add a timeout to prevent infinite hang if Firebase is unconfigured
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Firebase submission timed out. Check your Firebase environment variables on Vercel.')), 10000);
+                setTimeout(() => reject(new Error('Submission timed out. Please try again.')), 10000);
             });
 
             await Promise.race([submitContactMessage(formData), timeoutPromise]);
@@ -105,7 +196,12 @@ export default function ContactSection() {
             setShowCaptcha(false);
             setCaptchaToken(null);
 
-            // Auto-reset form after 4 seconds
+            // Remove widget
+            if (turnstileWidgetId.current && window.turnstile) {
+                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
+                turnstileWidgetId.current = null;
+            }
+
             setTimeout(() => {
                 setSubmitted(false);
             }, 4000);
@@ -114,21 +210,24 @@ export default function ContactSection() {
             console.error('Error submitting form:', error);
             setErrors(prev => ({
                 ...prev,
-                captcha: error.message || 'An error occurred while submitting. Please try again later.'
+                captcha: error.message || 'An error occurred. Please try again.'
             }));
             setCaptchaToken(null);
-            setShowCaptcha(true);
+            // Reset widget for retry
+            if (turnstileWidgetId.current && window.turnstile) {
+                window.turnstile.reset(turnstileWidgetId.current);
+            }
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Auto-submit when captcha is solved (with delay for success animation)
+    // Auto-submit when captcha is solved
     useEffect(() => {
         if (captchaToken && showCaptcha && !isSubmitting && !submitted) {
             const timer = setTimeout(() => {
                 processSubmission(captchaToken);
-            }, 1200);
+            }, 800);
             return () => clearTimeout(timer);
         }
     }, [captchaToken]);
@@ -138,14 +237,14 @@ export default function ContactSection() {
 
         if (!validateForm()) return;
 
-        // If captcha is not shown yet, show it and stop submission
         if (!showCaptcha) {
             setShowCaptcha(true);
             return;
         }
 
-        // If captcha is shown but not solved, submit anyway (server will skip if unconfigured)
-        await processSubmission(captchaToken || undefined);
+        if (captchaToken) {
+            await processSubmission(captchaToken);
+        }
     };
 
     const inputBaseStyle = {
@@ -629,16 +728,13 @@ export default function ContactSection() {
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 transition={{ duration: 0.3 }}
-                                                className="flex w-full items-center justify-center rounded-lg bg-[rgba(255,255,255,0.02)] border border-[rgba(255,255,255,0.05)] py-2"
+                                                className="flex w-full items-center justify-center rounded-lg py-3"
+                                                style={{
+                                                    backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+                                                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+                                                }}
                                             >
-                                                <Turnstile
-                                                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
-                                                    onSuccess={(token) => {
-                                                        setCaptchaToken(token);
-                                                        if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
-                                                    }}
-                                                    options={{ theme: theme as 'light' | 'dark' }}
-                                                />
+                                                <div ref={turnstileContainerRef} />
                                             </motion.div>
                                         )}
 
@@ -649,7 +745,13 @@ export default function ContactSection() {
                                                 className="flex w-full items-center justify-center py-4"
                                             >
                                                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
-                                                <span className="ml-3 text-sm" style={{ fontFamily: 'var(--font-outfit)', color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                                                <span
+                                                    className="ml-3 text-sm"
+                                                    style={{
+                                                        fontFamily: 'var(--font-outfit)',
+                                                        color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                                                    }}
+                                                >
                                                     Sending...
                                                 </span>
                                             </motion.div>
@@ -672,7 +774,7 @@ export default function ContactSection() {
                                         )}
 
                                         <AnimatePresence>
-                                            {showCaptcha && errors.captcha && (
+                                            {errors.captcha && (
                                                 <motion.p
                                                     initial={{ opacity: 0, height: 0, y: -10 }}
                                                     animate={{ opacity: 1, height: 'auto', y: 0 }}

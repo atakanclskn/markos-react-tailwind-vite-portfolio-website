@@ -16,16 +16,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, skipCaptcha: true });
         }
 
-        const formData = new URLSearchParams();
-        formData.append('secret', secretKey);
-        formData.append('response', token);
-
         const verifyResponse = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
             method: 'POST',
-            body: formData,
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
             },
+            body: JSON.stringify({
+                secret: secretKey,
+                response: token,
+            }),
         });
 
         const data = await verifyResponse.json();
@@ -34,10 +33,13 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true });
         } else {
             console.error('Turnstile verification failed:', data['error-codes']);
-            return NextResponse.json({ success: false, message: 'Cloudflare Validation Failed: ' + (data['error-codes']?.join(', ') || 'Unknown Error') }, { status: 400 });
+            return NextResponse.json({
+                success: false,
+                message: 'Verification failed: ' + (data['error-codes']?.join(', ') || 'Unknown error')
+            }, { status: 400 });
         }
     } catch (error: any) {
         console.error('Error verifying captcha:', error);
-        return NextResponse.json({ success: false, message: 'Internal server error: ' + error.message }, { status: 500 });
+        return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
     }
 }
