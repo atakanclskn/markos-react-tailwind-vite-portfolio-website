@@ -186,12 +186,11 @@ export default function Navbar({ visible }: NavbarProps) {
                             ))}
                         </motion.div>
 
-                        {/* Mobile Menu Button - Also fades in */}
+                        {/* Mobile Menu Button - Always visible on mobile after preloader */}
                         <motion.button
-                            className="absolute right-6 flex flex-col gap-[5px] md:hidden"
+                            className="absolute right-6 z-50 flex flex-col gap-[5px] md:hidden"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Toggle menu"
-                            style={{ opacity: navItemsOpacity }}
                         >
                             <motion.span
                                 className="block h-[1.5px] w-6 rounded-full"
@@ -218,33 +217,77 @@ export default function Navbar({ visible }: NavbarProps) {
                     <AnimatePresence>
                         {mobileMenuOpen && (
                             <motion.div
-                                className="absolute top-full left-0 w-full md:hidden"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
+                                className="fixed inset-0 top-0 left-0 z-40 flex flex-col md:hidden"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
                                 transition={{ duration: 0.3 }}
                                 style={{
                                     backgroundColor:
                                         theme === 'dark'
-                                            ? 'rgba(10, 10, 10, 0.95)'
-                                            : 'rgba(250, 250, 250, 0.95)',
-                                    backdropFilter: 'blur(20px)',
+                                            ? 'rgba(10, 10, 10, 0.97)'
+                                            : 'rgba(250, 250, 250, 0.97)',
+                                    backdropFilter: 'blur(24px) saturate(180%)',
+                                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
                                 }}
                             >
-                                <div className="flex flex-col gap-6 px-6 py-8">
+                                {/* Close button area (same height as navbar) */}
+                                <div className="flex items-center justify-end px-6 py-4">
+                                    <button
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        aria-label="Close menu"
+                                        className="flex flex-col gap-[5px]"
+                                    >
+                                        <motion.span
+                                            className="block h-[1.5px] w-6 rounded-full"
+                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
+                                            initial={{ rotate: 0, y: 0 }}
+                                            animate={{ rotate: 45, y: 6.5 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                        <motion.span
+                                            className="block h-[1.5px] w-6 rounded-full"
+                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
+                                            initial={{ opacity: 1 }}
+                                            animate={{ opacity: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                        <motion.span
+                                            className="block h-[1.5px] w-6 rounded-full"
+                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
+                                            initial={{ rotate: 0, y: 0 }}
+                                            animate={{ rotate: -45, y: -6.5 }}
+                                            transition={{ duration: 0.3 }}
+                                        />
+                                    </button>
+                                </div>
+
+                                {/* Links */}
+                                <div className="flex flex-1 flex-col items-center justify-center gap-8">
                                     {ALL_LINKS.map((link, i) => (
                                         <motion.a
                                             key={link.label}
                                             href={link.href}
-                                            onClick={(e) => handleNavClick(e, link.href)}
-                                            className="text-lg font-medium tracking-wider uppercase"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setMobileMenuOpen(false);
+                                                // Small delay so menu closes before scrolling
+                                                setTimeout(() => {
+                                                    const id = link.href.replace('#', '');
+                                                    const el = document.getElementById(id);
+                                                    if (el) {
+                                                        el.scrollIntoView({ behavior: 'smooth' });
+                                                    }
+                                                }, 350);
+                                            }}
+                                            className="text-2xl font-medium tracking-[0.2em] uppercase"
                                             style={{
                                                 fontFamily: 'var(--font-outfit)',
-                                                color: theme === 'dark' ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)',
+                                                color: theme === 'dark' ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
                                             }}
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: i * 0.1 }}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: i * 0.1, duration: 0.4 }}
                                         >
                                             {link.label}
                                         </motion.a>
