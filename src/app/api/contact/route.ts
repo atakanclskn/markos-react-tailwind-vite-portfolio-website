@@ -38,12 +38,13 @@ export async function POST(request: Request) {
         }
 
         // Write to Firestore using REST API (bypasses client SDK hanging issue)
-        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+        const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
+        const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
 
         if (!projectId || !apiKey) {
+            console.error('Missing Firebase env vars. PROJECT_ID:', !!projectId, 'API_KEY:', !!apiKey);
             return NextResponse.json(
-                { success: false, message: 'Firebase not configured' },
+                { success: false, message: 'Server configuration error. Please try again later.' },
                 { status: 500 }
             );
         }
