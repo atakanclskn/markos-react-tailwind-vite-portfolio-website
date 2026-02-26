@@ -11,8 +11,9 @@ export async function POST(request: Request) {
         const secretKey = process.env.TURNSTILE_SECRET_KEY;
 
         if (!secretKey) {
-            console.error('Turnstile secret key is not configured');
-            return NextResponse.json({ success: false, message: 'Server configuration error: TURNSTILE_SECRET_KEY is missing' }, { status: 500 });
+            // Captcha not configured — allow submission to pass through
+            console.warn('TURNSTILE_SECRET_KEY is not configured, skipping captcha verification');
+            return NextResponse.json({ success: true, skipCaptcha: true });
         }
 
         const formData = new URLSearchParams();

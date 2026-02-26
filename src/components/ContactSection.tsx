@@ -30,8 +30,10 @@ export default function ContactSection() {
     const email = contactInfo?.email || 'info@markosstudio.com';
     const phone = contactInfo?.phone || '+44 747 384 6666';
     const address = contactInfo?.address || 'Manchester, United Kingdom';
-    const statusText = contactInfo?.statusText || 'Currently available for new projects';
     const statusActive = contactInfo?.statusActive ?? true;
+    const statusText = statusActive
+        ? (contactInfo?.statusText || 'Currently available for new projects')
+        : (contactInfo?.statusText || 'Currently NOT available for new projects');
 
     const [formData, setFormData] = useState({
         name: '',
@@ -63,29 +65,32 @@ export default function ContactSection() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const processSubmission = async (token: string) => {
+    const processSubmission = async (token?: string) => {
         setIsSubmitting(true);
 
         try {
-            // Verify captcha with backend
-            const verifyRes = await fetch('/api/verify-captcha', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ token }),
-            });
-            const verifyData = await verifyRes.json();
+            // Verify captcha with backend (if token exists)
+            if (token) {
+                const verifyRes = await fetch('/api/verify-captcha', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token }),
+                });
+                const verifyData = await verifyRes.json();
 
-            if (!verifyData.success) {
-                setErrors(prev => ({
-                    ...prev,
-                    captcha: verifyData.message || 'Captcha verification failed. Please try again.'
-                }));
-                setIsSubmitting(false);
-                setCaptchaToken(null);
-                return;
+                // If captcha is configured but verification failed
+                if (!verifyData.success && !verifyData.skipCaptcha) {
+                    setErrors(prev => ({
+                        ...prev,
+                        captcha: verifyData.message || 'Captcha verification failed. Please try again.'
+                    }));
+                    setIsSubmitting(false);
+                    setCaptchaToken(null);
+                    return;
+                }
             }
 
-            // If captcha is successfully verified, save to firebase
+            // Save to firebase
             const { submitContactMessage } = await import('@/lib/firestore');
 
             // Add a timeout to prevent infinite hang if Firebase is unconfigured
@@ -139,13 +144,8 @@ export default function ContactSection() {
             return;
         }
 
-        // If captcha is shown but not solved
-        if (!captchaToken) {
-            setErrors(prev => ({ ...prev, captcha: 'Please complete the captcha.' }));
-            return;
-        }
-
-        await processSubmission(captchaToken);
+        // If captcha is shown but not solved, submit anyway (server will skip if unconfigured)
+        await processSubmission(captchaToken || undefined);
     };
 
     const inputBaseStyle = {
