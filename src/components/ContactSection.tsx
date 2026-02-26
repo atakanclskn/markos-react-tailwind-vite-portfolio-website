@@ -1,23 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import { getContactInfo } from '@/lib/firestore';
 import type { ContactInfo } from '@/types';
-
-// Declare Turnstile global type
-declare global {
-    interface Window {
-        turnstile?: {
-            render: (container: string | HTMLElement, options: Record<string, unknown>) => string;
-            reset: (widgetId: string) => void;
-            remove: (widgetId: string) => void;
-            getResponse: (widgetId: string) => string | undefined;
-            isExpired: (widgetId: string) => boolean;
-        };
-    }
-}
 
 const SUBJECT_OPTIONS = [
     'General Inquiry',
@@ -59,10 +46,7 @@ export default function ContactSection() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [showCaptcha, setShowCaptcha] = useState(false);
-    const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-    const turnstileContainerRef = useRef<HTMLDivElement>(null);
-    const turnstileWidgetId = useRef<string | null>(null);
+    const [submitError, setSubmitError] = useState('');
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
@@ -79,161 +63,38 @@ export default function ContactSection() {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Render Turnstile widget when captcha area becomes visible
-    useEffect(() => {
-        if (!showCaptcha || captchaToken || !turnstileContainerRef.current) return;
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!validateForm()) return;
 
-        const renderWidget = () => {
-            if (!window.turnstile || !turnstileContainerRef.current) return;
-
-            // Clean up any existing widget
-            if (turnstileWidgetId.current) {
-                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
-                turnstileWidgetId.current = null;
-            }
-
-            // Clear container
-            turnstileContainerRef.current.innerHTML = '';
-
-            const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-            if (!siteKey) {
-                console.error('NEXT_PUBLIC_TURNSTILE_SITE_KEY is not set');
-                // Submit without captcha
-                setCaptchaToken('skip');
-                return;
-            }
-
-            turnstileWidgetId.current = window.turnstile.render(turnstileContainerRef.current, {
-                sitekey: siteKey,
-                theme: theme === 'dark' ? 'dark' : 'light',
-                callback: (token: string) => {
-                    setCaptchaToken(token);
-                    if (errors.captcha) setErrors(prev => ({ ...prev, captcha: '' }));
-                },
-                'error-callback': () => {
-                    setErrors(prev => ({ ...prev, captcha: 'Captcha failed. Please try again.' }));
-                },
-                'expired-callback': () => {
-                    setCaptchaToken(null);
-                    setErrors(prev => ({ ...prev, captcha: 'Captcha expired. Please verify again.' }));
-                },
-            });
-        };
-
-        // Wait for Turnstile script to load
-        if (window.turnstile) {
-            renderWidget();
-        } else {
-            const interval = setInterval(() => {
-                if (window.turnstile) {
-                    clearInterval(interval);
-                    renderWidget();
-                }
-            }, 200);
-            // Timeout after 10 seconds
-            const timeout = setTimeout(() => {
-                clearInterval(interval);
-                if (!window.turnstile) {
-                    console.error('Turnstile script failed to load');
-                    setCaptchaToken('skip');
-                }
-            }, 10000);
-            return () => {
-                clearInterval(interval);
-                clearTimeout(timeout);
-            };
-        }
-    }, [showCaptcha, captchaToken, theme]);
-
-    // Cleanup widget on unmount
-    useEffect(() => {
-        return () => {
-            if (turnstileWidgetId.current && window.turnstile) {
-                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
-            }
-        };
-    }, []);
-
-    const processSubmission = async (token: string) => {
         setIsSubmitting(true);
+        setSubmitError('');
 
         try {
-            // Send everything to the server API route (captcha + message in one call)
             const res = await fetch('/api/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ...formData,
-                    captchaToken: token !== 'skip' ? token : undefined,
-                }),
+                body: JSON.stringify(formData),
             });
 
             const data = await res.json();
 
             if (!data.success) {
-                setErrors(prev => ({
-                    ...prev,
-                    captcha: data.message || 'Failed to send message. Please try again.'
-                }));
-                setCaptchaToken(null);
-                if (turnstileWidgetId.current && window.turnstile) {
-                    window.turnstile.reset(turnstileWidgetId.current);
-                }
+                setSubmitError(data.message || 'Failed to send message. Please try again.');
                 return;
             }
 
             setSubmitted(true);
             setFormData({ name: '', subject: '', email: '', phone: '', message: '' });
-            setShowCaptcha(false);
-            setCaptchaToken(null);
-
-            // Remove widget
-            if (turnstileWidgetId.current && window.turnstile) {
-                try { window.turnstile.remove(turnstileWidgetId.current); } catch {}
-                turnstileWidgetId.current = null;
-            }
 
             setTimeout(() => {
                 setSubmitted(false);
             }, 4000);
-
         } catch (error: unknown) {
             console.error('Error submitting form:', error);
-            setErrors(prev => ({
-                ...prev,
-                captcha: 'An error occurred. Please try again.'
-            }));
-            setCaptchaToken(null);
-            if (turnstileWidgetId.current && window.turnstile) {
-                window.turnstile.reset(turnstileWidgetId.current);
-            }
+            setSubmitError('An error occurred. Please try again.');
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    // Auto-submit when captcha is solved
-    useEffect(() => {
-        if (captchaToken && showCaptcha && !isSubmitting && !submitted) {
-            const timer = setTimeout(() => {
-                processSubmission(captchaToken);
-            }, 800);
-            return () => clearTimeout(timer);
-        }
-    }, [captchaToken]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!validateForm()) return;
-
-        if (!showCaptcha) {
-            setShowCaptcha(true);
-            return;
-        }
-
-        if (captchaToken) {
-            await processSubmission(captchaToken);
         }
     };
 
@@ -712,23 +573,7 @@ export default function ContactSection() {
 
                                     {/* Submit Area */}
                                     <div className="flex w-full flex-col gap-4">
-                                        {showCaptcha && !captchaToken && !isSubmitting && (
-                                            <motion.div
-                                                key="captcha-container"
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ duration: 0.3 }}
-                                                className="flex w-full items-center justify-center rounded-lg py-3"
-                                                style={{
-                                                    backgroundColor: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-                                                    border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
-                                                }}
-                                            >
-                                                <div ref={turnstileContainerRef} />
-                                            </motion.div>
-                                        )}
-
-                                        {isSubmitting && (
+                                        {isSubmitting ? (
                                             <motion.div
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
@@ -745,9 +590,7 @@ export default function ContactSection() {
                                                     Sending...
                                                 </span>
                                             </motion.div>
-                                        )}
-
-                                        {!showCaptcha && !isSubmitting && (
+                                        ) : (
                                             <motion.button
                                                 type="submit"
                                                 className="w-full rounded-lg px-8 py-4 text-sm font-semibold tracking-wider uppercase transition-all duration-300"
@@ -764,14 +607,14 @@ export default function ContactSection() {
                                         )}
 
                                         <AnimatePresence>
-                                            {errors.captcha && (
+                                            {submitError && (
                                                 <motion.p
                                                     initial={{ opacity: 0, height: 0, y: -10 }}
                                                     animate={{ opacity: 1, height: 'auto', y: 0 }}
                                                     exit={{ opacity: 0, height: 0, y: -10 }}
                                                     className="text-center text-xs text-red-500 sm:text-left"
                                                 >
-                                                    {errors.captcha}
+                                                    {submitError}
                                                 </motion.p>
                                             )}
                                         </AnimatePresence>

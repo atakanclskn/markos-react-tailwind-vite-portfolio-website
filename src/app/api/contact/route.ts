@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, subject, email, phone, message, captchaToken } = body;
+        const { name, subject, email, phone, message } = body;
 
         // Validate required fields
         if (!name || !subject || !email || !message) {
@@ -13,31 +13,7 @@ export async function POST(request: Request) {
             );
         }
 
-        // Verify captcha
-        const secretKey = process.env.TURNSTILE_SECRET_KEY;
-        if (secretKey && captchaToken) {
-            const verifyResponse = await fetch(
-                'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-                {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        secret: secretKey,
-                        response: captchaToken,
-                    }),
-                }
-            );
-            const verifyData = await verifyResponse.json();
-            if (!verifyData.success) {
-                console.error('Turnstile verification failed:', verifyData['error-codes']);
-                return NextResponse.json(
-                    { success: false, message: 'Captcha verification failed' },
-                    { status: 400 }
-                );
-            }
-        }
-
-        // Write to Firestore using REST API (bypasses client SDK hanging issue)
+        // Write to Firestore using REST API
         const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
         const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY;
 
