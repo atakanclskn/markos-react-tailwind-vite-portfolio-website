@@ -17,7 +17,7 @@ export default function AdminDashboardLayout({
                 <Sidebar />
                 <main
                     className={`flex-1 transition-all duration-300 ${
-                        sidebarCollapsed ? 'ml-[72px]' : 'ml-[260px]'
+                        sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]'
                     }`}
                 >
                     {children}

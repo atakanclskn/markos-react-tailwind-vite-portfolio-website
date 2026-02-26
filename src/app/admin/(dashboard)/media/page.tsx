@@ -193,8 +193,8 @@ export default function MediaPage() {
 
             <div className="p-6 lg:p-8">
                 {/* Sync Panel */}
-                <div className="mb-8 rounded-xl border border-white/[0.06] bg-[#111] p-6">
-                    <div className="mb-4 flex items-center justify-between">
+                <div className="mb-8 rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-6">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                             <h3 className="text-base font-semibold text-[#f5f5f5]">
                                 Google Photos Sync
@@ -206,9 +206,9 @@ export default function MediaPage() {
                         <button
                             onClick={fetchAlbums}
                             disabled={albumsLoading}
-                            className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
+                            className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
                                 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
-                                disabled:opacity-50"
+                                disabled:opacity-50 sm:w-auto"
                         >
                             {albumsLoading ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />

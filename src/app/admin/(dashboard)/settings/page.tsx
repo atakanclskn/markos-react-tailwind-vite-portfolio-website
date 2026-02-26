@@ -270,9 +270,9 @@ export default function SettingsPage() {
                                     {footerForm.socialLinks.map((link, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center gap-3 rounded-lg border border-white/[0.06] bg-[#0c0c0c] p-3"
+                                            className="flex flex-col gap-3 rounded-lg border border-white/[0.06] bg-[#0c0c0c] p-3 sm:flex-row sm:items-center"
                                         >
-                                            <div className="flex flex-1 gap-3">
+                                            <div className="flex flex-1 flex-col gap-3 sm:flex-row">
                                                 <input
                                                     type="text"
                                                     value={link.iconName}
@@ -280,9 +280,9 @@ export default function SettingsPage() {
                                                         updateSocialLink(index, 'iconName', e.target.value)
                                                     }
                                                     placeholder="Icon name (e.g. Instagram)"
-                                                    className="w-40 rounded-md border border-white/[0.06] bg-[#141414] px-3 py-1.5
+                                                    className="w-full rounded-md border border-white/[0.06] bg-[#141414] px-3 py-1.5
                                                         text-sm text-[#f5f5f5] placeholder-[#444] outline-none
-                                                        focus:border-[#c8a96e]/40"
+                                                        focus:border-[#c8a96e]/40 sm:w-40"
                                                 />
                                                 <input
                                                     type="url"
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                                             </div>
                                             <button
                                                 onClick={() => removeSocialLink(index)}
-                                                className="rounded-md p-1.5 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                                                className="self-end rounded-md p-1.5 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400 sm:self-center"
                                             >
                                                 <Trash2 className="h-4 w-4" />
                                             </button>

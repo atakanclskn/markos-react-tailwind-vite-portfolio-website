@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { getContactInfo } from '@/lib/firestore';
+import { getContactInfo, submitContactMessage } from '@/lib/firestore';
 import type { ContactInfo } from '@/types';
 
 const SUBJECT_OPTIONS = [
@@ -71,18 +71,7 @@ export default function ContactSection() {
         setSubmitError('');
 
         try {
-            const res = await fetch('/api/contact', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await res.json();
-
-            if (!data.success) {
-                setSubmitError(data.message || 'Failed to send message. Please try again.');
-                return;
-            }
+            await submitContactMessage(formData);
 
             setSubmitted(true);
             setFormData({ name: '', subject: '', email: '', phone: '', message: '' });

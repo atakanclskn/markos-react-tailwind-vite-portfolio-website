@@ -81,13 +81,44 @@ export async function getAllPhotos(): Promise<Photo[]> {
 export async function submitContactMessage(
     data: Omit<ContactMessage, 'id' | 'read' | 'starred' | 'archived' | 'createdAt'>
 ) {
-    return addDoc(collection(db, 'messages'), {
-        ...data,
-        read: false,
-        starred: false,
-        archived: false,
-        createdAt: serverTimestamp(),
+    // Use Firestore REST API to avoid client SDK hanging on permission denied
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+    if (!projectId || !apiKey) {
+        throw new Error('Firebase configuration missing');
+    }
+
+    const now = new Date().toISOString();
+    const firestoreDoc = {
+        fields: {
+            name: { stringValue: data.name || '' },
+            subject: { stringValue: data.subject || '' },
+            email: { stringValue: data.email || '' },
+            phone: { stringValue: data.phone || '' },
+            message: { stringValue: data.message || '' },
+            read: { booleanValue: false },
+            starred: { booleanValue: false },
+            archived: { booleanValue: false },
+            createdAt: { timestampValue: now },
+        },
+    };
+
+    const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/messages?key=${apiKey}`;
+
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(firestoreDoc),
     });
+
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.error('Firestore REST write failed:', err);
+        throw new Error('Failed to save message');
+    }
+
+    return res.json();
 }
 
 export async function getMessages(): Promise<ContactMessage[]> {

@@ -14,6 +14,7 @@ import {
     StarOff,
     ArchiveRestore,
     RefreshCw,
+    ArrowLeft,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 import {
@@ -137,9 +138,9 @@ export default function MessagesPage() {
                     <button
                         onClick={fetchMessages}
                         disabled={loading}
-                        className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
+                        className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-2.5 py-1.5
                             text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
-                            disabled:opacity-50"
+                            disabled:opacity-50 sm:px-3.5 sm:py-2"
                     >
                         <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                         <span className="hidden sm:inline">Refresh</span>
@@ -147,9 +148,32 @@ export default function MessagesPage() {
                 }
             />
 
-            <div className="flex h-[calc(100vh-64px)]">
-                {/* Left Column: Filters */}
-                <div className="w-[200px] shrink-0 border-r border-white/[0.06] bg-[#0c0c0c] p-3">
+            {/* Mobile: Filters as horizontal tabs */}
+            <div className="flex border-b border-white/[0.06] bg-[#0c0c0c] px-2 md:hidden">
+                {FILTERS.map((f) => (
+                    <button
+                        key={f.key}
+                        onClick={() => setMessageFilter(f.key)}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
+                            messageFilter === f.key
+                                ? 'border-b-2 border-[#c8a96e] text-[#c8a96e]'
+                                : 'text-[#a0a0a0]'
+                        }`}
+                    >
+                        <f.icon className="h-3.5 w-3.5" />
+                        <span>{f.label}</span>
+                        {f.key === 'inbox' && (
+                            <span className="ml-1 text-[10px] text-[#666]">
+                                {messages.filter((m) => !m.archived && !m.read).length}
+                            </span>
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            <div className="flex h-[calc(100vh-64px)] md:h-[calc(100vh-64px)]">
+                {/* Left Column: Filters (desktop only) */}
+                <div className="hidden w-[200px] shrink-0 border-r border-white/[0.06] bg-[#0c0c0c] p-3 md:block">
                     <p className="mb-3 px-3 text-xs font-medium uppercase tracking-wider text-[#555]">
                         Filters
                     </p>
@@ -176,8 +200,10 @@ export default function MessagesPage() {
                     </div>
                 </div>
 
-                {/* Middle Column: Message List */}
-                <div className="w-[340px] shrink-0 overflow-y-auto border-r border-white/[0.06]">
+                {/* Middle Column: Message List - hidden on mobile when message selected */}
+                <div className={`w-full overflow-y-auto border-r border-white/[0.06] md:w-[340px] md:shrink-0 ${
+                    selectedMessageId ? 'hidden md:block' : ''
+                }`}>
                     {loading ? (
                         <div className="flex items-center justify-center py-20">
                             <Loader2 className="h-5 w-5 animate-spin text-[#c8a96e]" />
@@ -234,21 +260,32 @@ export default function MessagesPage() {
                     )}
                 </div>
 
-                {/* Right Column: Message Detail */}
-                <div className="flex-1 overflow-y-auto">
+                {/* Right Column: Message Detail - full width on mobile */}
+                <div className={`flex-1 overflow-y-auto ${
+                    selectedMessageId ? '' : 'hidden md:flex'
+                }`}>
                     {selectedMessage ? (
-                        <div className="p-6 lg:p-8">
+                        <div className="p-4 sm:p-6 lg:p-8">
+                            {/* Mobile back button */}
+                            <button
+                                onClick={() => setSelectedMessageId(null)}
+                                className="mb-4 flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5] md:hidden"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                                <span>Back</span>
+                            </button>
+
                             {/* Header */}
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-[#f5f5f5]">
+                            <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0 flex-1">
+                                    <h3 className="text-lg font-semibold text-[#f5f5f5] sm:text-xl">
                                         {selectedMessage.subject}
                                     </h3>
                                     <p className="mt-1 text-sm text-[#666]">
                                         from {selectedMessage.name}
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex shrink-0 items-center gap-1">
                                     <button
                                         onClick={() => handleToggleStar(selectedMessage)}
                                         className="rounded-lg p-2 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#c8a96e]"
@@ -282,7 +319,7 @@ export default function MessagesPage() {
                             </div>
 
                             {/* Contact Info */}
-                            <div className="mt-6 space-y-3 rounded-xl border border-white/[0.06] bg-[#111] p-5">
+                            <div className="mt-4 space-y-3 rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:mt-6 sm:p-5">
                                 <InfoRow
                                     label="Email"
                                     value={selectedMessage.email}
@@ -319,11 +356,11 @@ export default function MessagesPage() {
                             </div>
 
                             {/* Message Body */}
-                            <div className="mt-6">
+                            <div className="mt-4 sm:mt-6">
                                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-[#555]">
                                     Message
                                 </p>
-                                <div className="rounded-xl border border-white/[0.06] bg-[#111] p-5">
+                                <div className="rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-5">
                                     <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#d0d0d0]">
                                         {selectedMessage.message}
                                     </p>

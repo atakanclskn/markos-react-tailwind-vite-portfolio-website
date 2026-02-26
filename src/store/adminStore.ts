@@ -21,6 +21,8 @@ interface AdminState {
     // --- Sidebar ---
     sidebarCollapsed: boolean;
     toggleSidebar: () => void;
+    mobileSidebarOpen: boolean;
+    setMobileSidebarOpen: (open: boolean) => void;
 
     // --- Dashboard Stats ---
     stats: {
@@ -82,6 +84,8 @@ export const useAdminStore = create<AdminState>((set) => ({
     // --- Sidebar ---
     sidebarCollapsed: false,
     toggleSidebar: () => set((state) => ({ sidebarCollapsed: !state.sidebarCollapsed })),
+    mobileSidebarOpen: false,
+    setMobileSidebarOpen: (open) => set({ mobileSidebarOpen: open }),
 
     // --- Dashboard Stats ---
     stats: {

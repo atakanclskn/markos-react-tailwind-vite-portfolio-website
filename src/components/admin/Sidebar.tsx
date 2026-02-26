@@ -12,6 +12,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Camera,
+    X,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 
@@ -26,34 +27,37 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
     const pathname = usePathname();
-    const { sidebarCollapsed, toggleSidebar } = useAdminStore();
+    const { sidebarCollapsed, toggleSidebar, mobileSidebarOpen, setMobileSidebarOpen } = useAdminStore();
 
     const isActive = (href: string) => {
         if (href === '/admin') return pathname === '/admin';
         return pathname.startsWith(href);
     };
 
-    return (
-        <aside
-            className={`
-                fixed left-0 top-0 z-40 flex h-screen flex-col border-r border-white/[0.06]
-                bg-[#0c0c0c] transition-all duration-300
-                ${sidebarCollapsed ? 'w-[72px]' : 'w-[260px]'}
-            `}
-        >
+    const sidebarContent = (
+        <>
             {/* Logo */}
-            <div className="flex h-16 items-center gap-3 border-b border-white/[0.06] px-5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#c8a96e]/10">
-                    <Camera className="h-[18px] w-[18px] text-[#c8a96e]" />
-                </div>
-                {!sidebarCollapsed && (
-                    <div className="overflow-hidden">
-                        <h1 className="text-sm font-semibold text-[#f5f5f5] whitespace-nowrap">
-                            Markos Studio
-                        </h1>
-                        <p className="text-[11px] text-[#666] whitespace-nowrap">Admin Panel</p>
+            <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-5">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#c8a96e]/10">
+                        <Camera className="h-[18px] w-[18px] text-[#c8a96e]" />
                     </div>
-                )}
+                    {(!sidebarCollapsed || mobileSidebarOpen) && (
+                        <div className="overflow-hidden">
+                            <h1 className="text-sm font-semibold text-[#f5f5f5] whitespace-nowrap">
+                                Markos Studio
+                            </h1>
+                            <p className="text-[11px] text-[#666] whitespace-nowrap">Admin Panel</p>
+                        </div>
+                    )}
+                </div>
+                {/* Mobile close button */}
+                <button
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="rounded-lg p-1.5 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#a0a0a0] lg:hidden"
+                >
+                    <X className="h-5 w-5" />
+                </button>
             </div>
 
             {/* Navigation */}
@@ -64,6 +68,7 @@ export default function Sidebar() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={() => setMobileSidebarOpen(false)}
                             className={`
                                 group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm
                                 transition-all duration-200
@@ -71,23 +76,23 @@ export default function Sidebar() {
                                     ? 'bg-[#c8a96e]/10 text-[#c8a96e]'
                                     : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
                                 }
-                                ${sidebarCollapsed ? 'justify-center' : ''}
+                                ${sidebarCollapsed && !mobileSidebarOpen ? 'justify-center' : ''}
                             `}
-                            title={sidebarCollapsed ? item.label : undefined}
+                            title={sidebarCollapsed && !mobileSidebarOpen ? item.label : undefined}
                         >
                             <item.icon
                                 className={`h-[18px] w-[18px] shrink-0 ${
                                     active ? 'text-[#c8a96e]' : 'text-[#666] group-hover:text-[#a0a0a0]'
                                 }`}
                             />
-                            {!sidebarCollapsed && <span>{item.label}</span>}
+                            {(!sidebarCollapsed || mobileSidebarOpen) && <span>{item.label}</span>}
                         </Link>
                     );
                 })}
             </nav>
 
-            {/* Collapse Toggle */}
-            <div className="border-t border-white/[0.06] p-3">
+            {/* Collapse Toggle (desktop only) */}
+            <div className="hidden border-t border-white/[0.06] p-3 lg:block">
                 <button
                     onClick={toggleSidebar}
                     className="flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2
@@ -103,6 +108,40 @@ export default function Sidebar() {
                     )}
                 </button>
             </div>
-        </aside>
+        </>
+    );
+
+    return (
+        <>
+            {/* Desktop Sidebar */}
+            <aside
+                className={`
+                    fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-white/[0.06]
+                    bg-[#0c0c0c] transition-all duration-300 lg:flex
+                    ${sidebarCollapsed ? 'w-[72px]' : 'w-[260px]'}
+                `}
+            >
+                {sidebarContent}
+            </aside>
+
+            {/* Mobile Overlay Backdrop */}
+            {mobileSidebarOpen && (
+                <div
+                    className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+                    onClick={() => setMobileSidebarOpen(false)}
+                />
+            )}
+
+            {/* Mobile Sidebar Drawer */}
+            <aside
+                className={`
+                    fixed left-0 top-0 z-50 flex h-screen w-[280px] flex-col border-r border-white/[0.06]
+                    bg-[#0c0c0c] transition-transform duration-300 lg:hidden
+                    ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+                `}
+            >
+                {sidebarContent}
+            </aside>
+        </>
     );
 }
