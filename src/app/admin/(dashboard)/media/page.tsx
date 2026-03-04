@@ -3,22 +3,22 @@
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import {
-    RefreshCw,
     Loader2,
     Image as ImageIcon,
     Trash2,
-    FolderOpen,
-    Download,
     X,
     AlertCircle,
     CheckCircle2,
     LogIn,
     LogOut,
+    FolderOpen,
+    Upload,
 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
 import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn } from '@/lib/firestore';
-import type { GooglePhotosAlbum, Category, Photo } from '@/types';
+import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
+import type { Category, Photo } from '@/types';
 
 export default function MediaPage() {
     const { data: session } = useSession();
@@ -26,12 +26,11 @@ export default function MediaPage() {
         useAdminStore();
 
     const [loading, setLoading] = useState(true);
-    const [albums, setAlbums] = useState<GooglePhotosAlbum[]>([]);
-    const [albumsLoading, setAlbumsLoading] = useState(false);
-    const [selectedAlbumId, setSelectedAlbumId] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [filterCategory, setFilterCategory] = useState<string>('all');
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [pickedFiles, setPickedFiles] = useState<PickerFile[]>([]);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const showToast = useCallback((type: 'success' | 'error', message: string) => {
         setToast({ type, message });
@@ -59,79 +58,81 @@ export default function MediaPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Fetch Google Photos albums
-    const fetchAlbums = async () => {
-        setAlbumsLoading(true);
-        try {
-            const res = await fetch('/api/admin/google-photos/albums');
-            const data = await res.json();
-            if (data.error) {
-                showToast('error', data.error);
-                return;
-            }
-            setAlbums(data.albums || []);
-        } catch (err) {
-            console.error('Failed to fetch albums:', err);
-            showToast('error', 'Failed to fetch Google Photos albums.');
-        } finally {
-            setAlbumsLoading(false);
-        }
-    };
+    // Called when user picks files from Google Picker
+    const handlePickerSelected = useCallback((files: PickerFile[]) => {
+        setPickedFiles(files);
+    }, []);
 
-    // Sync album to Firebase
-    const handleSync = async () => {
-        if (!selectedAlbumId || !selectedCategoryId) {
-            showToast('error', 'Please select both an album and a target category.');
+    // Upload selected files to ImgBB and save to Firestore
+    const handleUploadPicked = async () => {
+        if (!pickedFiles.length || !selectedCategoryId) {
+            showToast('error', 'Select a category and pick at least one photo.');
             return;
         }
 
-        setSyncProgress({ status: 'syncing', total: 0, current: 0, message: 'Starting sync...' });
+        const accessToken = (session as any)?.accessToken;
+        if (!accessToken) {
+            showToast('error', 'Please connect your Google account first.');
+            return;
+        }
 
-        try {
-            const res = await fetch('/api/admin/google-photos/sync', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    albumId: selectedAlbumId,
-                    categoryId: selectedCategoryId,
-                }),
-            });
+        setIsSyncing(true);
+        setSyncProgress({ status: 'syncing', total: pickedFiles.length, current: 0, message: 'Uploading photos...' });
 
-            const data = await res.json();
+        let synced = 0;
+        const errors: string[] = [];
 
-            if (data.error) {
-                setSyncProgress({
-                    status: 'error',
-                    total: 0,
-                    current: 0,
-                    message: data.error,
-                });
-                showToast('error', data.error);
-                return;
-            }
-
+        for (let i = 0; i < pickedFiles.length; i++) {
+            const file = pickedFiles[i];
             setSyncProgress({
-                status: 'complete',
-                total: data.total || data.synced,
-                current: data.synced,
-                message: data.message,
+                status: 'syncing',
+                total: pickedFiles.length,
+                current: i,
+                message: `Uploading ${i + 1} of ${pickedFiles.length}: ${file.name}`,
             });
+            try {
+                const res = await fetch('/api/admin/google-drive/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({
+                        fileId: file.id,
+                        fileName: file.name,
+                        mimeType: file.mimeType,
+                        categoryId: selectedCategoryId,
+                    }),
+                });
 
-            showToast('success', data.message);
+                const data = await res.json();
+                if (data.error) {
+                    errors.push(`${file.name}: ${data.error}`);
+                } else {
+                    synced++;
+                }
+            } catch (err) {
+                errors.push(`${file.name}: network error`);
+            }
+        }
 
-            // Refresh photos list
+        setSyncProgress({
+            status: errors.length === pickedFiles.length ? 'error' : 'complete',
+            total: pickedFiles.length,
+            current: synced,
+            message: `Synced ${synced} of ${pickedFiles.length} photos.${errors.length ? ' Some failed.' : ''}`,
+        });
+
+        if (synced > 0) {
+            showToast('success', `${synced} photo(s) added to your portfolio!`);
             const updatedPhotos = await getAllPhotos();
             setPhotos(updatedPhotos);
-        } catch (err) {
-            console.error('Sync failed:', err);
-            setSyncProgress({
-                status: 'error',
-                total: 0,
-                current: 0,
-                message: 'Sync failed. Please try again.',
-            });
-            showToast('error', 'Sync failed. Please try again.');
+            setPickedFiles([]);
+        } else {
+            showToast('error', 'Failed to upload photos. Please try again.');
         }
+
+        setIsSyncing(false);
     };
 
     // Delete photo
@@ -157,6 +158,8 @@ export default function MediaPage() {
         return categories.find((c) => c.id === categoryId)?.name || 'Uncategorized';
     };
 
+    const accessToken = (session as any)?.accessToken;
+
     return (
         <>
             <Topbar title="Media Sync" />
@@ -165,8 +168,8 @@ export default function MediaPage() {
             {toast && (
                 <div
                     className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${toast.type === 'success'
-                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                        : 'border-red-500/20 bg-red-500/10 text-red-400'
+                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                            : 'border-red-500/20 bg-red-500/10 text-red-400'
                         }`}
                 >
                     {toast.type === 'success' ? (
@@ -190,7 +193,7 @@ export default function MediaPage() {
                                 Google Photos Sync
                             </h3>
                             <p className="mt-1 text-sm text-[#666]">
-                                Connect your Google account, fetch albums, and sync photos to Firebase.
+                                Connect your Google account, pick photos, then save them to a category.
                             </p>
                         </div>
 
@@ -201,24 +204,11 @@ export default function MediaPage() {
                                     text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
                             >
                                 <LogIn className="h-4 w-4" />
-                                <span>Connect Google Photos</span>
+                                <span>Connect Google</span>
                             </button>
                         ) : (
-                            <div className="flex w-full items-center gap-2 sm:w-auto">
-                                <button
-                                    onClick={fetchAlbums}
-                                    disabled={albumsLoading}
-                                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
-                                        text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
-                                        disabled:opacity-50 sm:flex-none"
-                                >
-                                    {albumsLoading ? (
-                                        <Loader2 className="h-4 w-4 animate-spin" />
-                                    ) : (
-                                        <Download className="h-4 w-4" />
-                                    )}
-                                    <span>Fetch Albums</span>
-                                </button>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-[#666]">{session.user?.email}</span>
                                 <button
                                     onClick={() => signOut()}
                                     className="flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/20"
@@ -230,68 +220,69 @@ export default function MediaPage() {
                         )}
                     </div>
 
-                    {/* Album & Category Selection */}
-                    {albums.length > 0 && (
+                    {session && (
                         <div className="space-y-4">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <label className="mb-1.5 block text-sm text-[#a0a0a0]">
-                                        Google Photos Album
-                                    </label>
-                                    <select
-                                        value={selectedAlbumId}
-                                        onChange={(e) => setSelectedAlbumId(e.target.value)}
-                                        className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
-                                            text-sm text-[#f5f5f5] outline-none transition-colors
-                                            focus:border-[#c8a96e]/40"
-                                    >
-                                        <option value="">Select album...</option>
-                                        {albums.map((album) => (
-                                            <option key={album.id} value={album.id}>
-                                                {album.title} ({album.mediaItemsCount} items)
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="mb-1.5 block text-sm text-[#a0a0a0]">
-                                        Target Category
-                                    </label>
-                                    <select
-                                        value={selectedCategoryId}
-                                        onChange={(e) => setSelectedCategoryId(e.target.value)}
-                                        className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
-                                            text-sm text-[#f5f5f5] outline-none transition-colors
-                                            focus:border-[#c8a96e]/40"
-                                    >
-                                        <option value="">Select category...</option>
-                                        {categories.map((cat) => (
-                                            <option key={cat.id} value={cat.id}>
-                                                {cat.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                            {/* Step 1: Category Selection */}
+                            <div>
+                                <label className="mb-1.5 block text-sm text-[#a0a0a0]">
+                                    1. Select Target Category
+                                </label>
+                                <select
+                                    value={selectedCategoryId}
+                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
+                                    className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
+                                        text-sm text-[#f5f5f5] outline-none transition-colors
+                                        focus:border-[#c8a96e]/40 sm:max-w-xs"
+                                >
+                                    <option value="">Select category...</option>
+                                    {categories.map((cat) => (
+                                        <option key={cat.id} value={cat.id}>
+                                            {cat.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
 
-                            <button
-                                onClick={handleSync}
-                                disabled={syncProgress.status === 'syncing' || !selectedAlbumId || !selectedCategoryId}
-                                className="flex items-center gap-2 rounded-lg bg-[#c8a96e] px-5 py-2.5
-                                    text-sm font-medium text-[#0a0a0a] transition-all duration-200
-                                    hover:bg-[#e0c992] disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {syncProgress.status === 'syncing' ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <RefreshCw className="h-4 w-4" />
-                                )}
-                                <span>
-                                    {syncProgress.status === 'syncing'
-                                        ? 'Syncing...'
-                                        : 'Sync Albums'}
-                                </span>
-                            </button>
+                            {/* Step 2: Pick Photos */}
+                            <div>
+                                <label className="mb-1.5 block text-sm text-[#a0a0a0]">
+                                    2. Pick Photos from Google
+                                </label>
+                                <GooglePicker
+                                    accessToken={accessToken || ''}
+                                    onPhotosSelected={handlePickerSelected}
+                                >
+                                    <button
+                                        className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5
+                                            text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]"
+                                    >
+                                        <FolderOpen className="h-4 w-4" />
+                                        <span>
+                                            {pickedFiles.length > 0
+                                                ? `${pickedFiles.length} photo(s) selected — click to change`
+                                                : 'Open Google Photos Picker'}
+                                        </span>
+                                    </button>
+                                </GooglePicker>
+                            </div>
+
+                            {/* Step 3: Upload */}
+                            {pickedFiles.length > 0 && selectedCategoryId && (
+                                <button
+                                    onClick={handleUploadPicked}
+                                    disabled={isSyncing}
+                                    className="flex items-center gap-2 rounded-lg bg-[#c8a96e] px-5 py-2.5
+                                        text-sm font-medium text-[#0a0a0a] transition-all duration-200
+                                        hover:bg-[#e0c992] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isSyncing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Upload className="h-4 w-4" />
+                                    )}
+                                    <span>{isSyncing ? 'Uploading...' : `Upload ${pickedFiles.length} Photo(s)`}</span>
+                                </button>
+                            )}
 
                             {/* Progress */}
                             {syncProgress.status !== 'idle' && (
@@ -313,18 +304,14 @@ export default function MediaPage() {
                 {/* Photos Grid */}
                 <div>
                     <div className="mb-4 flex items-center justify-between">
-                        <h3 className="text-base font-semibold text-[#f5f5f5]">
-                            Synced Photos
-                            <span className="ml-2 text-sm font-normal text-[#666]">
-                                ({filteredPhotos.length})
-                            </span>
+                        <h3 className="text-sm font-medium text-[#a0a0a0]">
+                            Synced Photos ({filteredPhotos.length})
                         </h3>
                         <select
                             value={filterCategory}
                             onChange={(e) => setFilterCategory(e.target.value)}
-                            className="rounded-lg border border-white/[0.06] bg-[#141414] px-3 py-2
-                                text-sm text-[#a0a0a0] outline-none transition-colors
-                                focus:border-[#c8a96e]/40"
+                            className="rounded-lg border border-white/[0.06] bg-[#111] px-3 py-1.5
+                                text-sm text-[#f5f5f5] outline-none transition-colors focus:border-[#c8a96e]/40"
                         >
                             <option value="all">All Categories</option>
                             {categories.map((cat) => (
@@ -336,43 +323,34 @@ export default function MediaPage() {
                     </div>
 
                     {loading ? (
-                        <div className="flex items-center justify-center py-20">
+                        <div className="flex h-48 items-center justify-center">
                             <Loader2 className="h-6 w-6 animate-spin text-[#c8a96e]" />
                         </div>
                     ) : filteredPhotos.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/[0.06] py-20 text-[#666]">
-                            <ImageIcon className="mb-3 h-10 w-10 text-[#333]" />
+                        <div className="flex h-48 flex-col items-center justify-center gap-3 text-[#444]">
+                            <ImageIcon className="h-10 w-10" />
                             <p className="text-sm">No photos found</p>
-                            <p className="mt-1 text-xs text-[#555]">
-                                Sync albums from Google Photos to see them here.
-                            </p>
+                            <p className="text-xs">Sync albums from Google Photos to see them here.</p>
                         </div>
                     ) : (
-                        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                             {filteredPhotos.map((photo) => (
                                 <div
                                     key={photo.id}
-                                    className="group relative overflow-hidden rounded-xl border border-white/[0.06] bg-[#111]"
+                                    className="group relative aspect-square overflow-hidden rounded-lg border border-white/[0.06]"
                                 >
-                                    <div className="aspect-[4/3] overflow-hidden">
-                                        <img
-                                            src={photo.storageUrl}
-                                            alt=""
-                                            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                            loading="lazy"
-                                        />
-                                    </div>
-                                    <div className="flex items-center justify-between px-3 py-2.5">
-                                        <div className="flex items-center gap-1.5">
-                                            <FolderOpen className="h-3 w-3 text-[#555]" />
-                                            <span className="text-xs text-[#666]">
-                                                {getCategoryName(photo.categoryId)}
-                                            </span>
-                                        </div>
+                                    <img
+                                        src={photo.thumbnailUrl || photo.storageUrl}
+                                        alt=""
+                                        className="h-full w-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 flex flex-col justify-between bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                        <span className="rounded bg-black/50 px-1.5 py-0.5 text-xs text-[#a0a0a0]">
+                                            {getCategoryName(photo.categoryId)}
+                                        </span>
                                         <button
                                             onClick={() => handleDeletePhoto(photo)}
-                                            className="rounded-md p-1 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400"
-                                            title="Delete photo"
+                                            className="self-end rounded-lg bg-red-500/20 p-1.5 text-red-400 transition-colors hover:bg-red-500/40"
                                         >
                                             <Trash2 className="h-3.5 w-3.5" />
                                         </button>

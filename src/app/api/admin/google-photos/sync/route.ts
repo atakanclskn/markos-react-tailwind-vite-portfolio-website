@@ -62,8 +62,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const session = await getServerSession(authOptions) as any;
-        const accessToken = session?.accessToken;
+        // Read access token from Authorization header (forwarded by the frontend)
+        const authHeader = request.headers.get('Authorization');
+        const accessToken = authHeader?.replace('Bearer ', '');
 
         if (!accessToken) {
             return NextResponse.json(

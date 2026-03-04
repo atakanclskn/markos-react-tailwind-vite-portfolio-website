@@ -11,8 +11,8 @@ export const authOptions: NextAuthOptions = {
                     prompt: "consent",
                     access_type: "offline",
                     response_type: "code",
-                    // We need these scopes to read albums and media items.
-                    scope: "openid email profile https://www.googleapis.com/auth/photoslibrary.readonly",
+                    // drive.readonly lets us use the Google Picker API (doesn't need Google app review)
+                    scope: "openid email profile https://www.googleapis.com/auth/drive.readonly",
                 },
             },
         }),
