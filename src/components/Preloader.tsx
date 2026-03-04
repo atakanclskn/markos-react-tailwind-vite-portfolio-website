@@ -31,11 +31,7 @@ function getImg(i: number) {
     return IMAGES[((i % TOTAL) + TOTAL) % TOTAL];
 }
 
-interface PreloaderProps {
-    onComplete?: () => void;
-}
-
-export default function Preloader({ onComplete }: PreloaderProps) {
+export default function Preloader() {
     // imageBase tracks which image is shown in the center (slot 2) when at rest
     const { theme } = useTheme();
     const [imageBase, setImageBase] = useState(0);
@@ -99,11 +95,10 @@ export default function Preloader({ onComplete }: PreloaderProps) {
         if (phase === 'transforming') {
             const timeout = setTimeout(() => {
                 setPhase('scrolling');
-                if (onComplete) onComplete();
             }, 800);
             return () => clearTimeout(timeout);
         }
-    }, [phase, onComplete]);
+    }, [phase]);
 
     // Lock scroll until loading is complete
     useEffect(() => {
@@ -145,7 +140,7 @@ export default function Preloader({ onComplete }: PreloaderProps) {
     return (
         <motion.div
             ref={sectionRef}
-            className="relative z-50 flex h-[100vh] w-full items-center justify-center overflow-hidden"
+            className="relative z-40 flex h-[100vh] w-full items-center justify-center overflow-hidden"
             style={{ backgroundColor: bgColor, transition: 'background-color 0.5s ease' }}
         >
             {/* Background overlay */}
@@ -209,20 +204,6 @@ export default function Preloader({ onComplete }: PreloaderProps) {
                     background: `linear-gradient(to left, ${bgColor} 0%, ${bgColor} 30%, transparent 100%)`,
                 }}
             />
-
-            {/* Center Logo text overlay */}
-            <motion.div
-                className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center text-center"
-                animate={{ opacity: phase === 'scrolling' ? 0 : 1 }}
-                transition={{ duration: 0.8 }}
-            >
-                <h1 className="font-monoton text-5xl tracking-widest sm:text-7xl md:text-8xl" style={{ color: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}>
-                    MARKOS
-                </h1>
-                <p className="mt-4 font-outfit text-sm font-light tracking-[0.4em] sm:text-base md:text-lg text-brand" style={{ color: '#c8a96e' }}>
-                    STUDIO
-                </p>
-            </motion.div>
 
             {/* Combined Progress / Scroll Indicator */}
             <div className="absolute bottom-12 left-1/2 flex -translate-x-1/2 z-10 flex-col items-center justify-center min-h-[80px]">
