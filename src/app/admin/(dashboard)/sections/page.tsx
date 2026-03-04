@@ -22,8 +22,20 @@ import {
     getBentoGridSettings,
     updateBentoGridSettings,
 } from '@/lib/firestore';
-import { uploadFile } from '@/lib/storage';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
+import { LogIn, LogOut, Cloud, HardDrive, FolderOpen } from 'lucide-react';
 import type { HeroContent, FounderInfo, ContactInfo, FounderStat, BentoGridSettings } from '@/types';
+
+function DriveIcon({ className }: { className?: string }) {
+    return (
+        <img
+            src="https://img.icons8.com/?size=48&id=JF6kPfhVzeVz&format=png"
+            alt="Google Drive"
+            className={className}
+        />
+    );
+}
 
 export default function SectionsPage() {
     const {
@@ -37,10 +49,18 @@ export default function SectionsPage() {
         setBentoGridSettings,
     } = useAdminStore();
 
+    const { data: session } = useSession();
+    // Use the custom token if user signed in with Google
+    const accessToken = (session as any)?.accessToken as string | undefined;
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState<string | null>(null);
     const [openSection, setOpenSection] = useState<string | null>('hero');
     const [toast, setToast] = useState<string | null>(null);
+
+    // Image Upload States
+    const [uploadMode, setUploadMode] = useState<'drive' | 'computer'>('computer');
+    const [pickedDriveFile, setPickedDriveFile] = useState<PickerFile | null>(null);
 
     // Local form states
     const [heroForm, setHeroForm] = useState<HeroContent>({ title: '', subtitle: '', buttonText: '' });
@@ -139,19 +159,54 @@ export default function SectionsPage() {
         setSaving('founder');
         try {
             let photoUrl = founderForm.photoUrl;
-            if (photoFile) {
-                photoUrl = await uploadFile(
-                    `founder/profile-${Date.now()}.${photoFile.name.split('.').pop()}`,
-                    photoFile
-                );
+
+            // Handle new Photo Upload depending on the mode
+            if (uploadMode === 'computer' && photoFile) {
+                // Upload local file to ImgBB
+                const formData = new FormData();
+                formData.append('file', photoFile);
+
+                const res = await fetch('/api/admin/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!res.ok) throw new Error('Failed to upload local image');
+                const data = await res.json();
+                photoUrl = data.url;
+            } else if (uploadMode === 'drive' && pickedDriveFile) {
+                // Upload drive file to ImgBB
+                if (!accessToken) throw new Error('Missing Google access token');
+
+                const res = await fetch('/api/admin/google-drive/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fileId: pickedDriveFile.id,
+                        accessToken: accessToken,
+                        fileName: pickedDriveFile.name
+                    }),
+                });
+
+                if (!res.ok) {
+                    const errorMsg = await res.text();
+                    throw new Error(errorMsg || 'Failed to upload from Google Drive');
+                }
+
+                const data = await res.json();
+                photoUrl = data.url;
             }
+
             const data = { ...founderForm, photoUrl };
             await updateFounderInfo(data);
             setFounderInfo(data);
             setPhotoFile(null);
+            setPickedDriveFile(null);
+            setPhotoPreview(photoUrl);
             showToast('Founder section saved successfully.');
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to save founder:', err);
+            showToast(err.message || 'Failed to save Founder Info');
         } finally {
             setSaving(null);
         }
@@ -188,6 +243,15 @@ export default function SectionsPage() {
         if (!file) return;
         setPhotoFile(file);
         setPhotoPreview(URL.createObjectURL(file));
+        setPickedDriveFile(null); // Clear drive selection
+    };
+
+    const handleDriveFileSelect = (files: PickerFile[]) => {
+        if (files.length > 0) {
+            setPickedDriveFile(files[0]);
+            setPhotoFile(null); // Clear local selection
+            setPhotoPreview(files[0].thumbnailLink || null);
+        }
     };
 
     const updateStat = (index: number, field: keyof FounderStat, value: string) => {
@@ -327,28 +391,97 @@ export default function SectionsPage() {
                             </div>
 
                             {/* Profile Photo */}
-                            <div>
-                                <label className="mb-2 block text-sm text-[#a0a0a0]">
-                                    Profile Photo
-                                </label>
-                                <div className="flex items-center gap-4">
+                            <div className="rounded-lg border border-white/[0.06] bg-[#111] p-4">
+                                <div className="mb-4 flex items-center justify-between">
+                                    <label className="text-sm font-medium text-[#f5f5f5]">Profile Photo</label>
+                                    {uploadMode === 'drive' && (
+                                        !session ? (
+                                            <button
+                                                onClick={() => signIn('google')}
+                                                className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700"
+                                            >
+                                                <LogIn className="h-3.5 w-3.5" />
+                                                Connect Google
+                                            </button>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs text-[#666]">{session.user?.email}</span>
+                                                <button
+                                                    onClick={() => signOut()}
+                                                    className="flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-2 py-1.5 text-xs text-red-500 transition-colors hover:bg-red-500/20"
+                                                    title="Disconnect Google"
+                                                >
+                                                    <LogOut className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
+                                        )
+                                    )}
+                                </div>
+
+                                {/* Upload Mode Tabs */}
+                                <div className="mb-4 flex gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
+                                    <button
+                                        onClick={() => setUploadMode('drive')}
+                                        className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'drive'
+                                            ? 'bg-white/[0.06] text-[#f5f5f5]'
+                                            : 'text-[#666] hover:text-[#a0a0a0]'
+                                            }`}
+                                    >
+                                        <DriveIcon className="h-4 w-4" />
+                                        Google Drive
+                                    </button>
+                                    <button
+                                        onClick={() => setUploadMode('computer')}
+                                        className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'computer'
+                                            ? 'bg-white/[0.06] text-[#f5f5f5]'
+                                            : 'text-[#666] hover:text-[#a0a0a0]'
+                                            }`}
+                                    >
+                                        <HardDrive className="h-3.5 w-3.5" />
+                                        From Computer
+                                    </button>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row items-start gap-4">
                                     {photoPreview && (
                                         <img
                                             src={photoPreview}
                                             alt="Preview"
-                                            className="h-20 w-20 rounded-xl object-cover border border-white/[0.06]"
+                                            className="h-24 w-24 shrink-0 rounded-xl object-cover border border-white/[0.06]"
                                         />
                                     )}
-                                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-white/[0.1] px-4 py-3 text-sm text-[#666] transition-colors hover:border-[#c8a96e]/30 hover:text-[#a0a0a0]">
-                                        <Upload className="h-4 w-4" />
-                                        <span>{photoPreview ? 'Change Photo' : 'Upload Photo'}</span>
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={handlePhotoSelect}
-                                            className="hidden"
-                                        />
-                                    </label>
+                                    <div className="flex-1 w-full flex items-center justify-start h-24">
+                                        {/* Google Drive mode */}
+                                        {uploadMode === 'drive' && session && (
+                                            <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handleDriveFileSelect}>
+                                                <button className="flex w-fit items-center gap-2 rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5 text-sm text-[#f5f5f5] transition-colors hover:bg-white/[0.04]">
+                                                    <DriveIcon className="h-4 w-4" />
+                                                    <span>
+                                                        {pickedDriveFile ? pickedDriveFile.name : 'Select from Google Drive'}
+                                                    </span>
+                                                </button>
+                                            </GooglePicker>
+                                        )}
+                                        {uploadMode === 'drive' && !session && (
+                                            <p className="text-sm text-[#666]">Sign in to Google to pick photos from Drive.</p>
+                                        )}
+
+                                        {/* Computer mode */}
+                                        {uploadMode === 'computer' && (
+                                            <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5 text-sm text-[#f5f5f5] transition-colors hover:bg-white/[0.04]">
+                                                <HardDrive className="h-4 w-4" />
+                                                <span>
+                                                    {photoFile ? photoFile.name : 'Browse Files'}
+                                                </span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    onChange={handlePhotoSelect}
+                                                    className="hidden"
+                                                />
+                                            </label>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
