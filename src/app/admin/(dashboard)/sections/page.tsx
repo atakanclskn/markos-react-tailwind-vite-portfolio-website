@@ -401,14 +401,14 @@ export default function SectionsPage() {
                                         })
                                     }
                                     className={`relative h-6 w-11 rounded-full transition-colors ${contactForm.statusActive
-                                            ? 'bg-[#c8a96e]'
-                                            : 'bg-[#333]'
+                                        ? 'bg-[#c8a96e]'
+                                        : 'bg-[#333]'
                                         }`}
                                 >
                                     <div
                                         className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${contactForm.statusActive
-                                                ? 'translate-x-[22px]'
-                                                : 'translate-x-0.5'
+                                            ? 'translate-x-[22px]'
+                                            : 'translate-x-0.5'
                                             }`}
                                     />
                                 </button>
@@ -430,30 +430,34 @@ export default function SectionsPage() {
                                 Separate the limits to prevent all animations from jumping simultaneously.
                             </div>
 
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <InputField
-                                    label="Image Swap Interval (Min Seconds)"
-                                    value={String(bentoSettingsForm.imageSwapMinSeconds)}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMinSeconds: Number(v) || 0 })}
-                                    placeholder="e.g. 8"
+                            <div className="grid gap-6 sm:grid-cols-2">
+                                <SliderField
+                                    label="Image Swap Interval (Min)"
+                                    value={bentoSettingsForm.imageSwapMinSeconds}
+                                    min={3}
+                                    max={30}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMinSeconds: v })}
                                 />
-                                <InputField
-                                    label="Image Swap Interval (Max Seconds)"
-                                    value={String(bentoSettingsForm.imageSwapMaxSeconds)}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMaxSeconds: Number(v) || 0 })}
-                                    placeholder="e.g. 14"
+                                <SliderField
+                                    label="Image Swap Interval (Max)"
+                                    value={bentoSettingsForm.imageSwapMaxSeconds}
+                                    min={5}
+                                    max={45}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMaxSeconds: v })}
                                 />
-                                <InputField
-                                    label="Top Row Resize Interval (Seconds)"
-                                    value={String(bentoSettingsForm.row1LayoutSwapSeconds)}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row1LayoutSwapSeconds: Number(v) || 0 })}
-                                    placeholder="e.g. 15"
+                                <SliderField
+                                    label="Top Row Resize Interval"
+                                    value={bentoSettingsForm.row1LayoutSwapSeconds}
+                                    min={5}
+                                    max={60}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row1LayoutSwapSeconds: v })}
                                 />
-                                <InputField
-                                    label="Bottom Row Resize Interval (Seconds)"
-                                    value={String(bentoSettingsForm.row2LayoutSwapSeconds)}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row2LayoutSwapSeconds: Number(v) || 0 })}
-                                    placeholder="e.g. 12"
+                                <SliderField
+                                    label="Bottom Row Resize Interval"
+                                    value={bentoSettingsForm.row2LayoutSwapSeconds}
+                                    min={5}
+                                    max={60}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row2LayoutSwapSeconds: v })}
                                 />
                             </div>
 
@@ -521,6 +525,65 @@ function InputField({
                     text-sm text-[#f5f5f5] placeholder-[#444] outline-none
                     transition-colors focus:border-[#c8a96e]/40 focus:ring-1 focus:ring-[#c8a96e]/20"
             />
+        </div>
+    );
+}
+
+function SliderField({
+    label,
+    value,
+    min,
+    max,
+    onChange,
+}: {
+    label: string;
+    value: number;
+    min: number;
+    max: number;
+    onChange: (val: number) => void;
+}) {
+    // Calculate percentage for gradient track
+    const percentage = ((value - min) / (max - min)) * 100;
+
+    return (
+        <div className="rounded-lg border border-white/[0.06] bg-[#141414] p-4">
+            <div className="mb-4 flex items-center justify-between">
+                <label className="text-sm font-medium text-[#f5f5f5]">{label}</label>
+                <div className="flex items-center gap-1.5 rounded-md bg-[#222] px-2.5 py-1">
+                    <span className="text-sm font-semibold text-[#c8a96e]">{value}</span>
+                    <span className="text-xs text-[#a0a0a0]">sec</span>
+                </div>
+            </div>
+
+            <div className="relative flex items-center h-6">
+                <input
+                    type="range"
+                    min={min}
+                    max={max}
+                    value={value}
+                    onChange={(e) => onChange(Number(e.target.value))}
+                    className="absolute z-20 w-full opacity-0 cursor-pointer h-full"
+                />
+
+                {/* Custom Track */}
+                <div className="absolute z-10 w-full h-1.5 rounded-full bg-[#333] overflow-hidden pointer-events-none">
+                    <div
+                        className="h-full bg-[#c8a96e] transition-all duration-150 ease-out"
+                        style={{ width: `${percentage}%` }}
+                    />
+                </div>
+
+                {/* Custom Thumb */}
+                <div
+                    className="absolute z-10 h-4 w-4 rounded-full bg-white shadow-md pointer-events-none transition-all duration-150 ease-out"
+                    style={{ left: `calc(${percentage}% - 8px)` }}
+                />
+            </div>
+
+            <div className="mt-2 flex justify-between px-1">
+                <span className="text-[10px] text-[#666] font-medium tracking-wide">{min}s</span>
+                <span className="text-[10px] text-[#666] font-medium tracking-wide">{max}s</span>
+            </div>
         </div>
     );
 }
