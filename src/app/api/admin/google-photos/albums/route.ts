@@ -1,21 +1,18 @@
-import { NextResponse } from 'next/server';
-
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/admin/google-photos/albums
- * Fetch albums from Google Photos Library API using stored access token.
+ * Reads the access token from the Authorization header (sent by frontend).
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const session = await getServerSession(authOptions) as any;
-        console.log("NEXTAUTH SESSION:", JSON.stringify(session));
-        const accessToken = session?.accessToken;
+        // Read access token from Authorization header
+        const authHeader = request.headers.get('Authorization');
+        const accessToken = authHeader?.replace('Bearer ', '');
 
         if (!accessToken) {
             return NextResponse.json(
-                { error: 'Unauthorized. Please connect your Google Photos account first.', sessionDebug: session },
+                { error: 'Unauthorized. Please connect your Google Photos account first.' },
                 { status: 401 }
             );
         }

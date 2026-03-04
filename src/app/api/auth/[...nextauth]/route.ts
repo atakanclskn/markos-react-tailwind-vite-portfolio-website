@@ -25,7 +25,13 @@ export const authOptions: NextAuthOptions = {
         async jwt({ token, account }) {
             // Persist the OAuth access_token right after signin
             if (account) {
+                console.log("[NextAuth] New account sign-in:", JSON.stringify({
+                    scope: account.scope,
+                    token_type: account.token_type,
+                    has_access_token: !!account.access_token,
+                }));
                 token.accessToken = account.access_token;
+                token.scope = account.scope;
             }
             return token;
         },
