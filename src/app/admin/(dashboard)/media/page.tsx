@@ -414,9 +414,13 @@ export default function MediaPage() {
                 <div className="mb-8 rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-6">
                     <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 className="text-base font-semibold text-[#f5f5f5]">Google Drive Sync</h3>
+                            <h3 className="text-base font-semibold text-[#f5f5f5]">
+                                {uploadMode === 'drive' ? 'Google Drive Sync' : 'Local File Upload'}
+                            </h3>
                             <p className="mt-1 text-sm text-[#666]">
-                                Connect your Google account, pick photos from Drive, then save them to a category.
+                                {uploadMode === 'drive'
+                                    ? 'Connect your Google account, pick photos from Drive, then save them to a category.'
+                                    : 'Select photos directly from your computer and upload them to a category.'}
                             </p>
                         </div>
                         {!session ? (
