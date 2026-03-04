@@ -13,8 +13,9 @@ import {
     AlertCircle,
     CheckCircle2,
     LogIn,
+    LogOut,
 } from 'lucide-react';
-import { useSession, signIn } from 'next-auth/react';
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
 import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn } from '@/lib/firestore';
 import type { GooglePhotosAlbum, Category, Photo } from '@/types';
@@ -203,20 +204,29 @@ export default function MediaPage() {
                                 <span>Connect Google Photos</span>
                             </button>
                         ) : (
-                            <button
-                                onClick={fetchAlbums}
-                                disabled={albumsLoading}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
-                                    text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
-                                    disabled:opacity-50 sm:w-auto"
-                            >
-                                {albumsLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Download className="h-4 w-4" />
-                                )}
-                                <span>Fetch Albums</span>
-                            </button>
+                            <div className="flex w-full items-center gap-2 sm:w-auto">
+                                <button
+                                    onClick={fetchAlbums}
+                                    disabled={albumsLoading}
+                                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
+                                        text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
+                                        disabled:opacity-50 sm:flex-none"
+                                >
+                                    {albumsLoading ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Download className="h-4 w-4" />
+                                    )}
+                                    <span>Fetch Albums</span>
+                                </button>
+                                <button
+                                    onClick={() => signOut()}
+                                    className="flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/20"
+                                    title="Disconnect Google"
+                                >
+                                    <LogOut className="h-4 w-4" />
+                                </button>
+                            </div>
                         )}
                     </div>
 

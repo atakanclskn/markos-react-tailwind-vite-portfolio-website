@@ -10,11 +10,12 @@ import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 export async function GET() {
     try {
         const session = await getServerSession(authOptions) as any;
+        console.log("NEXTAUTH SESSION:", JSON.stringify(session));
         const accessToken = session?.accessToken;
 
         if (!accessToken) {
             return NextResponse.json(
-                { error: 'Unauthorized. Please connect your Google Photos account first.' },
+                { error: 'Unauthorized. Please connect your Google Photos account first.', sessionDebug: session },
                 { status: 401 }
             );
         }
