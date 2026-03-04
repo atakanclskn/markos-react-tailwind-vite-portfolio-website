@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getStorage } from 'firebase-admin/storage';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
 import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
@@ -12,7 +11,6 @@ function getAdminApp() {
     }
 
     const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-    const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
     // Try service account JSON first, fallback to Application Default Credentials
     const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
@@ -21,13 +19,11 @@ function getAdminApp() {
         const serviceAccount = JSON.parse(serviceAccountKey);
         return initializeApp({
             credential: cert(serviceAccount),
-            storageBucket,
         });
     }
 
     return initializeApp({
         projectId,
-        storageBucket,
     });
 }
 
@@ -52,8 +48,8 @@ interface MediaItem {
  * Flow:
  * 1. Fetch all media items from the specified Google Photos album
  * 2. Download each image via its temporary baseUrl
- * 3. Upload to Firebase Storage
- * 4. Save the permanent Firebase Storage URL to Firestore
+ * 3. Upload to ImgBB via API (Free tier, no Firebase Storage)
+ * 4. Save the permanent ImgBB URLs to Firestore
  */
 export async function POST(request: NextRequest) {
     try {
@@ -119,9 +115,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ synced: 0, message: 'No media items found in album.' });
         }
 
-        // 2. Initialize Firebase Admin
+        // 2. Initialize Firebase Admin (db only)
         const app = getAdminApp();
-        const bucket = getStorage(app).bucket();
         const adminDb = getFirestore(app);
 
         // 3. Get existing synced Google Photos IDs to avoid duplicates
@@ -166,30 +161,41 @@ export async function POST(request: NextRequest) {
                 }
 
                 const buffer = Buffer.from(await imageRes.arrayBuffer());
-                const ext = item.mimeType?.split('/')[1] || 'jpg';
-                const storagePath = `photos/${categoryId}/${item.id}.${ext}`;
 
-                // Upload to Firebase Storage
-                const file = bucket.file(storagePath);
-                await file.save(buffer, {
-                    metadata: {
-                        contentType: item.mimeType || 'image/jpeg',
-                        metadata: {
-                            googlePhotosId: item.id,
-                        },
-                    },
+                // Upload to ImgBB
+                const base64Image = buffer.toString('base64');
+                const formData = new FormData();
+                formData.append('key', process.env.IMGBB_API_KEY || '6902c7b41fa8673e8aa0d91855974b42');
+                formData.append('image', base64Image);
+                formData.append('name', item.filename);
+
+                const imgbbRes = await fetch('https://api.imgbb.com/1/upload', {
+                    method: 'POST',
+                    body: formData
                 });
 
-                // Make file publicly accessible
-                await file.makePublic();
+                if (!imgbbRes.ok) {
+                    const imgbbErr = await imgbbRes.json().catch(() => ({}));
+                    console.error(`ImgBB Upload failed for ${item.filename}:`, imgbbErr);
+                    errors.push(`Failed to upload to ImgBB: ${item.filename}`);
+                    continue;
+                }
 
-                const storageUrl = `https://storage.googleapis.com/${bucket.name}/${storagePath}`;
+                const imgbbData = await imgbbRes.json();
+
+                if (!imgbbData.success) {
+                    errors.push(`Failed to upload to ImgBB (API Error): ${item.filename}`);
+                    continue;
+                }
+
+                const storageUrl = imgbbData.data.url; // High res
+                const thumbnailUrl = imgbbData.data.thumb?.url || imgbbData.data.url;
 
                 // 6. Save to Firestore
                 await adminDb.collection('photos').add({
                     categoryId,
                     storageUrl,
-                    thumbnailUrl: storageUrl,
+                    thumbnailUrl,
                     googlePhotosId: item.id,
                     width: parseInt(item.mediaMetadata?.width || '0'),
                     height: parseInt(item.mediaMetadata?.height || '0'),

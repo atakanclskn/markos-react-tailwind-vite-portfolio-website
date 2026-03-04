@@ -17,7 +17,6 @@ import {
 import { useSession, signIn } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
 import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn } from '@/lib/firestore';
-import { deleteFile } from '@/lib/storage';
 import type { GooglePhotosAlbum, Category, Photo } from '@/types';
 
 export default function MediaPage() {
@@ -138,18 +137,6 @@ export default function MediaPage() {
     const handleDeletePhoto = async (photo: Photo) => {
         if (!confirm('Are you sure you want to delete this photo?')) return;
         try {
-            // Extract storage path from URL
-            const urlPath = new URL(photo.storageUrl).pathname;
-            const storagePath = decodeURIComponent(urlPath.split('/o/')[1]?.split('?')[0] || '');
-
-            if (storagePath) {
-                try {
-                    await deleteFile(storagePath);
-                } catch {
-                    // File might not exist in client-accessible storage, continue with Firestore delete
-                }
-            }
-
             await deletePhotoFn(photo.id);
             setPhotos(photos.filter((p) => p.id !== photo.id));
             showToast('success', 'Photo deleted.');
@@ -177,8 +164,8 @@ export default function MediaPage() {
             {toast && (
                 <div
                     className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${toast.type === 'success'
-                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                            : 'border-red-500/20 bg-red-500/10 text-red-400'
+                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                        : 'border-red-500/20 bg-red-500/10 text-red-400'
                         }`}
                 >
                     {toast.type === 'success' ? (
@@ -300,10 +287,10 @@ export default function MediaPage() {
                             {syncProgress.status !== 'idle' && (
                                 <div
                                     className={`rounded-lg border px-4 py-3 text-sm ${syncProgress.status === 'syncing'
-                                            ? 'border-blue-500/20 bg-blue-500/5 text-blue-400'
-                                            : syncProgress.status === 'complete'
-                                                ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
-                                                : 'border-red-500/20 bg-red-500/5 text-red-400'
+                                        ? 'border-blue-500/20 bg-blue-500/5 text-blue-400'
+                                        : syncProgress.status === 'complete'
+                                            ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
+                                            : 'border-red-500/20 bg-red-500/5 text-red-400'
                                         }`}
                                 >
                                     {syncProgress.message}
