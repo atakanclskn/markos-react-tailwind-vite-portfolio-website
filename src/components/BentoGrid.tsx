@@ -18,11 +18,8 @@ const FALLBACK_CATEGORIES = [
 ];
 
 // Default animation settings (used as fallback or initial fast render)
-const DEFAULT_SETTINGS = {
-    imageSwapMinSeconds: 8,
-    imageSwapMaxSeconds: 14,
-    row1LayoutSwapSeconds: 15,
-    row2LayoutSwapSeconds: 12,
+const DEFAULT_SETTINGS: BentoGridSettings = {
+    animationIntervalSeconds: 12,
 };
 
 type CategoryWithImages = { id: string; title: string; images: string[] };
@@ -41,27 +38,25 @@ function GridItem({
     weight,
     onClick,
     isDark,
-    minSwapS,
-    maxSwapS
+    baseIntervalS
 }: {
     category: CategoryWithImages,
     weight: number,
     onClick: (category: string) => void,
     isDark: boolean,
-    minSwapS: number,
-    maxSwapS: number,
+    baseIntervalS: number,
 }) {
     const [imgIndex, setImgIndex] = useState(0);
 
     useEffect(() => {
-        const minMs = minSwapS * 1000;
-        const maxMs = maxSwapS * 1000;
+        const minMs = Math.max(3, baseIntervalS - 2) * 1000;
+        const maxMs = (baseIntervalS + 4) * 1000;
         const intervalTime = Math.random() * (maxMs - minMs) + minMs;
         const timer = setInterval(() => {
             setImgIndex((prev) => (prev + 1) % category.images.length);
         }, intervalTime);
         return () => clearInterval(timer);
-    }, [category.images.length]);
+    }, [category.images.length, baseIntervalS]);
 
     return (
         <motion.div
@@ -106,27 +101,25 @@ function MobileGridItem({
     onClick,
     isDark,
     index,
-    minSwapS,
-    maxSwapS
+    baseIntervalS
 }: {
     category: CategoryWithImages;
     onClick: (category: string) => void;
     isDark: boolean;
     index: number;
-    minSwapS: number;
-    maxSwapS: number;
+    baseIntervalS: number;
 }) {
     const [imgIndex, setImgIndex] = useState(0);
 
     useEffect(() => {
-        const minMs = minSwapS * 1000;
-        const maxMs = maxSwapS * 1000;
+        const minMs = Math.max(3, baseIntervalS - 2) * 1000;
+        const maxMs = (baseIntervalS + 4) * 1000;
         const intervalTime = Math.random() * (maxMs - minMs) + minMs;
         const timer = setInterval(() => {
             setImgIndex((prev) => (prev + 1) % category.images.length);
         }, intervalTime);
         return () => clearInterval(timer);
-    }, [category.images.length]);
+    }, [category.images.length, baseIntervalS]);
 
     return (
         <motion.div
@@ -227,7 +220,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 next[randomIndex] = Math.random() * 2 + 1;
                 return next;
             });
-        }, settings.row1LayoutSwapSeconds * 1000);
+        }, (settings.animationIntervalSeconds + 3) * 1000);
 
         // Alt satır için bağımsız döngü
         const timer2 = setInterval(() => {
@@ -237,13 +230,13 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 next[randomIndex] = Math.random() * 2 + 1;
                 return next;
             });
-        }, settings.row2LayoutSwapSeconds * 1000);
+        }, (settings.animationIntervalSeconds + 6) * 1000);
 
         return () => {
             clearInterval(timer1);
             clearInterval(timer2);
         };
-    }, [categories, settings.row1LayoutSwapSeconds, settings.row2LayoutSwapSeconds]);
+    }, [categories, settings.animationIntervalSeconds]);
 
     return (
         <section id="categories" className="py-20 md:py-32 px-4 md:px-12 max-w-[1600px] mx-auto">
@@ -270,8 +263,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                             onClick={onCategoryClick}
                             isDark={isDark}
                             index={i * 2}
-                            minSwapS={settings.imageSwapMinSeconds}
-                            maxSwapS={settings.imageSwapMaxSeconds}
+                            baseIntervalS={settings.animationIntervalSeconds}
                         />
                     ))}
                 </div>
@@ -283,8 +275,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                             onClick={onCategoryClick}
                             isDark={isDark}
                             index={i * 2 + 1}
-                            minSwapS={settings.imageSwapMinSeconds}
-                            maxSwapS={settings.imageSwapMaxSeconds}
+                            baseIntervalS={settings.animationIntervalSeconds}
                         />
                     ))}
                 </div>
@@ -302,8 +293,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                             weight={row1Weights[i]}
                             onClick={onCategoryClick}
                             isDark={isDark}
-                            minSwapS={settings.imageSwapMinSeconds}
-                            maxSwapS={settings.imageSwapMaxSeconds}
+                            baseIntervalS={settings.animationIntervalSeconds}
                         />
                     ))}
                 </div>
@@ -316,8 +306,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                             weight={row2Weights[i]}
                             onClick={onCategoryClick}
                             isDark={isDark}
-                            minSwapS={settings.imageSwapMinSeconds}
-                            maxSwapS={settings.imageSwapMaxSeconds}
+                            baseIntervalS={settings.animationIntervalSeconds}
                         />
                     ))}
                 </div>

@@ -65,10 +65,7 @@ export default function SectionsPage() {
         statusActive: true,
     });
     const [bentoSettingsForm, setBentoSettingsForm] = useState<BentoGridSettings>({
-        imageSwapMinSeconds: 8,
-        imageSwapMaxSeconds: 14,
-        row1LayoutSwapSeconds: 15,
-        row2LayoutSwapSeconds: 12,
+        animationIntervalSeconds: 12,
     });
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -426,38 +423,16 @@ export default function SectionsPage() {
                     >
                         <div className="space-y-4">
                             <div className="text-sm text-[#a0a0a0] mb-4 border-b border-white/5 pb-4">
-                                Adjust the animation intervals (in seconds) for the homepage portfolio grid.
-                                Separate the limits to prevent all animations from jumping simultaneously.
+                                Adjust the overall pacing of the portfolio grid animations. A higher number means fewer layout shifts and slower image changes, creating a calmer experience.
                             </div>
 
-                            <div className="grid gap-6 sm:grid-cols-2">
+                            <div className="grid gap-6 sm:grid-cols-1 max-w-md">
                                 <SliderField
-                                    label="Image Swap Interval (Min)"
-                                    value={bentoSettingsForm.imageSwapMinSeconds}
-                                    min={3}
-                                    max={30}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMinSeconds: v })}
-                                />
-                                <SliderField
-                                    label="Image Swap Interval (Max)"
-                                    value={bentoSettingsForm.imageSwapMaxSeconds}
-                                    min={5}
-                                    max={45}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMaxSeconds: v })}
-                                />
-                                <SliderField
-                                    label="Top Row Resize Interval"
-                                    value={bentoSettingsForm.row1LayoutSwapSeconds}
+                                    label="Animation Frequency (Seconds)"
+                                    value={bentoSettingsForm.animationIntervalSeconds || 12}
                                     min={5}
                                     max={60}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row1LayoutSwapSeconds: v })}
-                                />
-                                <SliderField
-                                    label="Bottom Row Resize Interval"
-                                    value={bentoSettingsForm.row2LayoutSwapSeconds}
-                                    min={5}
-                                    max={60}
-                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row2LayoutSwapSeconds: v })}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, animationIntervalSeconds: v })}
                                 />
                             </div>
 
