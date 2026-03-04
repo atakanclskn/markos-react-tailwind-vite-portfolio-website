@@ -239,3 +239,15 @@ export async function getUnreadMessageCount(): Promise<number> {
     const snapshot = await getCountFromServer(q);
     return snapshot.data().count;
 }
+
+// --- Appearance Settings ---
+import type { AppearanceSettings } from '@/types';
+
+export async function getAppearanceSettings(): Promise<AppearanceSettings | null> {
+    const snap = await getDoc(doc(db, 'siteContent', 'appearance'));
+    return snap.exists() ? (snap.data() as AppearanceSettings) : null;
+}
+
+export async function updateAppearanceSettings(data: AppearanceSettings) {
+    return setDoc(doc(db, 'siteContent', 'appearance'), data as DocumentData, { merge: true });
+}

@@ -4,9 +4,10 @@
 /* --- Tailwind v4 Theme Configuration --- */
 @theme inline {
   /* Colors - Dark Mode First */
-  --color-brand: #c8a96e;
-  --color-brand-light: #e0c992;
-  --color-brand-dark: #a08450;
+  --color-brand: var(--dyn-brand, #ffffff);
+  /* The light/dark scale isn't heavily used, setting them to variations of brand or just the exact same color */
+  --color-brand-light: var(--dyn-brand, #ffffff);
+  --color-brand-dark: var(--dyn-brand, #ffffff);
 
   --color-surface-dark: #0a0a0a;
   --color-surface-dark-secondary: #141414;

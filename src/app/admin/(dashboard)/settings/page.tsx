@@ -10,6 +10,7 @@ import {
     X,
     Globe,
     Link as LinkIcon,
+    Palette,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 import {
@@ -17,8 +18,20 @@ import {
     updateSEOSettings,
     getFooterContent,
     updateFooterContent,
+    getAppearanceSettings,
+    updateAppearanceSettings,
 } from '@/lib/firestore';
-import type { SEOSettings, FooterContent, SocialLink } from '@/types';
+import type { SEOSettings, FooterContent, SocialLink, AppearanceSettings } from '@/types';
+import { useTheme } from '@/context/ThemeContext';
+
+const PREMIUM_COLORS = [
+    { name: 'Pure White (Default)', hex: '#ffffff' },
+    { name: 'Signature Gold', hex: '#c8a96e' },
+    { name: 'Rose Gold', hex: '#b76e79' },
+    { name: 'Platinum', hex: '#e5e4e2' },
+    { name: 'Emerald', hex: '#50c878' },
+    { name: 'Midnight Blue', hex: '#191970' },
+];
 
 export default function SettingsPage() {
     const { seoSettings, setSEOSettings, footerContent, setFooterContent } = useAdminStore();
@@ -39,6 +52,12 @@ export default function SettingsPage() {
         socialLinks: [],
     });
 
+    const { brandColor, setBrandColor } = useTheme();
+    const [appearanceForm, setAppearanceForm] = useState<AppearanceSettings>({
+        brandColor: brandColor || '#ffffff',
+    });
+    const [savingAppearance, setSavingAppearance] = useState(false);
+
     const showToast = useCallback((message: string) => {
         setToast(message);
         setTimeout(() => setToast(null), 3000);
@@ -48,7 +67,11 @@ export default function SettingsPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [seo, footer] = await Promise.all([getSEOSettings(), getFooterContent()]);
+                const [seo, footer, appearance] = await Promise.all([
+                    getSEOSettings(),
+                    getFooterContent(),
+                    getAppearanceSettings()
+                ]);
                 if (seo) {
                     setSEOSettings(seo);
                     setSeoForm(seo);
@@ -56,6 +79,9 @@ export default function SettingsPage() {
                 if (footer) {
                     setFooterContent(footer);
                     setFooterForm(footer);
+                }
+                if (appearance) {
+                    setAppearanceForm(appearance);
                 }
             } catch (err) {
                 console.error('Failed to fetch settings:', err);
@@ -92,6 +118,21 @@ export default function SettingsPage() {
             console.error('Failed to save footer:', err);
         } finally {
             setSavingFooter(false);
+        }
+    };
+
+    // --- Appearance ---
+    const handleSaveAppearance = async () => {
+        setSavingAppearance(true);
+        try {
+            await updateAppearanceSettings(appearanceForm);
+            // Instantly apply globally to the page via Context without reload
+            setBrandColor(appearanceForm.brandColor);
+            showToast('Appearance settings saved. Brand color updated.');
+        } catch (err) {
+            console.error('Failed to save appearance:', err);
+        } finally {
+            setSavingAppearance(false);
         }
     };
 
@@ -141,6 +182,92 @@ export default function SettingsPage() {
             )}
 
             <div className="mx-auto max-w-3xl p-6 lg:p-8 space-y-8">
+                {/* Appearance Settings */}
+                <section className="rounded-xl border border-white/[0.06] bg-[#111] overflow-hidden">
+                    <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
+                        <Palette className="h-4 w-4" style={{ color: 'var(--color-brand)' }} />
+                        <h3 className="text-sm font-semibold text-[#f5f5f5]">Appearance & Theming</h3>
+                    </div>
+                    <div className="space-y-6 p-5">
+                        {/* Live Color Preview and Picker */}
+                        <div className="flex flex-col sm:flex-row gap-6">
+                            <div className="flex-1 space-y-4">
+                                <label className="block text-sm text-[#a0a0a0]">Brand Accent Color</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {PREMIUM_COLORS.map((preset) => (
+                                        <button
+                                            key={preset.hex}
+                                            type="button"
+                                            onClick={() => setAppearanceForm({ ...appearanceForm, brandColor: preset.hex })}
+                                            className={`h-10 w-10 rounded-full border-2 transition-transform ${appearanceForm.brandColor.toLowerCase() === preset.hex.toLowerCase()
+                                                    ? 'border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.3)]'
+                                                    : 'border-transparent hover:scale-105'
+                                                }`}
+                                            style={{ backgroundColor: preset.hex }}
+                                            title={preset.name}
+                                        />
+                                    ))}
+                                </div>
+                                <div className="pt-2 flex items-center gap-4">
+                                    <span className="text-xs text-[#666]">Or enter custom Hex:</span>
+                                    <div className="relative w-32">
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#666]">#</div>
+                                        <input
+                                            type="text"
+                                            value={appearanceForm.brandColor.replace('#', '')}
+                                            onChange={(e) => {
+                                                const val = e.target.value.replace(/[^0-9a-fA-F]/g, '').slice(0, 6);
+                                                setAppearanceForm({ ...appearanceForm, brandColor: `#${val}` });
+                                            }}
+                                            placeholder="ffffff"
+                                            className="w-full rounded-lg border border-white/[0.06] bg-[#141414] pl-7 pr-3 py-2 text-sm text-[#f5f5f5] outline-none focus:border-[#c8a96e]/40 uppercase tracking-widest"
+                                        />
+                                        <input
+                                            type="color"
+                                            value={appearanceForm.brandColor}
+                                            onChange={(e) => setAppearanceForm({ ...appearanceForm, brandColor: e.target.value })}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 p-0 border-0 rounded cursor-pointer bg-transparent"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Live Demo Mini-card */}
+                            <div className="sm:w-64 rounded-xl border border-white/[0.06] bg-[#0a0a0a] p-5 flex flex-col justify-center items-center text-center">
+                                <span className="text-xs text-[#666] mb-4 uppercase tracking-widest">Live Preview</span>
+                                <div
+                                    className="h-12 w-12 rounded-full flex items-center justify-center mb-3 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                                    style={{ backgroundColor: `color-mix(in srgb, ${appearanceForm.brandColor} 15%, transparent)` }}
+                                >
+                                    <span className="text-2xl" style={{ fontFamily: 'var(--font-monoton)', color: appearanceForm.brandColor }}>M</span>
+                                </div>
+                                <div
+                                    className="px-4 py-1.5 rounded-full text-xs font-medium"
+                                    style={{ backgroundColor: appearanceForm.brandColor, color: '#0a0a0a' }}
+                                >
+                                    Primary Button
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-2 border-t border-white/[0.06]">
+                            <button
+                                onClick={handleSaveAppearance}
+                                disabled={savingAppearance}
+                                className="flex items-center gap-2 rounded-lg px-4 py-2 mt-4 text-sm font-medium text-[#0a0a0a] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                style={{ backgroundColor: 'var(--color-brand)' }}
+                            >
+                                {savingAppearance ? (
+                                    <Loader2 className="h-4 w-4 animate-spin text-[#0a0a0a]" />
+                                ) : (
+                                    <Save className="h-4 w-4 text-[#0a0a0a]" />
+                                )}
+                                <span>Apply Brand Color</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
                 {/* SEO Settings */}
                 <section className="rounded-xl border border-white/[0.06] bg-[#111] overflow-hidden">
                     <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">

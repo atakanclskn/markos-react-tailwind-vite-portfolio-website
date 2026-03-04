@@ -5,7 +5,9 @@ import type { Theme } from '@/types';
 
 interface ThemeContextType {
     theme: Theme;
+    brandColor: string;
     toggleTheme: (event?: React.MouseEvent) => void;
+    setBrandColor: (color: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -18,6 +20,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         return 'dark';
     });
 
+    const [brandColor, setBrandColorState] = useState<string>('#ffffff'); // Default to pure white
+
     // Sync body class when theme changes
     useEffect(() => {
         if (theme === 'light') {
@@ -26,6 +30,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             document.body.classList.remove('light');
         }
     }, [theme]);
+
+    // Apply Brand Color to DOM
+    const setBrandColor = useCallback((color: string) => {
+        setBrandColorState(color);
+        if (typeof document !== 'undefined') {
+            document.documentElement.style.setProperty('--dyn-brand', color);
+        }
+    }, []);
+
+    // Fetch initial appearance settings
+    useEffect(() => {
+        const fetchAppearance = async () => {
+            try {
+                // Dynamically import to avoid server/client issues
+                const { getAppearanceSettings } = await import('@/lib/firestore');
+                const settings = await getAppearanceSettings();
+                if (settings?.brandColor) {
+                    setBrandColor(settings.brandColor);
+                } else {
+                    // Force the default white color if nothing is in DB
+                    setBrandColor('#ffffff');
+                }
+            } catch (error) {
+                console.error('Error fetching appearance settings:', error);
+                setBrandColor('#ffffff');
+            }
+        };
+        fetchAppearance();
+    }, [setBrandColor]);
 
     const toggleTheme = useCallback((event?: React.MouseEvent) => {
         const newTheme: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -50,7 +83,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }, [theme]);
 
     return (
-        <ThemeContext.Provider value={{ theme, toggleTheme }}>
+        <ThemeContext.Provider value={{ theme, brandColor, toggleTheme, setBrandColor }}>
             {children}
         </ThemeContext.Provider>
     );

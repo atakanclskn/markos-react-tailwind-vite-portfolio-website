@@ -110,3 +110,8 @@ export interface SyncProgress {
 
 // --- Theme ---
 export type Theme = 'dark' | 'light';
+
+// --- Appearance Settings ---
+export interface AppearanceSettings {
+    brandColor: string;
+}

@@ -39,8 +39,16 @@ export default function Sidebar() {
             {/* Logo */}
             <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-5">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#c8a96e]/10">
-                        <Camera className="h-[18px] w-[18px] text-[#c8a96e]" />
+                    <div
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--color-brand) 15%, transparent)' }}
+                    >
+                        <span
+                            className="text-xl leading-none"
+                            style={{ fontFamily: 'var(--font-monoton)', color: 'var(--color-brand)' }}
+                        >
+                            M
+                        </span>
                     </div>
                     {(!sidebarCollapsed || mobileSidebarOpen) && (
                         <div className="overflow-hidden">
@@ -73,17 +81,20 @@ export default function Sidebar() {
                                 group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm
                                 transition-all duration-200
                                 ${active
-                                    ? 'bg-[#c8a96e]/10 text-[#c8a96e]'
+                                    ? ''
                                     : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
                                 }
                                 ${sidebarCollapsed && !mobileSidebarOpen ? 'justify-center' : ''}
                             `}
+                            style={active ? {
+                                color: 'var(--color-brand)',
+                                backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
+                            } : {}}
                             title={sidebarCollapsed && !mobileSidebarOpen ? item.label : undefined}
                         >
                             <item.icon
-                                className={`h-[18px] w-[18px] shrink-0 ${
-                                    active ? 'text-[#c8a96e]' : 'text-[#666] group-hover:text-[#a0a0a0]'
-                                }`}
+                                className={`h-[18px] w-[18px] shrink-0 transition-colors ${active ? '' : 'text-[#666] group-hover:text-[#a0a0a0]'}`}
+                                style={active ? { color: 'var(--color-brand)' } : {}}
                             />
                             {(!sidebarCollapsed || mobileSidebarOpen) && <span>{item.label}</span>}
                         </Link>
