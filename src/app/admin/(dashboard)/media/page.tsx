@@ -14,6 +14,8 @@ import {
     FolderOpen,
     Upload,
     Pencil,
+    HardDrive,
+    Cloud,
 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
@@ -190,6 +192,8 @@ export default function MediaPage() {
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [pickedFiles, setPickedFiles] = useState<PickerFile[]>([]);
     const [isSyncing, setIsSyncing] = useState(false);
+    const [uploadMode, setUploadMode] = useState<'drive' | 'computer'>('drive');
+    const [localFiles, setLocalFiles] = useState<File[]>([]);
 
     // Modals
     const [deleteTarget, setDeleteTarget] = useState<Photo | null>(null);
@@ -285,7 +289,59 @@ export default function MediaPage() {
         setIsSyncing(false);
     };
 
-    const handleConfirmDelete = async () => {
+    const handleLocalUpload = async () => {
+        if (!localFiles.length || !selectedCategoryId) {
+            showToast('error', 'Select a category and at least one photo.');
+            return;
+        }
+        setIsSyncing(true);
+        setSyncProgress({ status: 'syncing', total: localFiles.length, current: 0, message: 'Uploading...' });
+        let synced = 0;
+        const errors: string[] = [];
+        for (let i = 0; i < localFiles.length; i++) {
+            const file = localFiles[i];
+            setSyncProgress({
+                status: 'syncing', total: localFiles.length, current: i,
+                message: `Uploading ${i + 1} of ${localFiles.length}: ${file.name}`,
+            });
+            try {
+                const form = new FormData();
+                form.append('file', file);
+                form.append('fileName', file.name);
+                const res = await fetch('/api/admin/upload', { method: 'POST', body: form });
+                const data = await res.json();
+                if (data.error) {
+                    errors.push(`${file.name}: ${data.error}`);
+                } else {
+                    const photoCount = await getCollectionCount('photos');
+                    await addPhoto({
+                        categoryId: selectedCategoryId,
+                        storageUrl: data.storageUrl,
+                        thumbnailUrl: data.thumbnailUrl,
+                        width: 0, height: 0, order: photoCount,
+                    });
+                    synced++;
+                }
+            } catch {
+                errors.push(`${file.name}: network error`);
+            }
+        }
+        setSyncProgress({
+            status: errors.length === localFiles.length ? 'error' : 'complete',
+            total: localFiles.length, current: synced,
+            message: `Synced ${synced} of ${localFiles.length} photos.${errors.length ? ' Some failed.' : ''}`,
+        });
+        if (synced > 0) {
+            showToast('success', `${synced} photo(s) uploaded!`);
+            setPhotos(await getAllPhotos());
+            setLocalFiles([]);
+        } else {
+            showToast('error', 'Upload failed. Please try again.');
+        }
+        setIsSyncing(false);
+    };
+
+    const handleDeletePhoto = async () => {
         if (!deleteTarget) return;
         try {
             await deletePhotoFn(deleteTarget.id);
@@ -324,8 +380,8 @@ export default function MediaPage() {
             {toast && (
                 <div
                     className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${toast.type === 'success'
-                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                            : 'border-red-500/20 bg-red-500/10 text-red-400'
+                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                        : 'border-red-500/20 bg-red-500/10 text-red-400'
                         }`}
                 >
                     {toast.type === 'success' ? (
@@ -345,7 +401,7 @@ export default function MediaPage() {
                 open={!!deleteTarget}
                 title="Delete Photo"
                 message="Are you sure you want to delete this photo? This action cannot be undone."
-                onConfirm={handleConfirmDelete}
+                onConfirm={handleDeletePhoto}
                 onCancel={() => setDeleteTarget(null)}
             />
 
@@ -391,6 +447,31 @@ export default function MediaPage() {
 
                     {session && (
                         <div className="space-y-4">
+                            {/* Upload Mode Tabs */}
+                            <div className="flex gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
+                                <button
+                                    onClick={() => setUploadMode('drive')}
+                                    className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'drive'
+                                        ? 'bg-white/[0.06] text-[#f5f5f5]'
+                                        : 'text-[#666] hover:text-[#a0a0a0]'
+                                        }`}
+                                >
+                                    <Cloud className="h-3.5 w-3.5" />
+                                    Google Drive
+                                </button>
+                                <button
+                                    onClick={() => setUploadMode('computer')}
+                                    className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'computer'
+                                        ? 'bg-white/[0.06] text-[#f5f5f5]'
+                                        : 'text-[#666] hover:text-[#a0a0a0]'
+                                        }`}
+                                >
+                                    <HardDrive className="h-3.5 w-3.5" />
+                                    From Computer
+                                </button>
+                            </div>
+
+                            {/* Category selection shown for both modes */}
                             <div>
                                 <label className="mb-1.5 block text-sm text-[#a0a0a0]">1. Select Target Category</label>
                                 <select
@@ -404,33 +485,73 @@ export default function MediaPage() {
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="mb-1.5 block text-sm text-[#a0a0a0]">2. Pick Photos from Google Drive</label>
-                                <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handlePickerSelected}>
-                                    <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]">
-                                        <FolderOpen className="h-4 w-4" />
+
+                            {/* Google Drive mode */}
+                            {uploadMode === 'drive' && (
+                                <div>
+                                    <label className="mb-1.5 block text-sm text-[#a0a0a0]">2. Pick Photos from Google Drive</label>
+                                    <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handlePickerSelected}>
+                                        <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]">
+                                            <FolderOpen className="h-4 w-4" />
+                                            <span>
+                                                {pickedFiles.length > 0
+                                                    ? `${pickedFiles.length} photo(s) selected — click to change`
+                                                    : 'Open Google Drive Picker'}
+                                            </span>
+                                        </button>
+                                    </GooglePicker>
+                                </div>
+                            )}
+
+                            {/* Computer mode */}
+                            {uploadMode === 'computer' && (
+                                <div>
+                                    <label className="mb-1.5 block text-sm text-[#a0a0a0]">2. Select Photos from Your Computer</label>
+                                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5] w-fit">
+                                        <HardDrive className="h-4 w-4" />
                                         <span>
-                                            {pickedFiles.length > 0
-                                                ? `${pickedFiles.length} photo(s) selected — click to change`
-                                                : 'Open Google Drive Picker'}
+                                            {localFiles.length > 0
+                                                ? `${localFiles.length} file(s) selected — click to change`
+                                                : 'Browse Files'}
                                         </span>
-                                    </button>
-                                </GooglePicker>
-                            </div>
-                            {pickedFiles.length > 0 && selectedCategoryId && (
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            className="hidden"
+                                            onChange={(e) => setLocalFiles(Array.from(e.target.files || []))}
+                                        />
+                                    </label>
+                                    {localFiles.length > 0 && (
+                                        <div className="mt-2 flex flex-wrap gap-1">
+                                            {localFiles.map((f) => (
+                                                <span
+                                                    key={f.name}
+                                                    className="rounded bg-white/[0.05] px-2 py-0.5 text-xs text-[#888]"
+                                                >
+                                                    {f.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Upload button */}
+                            {((uploadMode === 'drive' && pickedFiles.length > 0) || (uploadMode === 'computer' && localFiles.length > 0)) && selectedCategoryId && (
                                 <button
-                                    onClick={handleUploadPicked}
+                                    onClick={uploadMode === 'drive' ? handleUploadPicked : handleLocalUpload}
                                     disabled={isSyncing}
                                     className="flex items-center gap-2 rounded-lg bg-[#c8a96e] px-5 py-2.5 text-sm font-medium text-[#0a0a0a] transition-all hover:bg-[#e0c992] disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSyncing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                                    <span>{isSyncing ? 'Uploading...' : `Upload ${pickedFiles.length} Photo(s)`}</span>
+                                    <span>{isSyncing ? 'Uploading...' : `Upload ${uploadMode === 'drive' ? pickedFiles.length : localFiles.length} Photo(s)`}</span>
                                 </button>
                             )}
                             {syncProgress.status !== 'idle' && (
                                 <div className={`rounded-lg border px-4 py-3 text-sm ${syncProgress.status === 'syncing' ? 'border-blue-500/20 bg-blue-500/5 text-blue-400'
-                                        : syncProgress.status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
-                                            : 'border-red-500/20 bg-red-500/5 text-red-400'
+                                    : syncProgress.status === 'complete' ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
+                                        : 'border-red-500/20 bg-red-500/5 text-red-400'
                                     }`}>
                                     {syncProgress.message}
                                 </div>
