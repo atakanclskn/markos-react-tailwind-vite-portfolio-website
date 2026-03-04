@@ -251,3 +251,15 @@ export async function getAppearanceSettings(): Promise<AppearanceSettings | null
 export async function updateAppearanceSettings(data: AppearanceSettings) {
     return setDoc(doc(db, 'siteContent', 'appearance'), data as DocumentData, { merge: true });
 }
+
+// --- Preloader Settings ---
+import type { PreloaderSettings } from '@/types';
+
+export async function getPreloaderSettings(): Promise<PreloaderSettings | null> {
+    const snap = await getDoc(doc(db, 'siteContent', 'preloader'));
+    return snap.exists() ? (snap.data() as PreloaderSettings) : null;
+}
+
+export async function updatePreloaderSettings(data: PreloaderSettings) {
+    return setDoc(doc(db, 'siteContent', 'preloader'), data as DocumentData, { merge: true });
+}

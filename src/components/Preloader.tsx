@@ -3,9 +3,11 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTheme } from '@/context/ThemeContext';
+import { getPreloaderSettings } from '@/lib/firestore';
 
 // Demo placeholder images for development
-const IMAGES = [
+// Demo placeholder images for development
+const DEFAULT_IMAGES = [
     'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
     'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80',
     'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
@@ -16,7 +18,6 @@ const IMAGES = [
     'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
 ];
 
-const TOTAL = IMAGES.length;
 const SLIDE_INTERVAL = 3500;
 const EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
@@ -27,13 +28,9 @@ const SIDE_W = 22;
 // Slide step = side card width + gap (mathematically proven to make reset seamless)
 const STEP_VW = SIDE_W + GAP_VW; // 24vw
 
-function getImg(i: number) {
-    return IMAGES[((i % TOTAL) + TOTAL) % TOTAL];
-}
-
 export default function Preloader() {
-    // imageBase tracks which image is shown in the center (slot 2) when at rest
     const { theme } = useTheme();
+    const [images, setImages] = useState<string[]>(DEFAULT_IMAGES);
     const [imageBase, setImageBase] = useState(0);
     // slidingOffset: 0 = at rest, 1 = sliding one position left
     const [slidingOffset, setSlidingOffset] = useState(0);
@@ -43,6 +40,21 @@ export default function Preloader() {
     const [phase, setPhase] = useState<'loading' | 'transforming' | 'scrolling'>('loading');
     const sectionRef = useRef<HTMLDivElement>(null);
     const stripRef = useRef<HTMLDivElement>(null);
+
+    const TOTAL = images.length;
+    const getImg = useCallback((i: number) => {
+        if (TOTAL === 0) return '';
+        return images[((i % TOTAL) + TOTAL) % TOTAL];
+    }, [images, TOTAL]);
+
+    // Fetch custom images
+    useEffect(() => {
+        getPreloaderSettings().then(settings => {
+            if (settings?.images && settings.images.length > 0) {
+                setImages(settings.images.map(img => img.storageUrl));
+            }
+        }).catch(console.error);
+    }, []);
 
     // Auto-advance carousel
     useEffect(() => {

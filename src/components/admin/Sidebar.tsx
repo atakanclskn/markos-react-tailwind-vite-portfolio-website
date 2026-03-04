@@ -13,16 +13,37 @@ import {
     ChevronRight,
     Camera,
     X,
+    User,
+    PlaySquare,
+    Smartphone,
+    MonitorPlay,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 
-const NAV_ITEMS = [
-    { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { label: 'Messages', href: '/admin/messages', icon: Mail },
-    { label: 'Section Texts', href: '/admin/sections', icon: FileText },
-    { label: 'Media Sync', href: '/admin/media', icon: Image },
-    { label: 'Categories', href: '/admin/categories', icon: FolderOpen },
-    { label: 'Settings', href: '/admin/settings', icon: Settings },
+const NAV_GROUPS = [
+    {
+        title: 'Sections',
+        items: [
+            { label: 'Preloader (Intro)', href: '/admin/sections/preloader', icon: PlaySquare },
+            { label: 'Hero Area', href: '/admin/sections/hero', icon: MonitorPlay },
+            { label: 'About (Founder)', href: '/admin/sections/founder', icon: User },
+            { label: 'Contact Section', href: '/admin/sections/contact', icon: Smartphone },
+        ],
+    },
+    {
+        title: 'Media',
+        items: [
+            { label: 'Media Sync', href: '/admin/media', icon: Image },
+            { label: 'Categories', href: '/admin/categories', icon: FolderOpen },
+        ],
+    },
+    {
+        title: 'Global',
+        items: [
+            { label: 'Messages', href: '/admin/messages', icon: Mail },
+            { label: 'Settings', href: '/admin/settings', icon: Settings },
+        ],
+    },
 ];
 
 export default function Sidebar() {
@@ -69,37 +90,74 @@ export default function Sidebar() {
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-                {NAV_ITEMS.map((item) => {
-                    const active = isActive(item.href);
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setMobileSidebarOpen(false)}
-                            className={`
-                                group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm
-                                transition-all duration-200
-                                ${active
-                                    ? ''
-                                    : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
-                                }
-                                ${sidebarCollapsed && !mobileSidebarOpen ? 'justify-center' : ''}
-                            `}
-                            style={active ? {
-                                color: 'var(--color-brand)',
-                                backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
-                            } : {}}
-                            title={sidebarCollapsed && !mobileSidebarOpen ? item.label : undefined}
-                        >
-                            <item.icon
-                                className={`h-[18px] w-[18px] shrink-0 transition-colors ${active ? '' : 'text-[#666] group-hover:text-[#a0a0a0]'}`}
-                                style={active ? { color: 'var(--color-brand)' } : {}}
-                            />
-                            {(!sidebarCollapsed || mobileSidebarOpen) && <span>{item.label}</span>}
-                        </Link>
-                    );
-                })}
+            <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-4">
+                {/* Core Dashboard Link */}
+                <div className="space-y-1">
+                    <Link
+                        href="/admin"
+                        onClick={() => setMobileSidebarOpen(false)}
+                        className={`
+                            group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm
+                            transition-all duration-200
+                            ${pathname === '/admin'
+                                ? ''
+                                : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
+                            }
+                            ${sidebarCollapsed && !mobileSidebarOpen ? 'justify-center' : ''}
+                        `}
+                        style={pathname === '/admin' ? {
+                            color: 'var(--color-brand)',
+                            backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
+                        } : {}}
+                        title={sidebarCollapsed && !mobileSidebarOpen ? 'Dashboard' : undefined}
+                    >
+                        <LayoutDashboard
+                            className={`h-[18px] w-[18px] shrink-0 transition-colors ${pathname === '/admin' ? '' : 'text-[#666] group-hover:text-[#a0a0a0]'}`}
+                            style={pathname === '/admin' ? { color: 'var(--color-brand)' } : {}}
+                        />
+                        {(!sidebarCollapsed || mobileSidebarOpen) && <span>Dashboard</span>}
+                    </Link>
+                </div>
+
+                {NAV_GROUPS.map((group) => (
+                    <div key={group.title} className="space-y-1">
+                        {(!sidebarCollapsed || mobileSidebarOpen) && (
+                            <h2 className="px-3 text-xs font-semibold uppercase tracking-wider text-[#444] mb-2 mt-4">
+                                {group.title}
+                            </h2>
+                        )}
+                        {group.items.map((item) => {
+                            const active = isActive(item.href);
+                            return (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={() => setMobileSidebarOpen(false)}
+                                    className={`
+                                        group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm
+                                        transition-all duration-200
+                                        ${active
+                                            ? ''
+                                            : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
+                                        }
+                                        ${sidebarCollapsed && !mobileSidebarOpen ? 'justify-center' : ''}
+                                    `}
+                                    style={active ? {
+                                        color: 'var(--color-brand)',
+                                        backgroundColor: 'color-mix(in srgb, var(--color-brand) 10%, transparent)'
+                                    } : {}}
+                                    title={sidebarCollapsed && !mobileSidebarOpen ? item.label : undefined}
+                                >
+                                    <item.icon
+                                        className={`h-[18px] w-[18px] shrink-0 transition-colors ${active ? '' : 'text-[#666] group-hover:text-[#a0a0a0]'}`}
+                                        style={active ? { color: 'var(--color-brand)' } : {}}
+                                    />
+                                    {(!sidebarCollapsed || mobileSidebarOpen) && <span>{item.label}</span>}
+                                </Link>
+                            );
+                        })}
+                    </div>
+                ))}
             </nav>
 
             {/* Collapse Toggle (desktop only) */}

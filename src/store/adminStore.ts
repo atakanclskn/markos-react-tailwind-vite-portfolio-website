@@ -9,6 +9,7 @@ import type {
     FooterContent,
     SEOSettings,
     SyncProgress,
+    PreloaderSettings,
 } from '@/types';
 
 interface AdminState {
@@ -67,9 +68,11 @@ interface AdminState {
     footerContent: FooterContent | null;
     seoSettings: SEOSettings | null;
     bentoGridSettings: import('@/types').BentoGridSettings | null;
+    preloaderSettings: PreloaderSettings | null;
     setFooterContent: (data: FooterContent) => void;
     setSEOSettings: (data: SEOSettings) => void;
     setBentoGridSettings: (data: import('@/types').BentoGridSettings) => void;
+    setPreloaderSettings: (data: PreloaderSettings) => void;
 
     // --- Sync ---
     syncProgress: SyncProgress;
@@ -149,9 +152,11 @@ export const useAdminStore = create<AdminState>((set) => ({
     footerContent: null,
     seoSettings: null,
     bentoGridSettings: null,
+    preloaderSettings: null,
     setFooterContent: (data) => set({ footerContent: data }),
     setSEOSettings: (data) => set({ seoSettings: data }),
     setBentoGridSettings: (data) => set({ bentoGridSettings: data }),
+    setPreloaderSettings: (data) => set({ preloaderSettings: data }),
 
     // --- Sync ---
     syncProgress: { status: 'idle', total: 0, current: 0, message: '' },

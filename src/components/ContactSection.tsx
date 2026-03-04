@@ -16,20 +16,24 @@ const SUBJECT_OPTIONS = [
     'Other',
 ];
 
-export default function ContactSection() {
+export default function ContactSection({ previewData }: { previewData?: ContactInfo }) {
     const { theme } = useTheme();
     const [contactInfo, setContactInfoState] = useState<ContactInfo | null>(null);
 
     useEffect(() => {
-        getContactInfo().then((data) => {
-            if (data) setContactInfoState(data);
-        });
-    }, []);
+        if (!previewData) {
+            getContactInfo().then((data) => {
+                if (data) setContactInfoState(data);
+            });
+        }
+    }, [previewData]);
 
-    const email = contactInfo?.email || 'info@markosstudio.com';
-    const phone = contactInfo?.phone || '+44 747 384 6666';
-    const address = contactInfo?.address || 'Manchester, United Kingdom';
-    const statusActive = contactInfo?.statusActive ?? true;
+    const activeData = previewData || contactInfo;
+
+    const email = activeData?.email || 'info@markosstudio.com';
+    const phone = activeData?.phone || '+44 747 384 6666';
+    const address = activeData?.address || 'Manchester, United Kingdom';
+    const statusActive = activeData?.statusActive ?? true;
     const statusText = statusActive
         ? 'Currently available for new projects'
         : 'Currently not available for new projects';
@@ -284,7 +288,7 @@ export default function ContactSection() {
                                 border: `1px solid ${statusActive
                                     ? (theme === 'dark' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(34, 197, 94, 0.2)')
                                     : (theme === 'dark' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(239, 68, 68, 0.2)')
-                                }`,
+                                    }`,
                             }}
                         >
                             <span className="relative flex h-2.5 w-2.5">

@@ -6,20 +6,24 @@ import { useTheme } from '@/context/ThemeContext';
 import { getHeroContent } from '@/lib/firestore';
 import type { HeroContent } from '@/types';
 
-export default function Hero() {
+export default function Hero({ previewData }: { previewData?: HeroContent }) {
     const { theme } = useTheme();
     const [content, setContent] = useState<HeroContent | null>(null);
 
     useEffect(() => {
-        getHeroContent().then((data) => {
-            if (data) setContent(data);
-        });
-    }, []);
+        if (!previewData) {
+            getHeroContent().then((data) => {
+                if (data) setContent(data);
+            });
+        }
+    }, [previewData]);
+
+    const activeData = previewData || content;
 
     // Fallback defaults while loading or if Firestore is empty
-    const title = content?.title || 'Every Frame a Story';
-    const subtitle = content?.subtitle || 'At Markos Studio, we transform your moments into timeless art. From nature to fashion, portraits to products, we provide professional photography services across every field.';
-    const buttonText = content?.buttonText || 'Explore Our Portfolio';
+    const title = activeData?.title || 'Every Frame a Story';
+    const subtitle = activeData?.subtitle || 'At Markos Studio, we transform your moments into timeless art. From nature to fashion, portraits to products, we provide professional photography services across every field.';
+    const buttonText = activeData?.buttonText || 'Explore Our Portfolio';
 
     // Split title to apply gradient on last word
     const titleWords = title.split(' ');

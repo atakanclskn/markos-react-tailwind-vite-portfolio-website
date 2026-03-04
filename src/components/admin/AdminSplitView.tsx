@@ -1,0 +1,55 @@
+'use client';
+
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
+interface AdminSplitViewProps {
+    children: React.ReactNode; // The admin form
+    preview: React.ReactNode; // The live preview component
+    title?: string;
+}
+
+export default function AdminSplitView({ children, preview, title }: AdminSplitViewProps) {
+    const [showPreview, setShowPreview] = useState(false);
+
+    return (
+        <div className="flex h-[calc(100vh-64px)] w-full flex-col lg:flex-row bg-[#0a0a0a]">
+
+            {/* Left Side: Form Controls */}
+            <div className={`flex flex-col border-r border-white/[0.06] transition-all duration-300 ${showPreview ? 'w-full lg:w-[450px] xl:w-[500px]' : 'w-full'}`}>
+                {/* Fixed Sub-header for Preview Toggle */}
+                <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#0c0c0c] px-6 py-3 shrink-0">
+                    <span className="text-sm font-medium text-[#f5f5f5]">{title || 'Editor'}</span>
+                    <button
+                        onClick={() => setShowPreview(!showPreview)}
+                        className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${showPreview
+                                ? 'bg-[#c8a96e] text-[#0a0a0a]'
+                                : 'bg-white/[0.06] text-[#f5f5f5] hover:bg-white/[0.1]'
+                            }`}
+                    >
+                        {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                        {showPreview ? 'Hide Preview' : 'Show Preview'}
+                    </button>
+                </div>
+
+                {/* Scrollable Form Content */}
+                <div className="flex-1 overflow-y-auto w-full relative">
+                    {children}
+                </div>
+            </div>
+
+            {/* Right Side: Live Preview Area */}
+            {showPreview && (
+                <div className="flex-1 hidden lg:flex flex-col bg-black overflow-hidden relative">
+                    <div className="absolute top-4 left-4 z-50 rounded-md bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs text-[#a0a0a0]">
+                        Live Preview Mode
+                    </div>
+                    {/* Fake browser chrome or simple wrapper */}
+                    <div className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden isolate">
+                        {preview}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}

@@ -6,22 +6,26 @@ import { useTheme } from '@/context/ThemeContext';
 import { getFounderInfo } from '@/lib/firestore';
 import type { FounderInfo } from '@/types';
 
-export default function FounderSection() {
+export default function FounderSection({ previewData }: { previewData?: FounderInfo }) {
     const { theme } = useTheme();
     const [founder, setFounder] = useState<FounderInfo | null>(null);
 
     useEffect(() => {
-        getFounderInfo().then((data) => {
-            if (data) setFounder(data);
-        });
-    }, []);
+        if (!previewData) {
+            getFounderInfo().then((data) => {
+                if (data) setFounder(data);
+            });
+        }
+    }, [previewData]);
 
-    const name = founder?.name || 'Onur Satici';
-    const title = founder?.title || 'Founder & Photography Artist';
-    const bio = founder?.bio || 'The creative force behind Markos Studio with over 10 years of experience. As a master of natural light and composition, he brings a unique perspective to every project. Working in and around Istanbul, he creates unforgettable visuals for brands and individuals alike.';
-    const photoUrl = founder?.photoUrl;
-    const stats = founder?.stats?.length
-        ? founder.stats
+    const activeData = previewData || founder;
+
+    const name = activeData?.name || 'Onur Satici';
+    const title = activeData?.title || 'Founder & Photography Artist';
+    const bio = activeData?.bio || 'The creative force behind Markos Studio with over 10 years of experience. As a master of natural light and composition, he brings a unique perspective to every project. Working in and around Istanbul, he creates unforgettable visuals for brands and individuals alike.';
+    const photoUrl = activeData?.photoUrl;
+    const stats = activeData?.stats?.length
+        ? activeData.stats
         : [
             { value: '10+', label: 'Years Experience' },
             { value: '500+', label: 'Projects' },

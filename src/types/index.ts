@@ -115,3 +115,14 @@ export type Theme = 'dark' | 'light';
 export interface AppearanceSettings {
     brandColor: string;
 }
+
+// --- Preloader Settings ---
+export interface PreloaderImage {
+    id: string;
+    storageUrl: string;
+    thumbnailUrl?: string;
+}
+
+export interface PreloaderSettings {
+    images: PreloaderImage[];
+}
