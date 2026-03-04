@@ -88,7 +88,7 @@ export default function GooglePicker({ accessToken, onPhotosSelected, children }
                     onPhotosSelected(files);
                 }
             })
-            .setTitle('Select Photos');
+            .setTitle('Select Photos from Google Drive');
 
         // Only add developer key and appId if they are set
         if (apiKey) builder = builder.setDeveloperKey(apiKey);

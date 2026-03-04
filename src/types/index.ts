@@ -15,6 +15,7 @@ export interface Photo {
     thumbnailUrl: string;
     order: number;
     createdAt: Date;
+    description?: string;
     googlePhotosId?: string;
     googleDriveId?: string;
     width?: number;
