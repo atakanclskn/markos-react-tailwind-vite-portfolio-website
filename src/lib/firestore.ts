@@ -212,6 +212,17 @@ export async function updateSEOSettings(data: SEOSettings) {
     return setDoc(doc(db, 'siteContent', 'seo'), data as DocumentData, { merge: true });
 }
 
+// --- BentoGrid Settings ---
+import type { BentoGridSettings } from '@/types';
+export async function getBentoGridSettings(): Promise<BentoGridSettings | null> {
+    const snap = await getDoc(doc(db, 'siteContent', 'bentoGrid'));
+    return snap.exists() ? (snap.data() as BentoGridSettings) : null;
+}
+
+export async function updateBentoGridSettings(data: BentoGridSettings) {
+    return setDoc(doc(db, 'siteContent', 'bentoGrid'), data as DocumentData, { merge: true });
+}
+
 // --- Counts (Dashboard) ---
 export async function getCollectionCount(collectionName: string): Promise<number> {
     const coll = collection(db, collectionName);

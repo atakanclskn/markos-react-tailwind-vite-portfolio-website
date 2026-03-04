@@ -66,8 +66,10 @@ interface AdminState {
     // --- Settings ---
     footerContent: FooterContent | null;
     seoSettings: SEOSettings | null;
+    bentoGridSettings: import('@/types').BentoGridSettings | null;
     setFooterContent: (data: FooterContent) => void;
     setSEOSettings: (data: SEOSettings) => void;
+    setBentoGridSettings: (data: import('@/types').BentoGridSettings) => void;
 
     // --- Sync ---
     syncProgress: SyncProgress;
@@ -146,8 +148,10 @@ export const useAdminStore = create<AdminState>((set) => ({
     // --- Settings ---
     footerContent: null,
     seoSettings: null,
+    bentoGridSettings: null,
     setFooterContent: (data) => set({ footerContent: data }),
     setSEOSettings: (data) => set({ seoSettings: data }),
+    setBentoGridSettings: (data) => set({ bentoGridSettings: data }),
 
     // --- Sync ---
     syncProgress: { status: 'idle', total: 0, current: 0, message: '' },

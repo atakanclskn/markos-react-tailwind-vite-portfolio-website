@@ -82,6 +82,13 @@ export interface SEOSettings {
 }
 
 // --- Site Settings ---
+export interface BentoGridSettings {
+    imageSwapMinSeconds: number;
+    imageSwapMaxSeconds: number;
+    row1LayoutSwapSeconds: number;
+    row2LayoutSwapSeconds: number;
+}
+
 export interface SiteSettings {
     seo: SEOSettings;
     footer: FooterContent;

@@ -19,9 +19,11 @@ import {
     updateFounderInfo,
     getContactInfo,
     updateContactInfo,
+    getBentoGridSettings,
+    updateBentoGridSettings,
 } from '@/lib/firestore';
 import { uploadFile } from '@/lib/storage';
-import type { HeroContent, FounderInfo, ContactInfo, FounderStat } from '@/types';
+import type { HeroContent, FounderInfo, ContactInfo, FounderStat, BentoGridSettings } from '@/types';
 
 export default function SectionsPage() {
     const {
@@ -31,6 +33,8 @@ export default function SectionsPage() {
         setFounderInfo,
         contactInfo,
         setContactInfo,
+        bentoGridSettings,
+        setBentoGridSettings,
     } = useAdminStore();
 
     const [loading, setLoading] = useState(true);
@@ -60,6 +64,12 @@ export default function SectionsPage() {
         statusText: 'Currently available for new projects',
         statusActive: true,
     });
+    const [bentoSettingsForm, setBentoSettingsForm] = useState<BentoGridSettings>({
+        imageSwapMinSeconds: 8,
+        imageSwapMaxSeconds: 14,
+        row1LayoutSwapSeconds: 15,
+        row2LayoutSwapSeconds: 12,
+    });
     const [photoFile, setPhotoFile] = useState<File | null>(null);
     const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
@@ -72,10 +82,11 @@ export default function SectionsPage() {
         const fetchAll = async () => {
             setLoading(true);
             try {
-                const [hero, founder, contact] = await Promise.all([
+                const [hero, founder, contact, bento] = await Promise.all([
                     getHeroContent(),
                     getFounderInfo(),
                     getContactInfo(),
+                    getBentoGridSettings(),
                 ]);
                 if (hero) {
                     setHeroContent(hero);
@@ -88,16 +99,20 @@ export default function SectionsPage() {
                         stats: founder.stats?.length
                             ? founder.stats
                             : [
-                                  { value: '', label: '' },
-                                  { value: '', label: '' },
-                                  { value: '', label: '' },
-                              ],
+                                { value: '', label: '' },
+                                { value: '', label: '' },
+                                { value: '', label: '' },
+                            ],
                     });
                     if (founder.photoUrl) setPhotoPreview(founder.photoUrl);
                 }
                 if (contact) {
                     setContactInfo(contact);
                     setContactForm(contact);
+                }
+                if (bento) {
+                    setBentoGridSettings(bento);
+                    setBentoSettingsForm(bento);
                 }
             } catch (err) {
                 console.error('Failed to fetch section texts:', err);
@@ -153,6 +168,19 @@ export default function SectionsPage() {
             showToast('Contact section saved successfully.');
         } catch (err) {
             console.error('Failed to save contact:', err);
+        } finally {
+            setSaving(null);
+        }
+    };
+
+    const handleSaveBentoGrid = async () => {
+        setSaving('bento');
+        try {
+            await updateBentoGridSettings(bentoSettingsForm);
+            setBentoGridSettings(bentoSettingsForm);
+            showToast('Portfolio Grid settings saved successfully.');
+        } catch (err) {
+            console.error('Failed to save bento grid settings:', err);
         } finally {
             setSaving(null);
         }
@@ -372,23 +400,64 @@ export default function SectionsPage() {
                                             statusActive: !contactForm.statusActive,
                                         })
                                     }
-                                    className={`relative h-6 w-11 rounded-full transition-colors ${
-                                        contactForm.statusActive
+                                    className={`relative h-6 w-11 rounded-full transition-colors ${contactForm.statusActive
                                             ? 'bg-[#c8a96e]'
                                             : 'bg-[#333]'
-                                    }`}
+                                        }`}
                                 >
                                     <div
-                                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                                            contactForm.statusActive
+                                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${contactForm.statusActive
                                                 ? 'translate-x-[22px]'
                                                 : 'translate-x-0.5'
-                                        }`}
+                                            }`}
                                     />
                                 </button>
                             </div>
 
                             <SaveButton onClick={handleSaveContact} loading={saving === 'contact'} />
+                        </div>
+                    </AccordionItem>
+
+                    {/* Bento Grid Settings Accordion */}
+                    <AccordionItem
+                        title="Portfolio Grid Settings"
+                        isOpen={openSection === 'bento'}
+                        onToggle={() => toggleSection('bento')}
+                    >
+                        <div className="space-y-4">
+                            <div className="text-sm text-[#a0a0a0] mb-4 border-b border-white/5 pb-4">
+                                Adjust the animation intervals (in seconds) for the homepage portfolio grid.
+                                Separate the limits to prevent all animations from jumping simultaneously.
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <InputField
+                                    label="Image Swap Interval (Min Seconds)"
+                                    value={String(bentoSettingsForm.imageSwapMinSeconds)}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMinSeconds: Number(v) || 0 })}
+                                    placeholder="e.g. 8"
+                                />
+                                <InputField
+                                    label="Image Swap Interval (Max Seconds)"
+                                    value={String(bentoSettingsForm.imageSwapMaxSeconds)}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, imageSwapMaxSeconds: Number(v) || 0 })}
+                                    placeholder="e.g. 14"
+                                />
+                                <InputField
+                                    label="Top Row Resize Interval (Seconds)"
+                                    value={String(bentoSettingsForm.row1LayoutSwapSeconds)}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row1LayoutSwapSeconds: Number(v) || 0 })}
+                                    placeholder="e.g. 15"
+                                />
+                                <InputField
+                                    label="Bottom Row Resize Interval (Seconds)"
+                                    value={String(bentoSettingsForm.row2LayoutSwapSeconds)}
+                                    onChange={(v) => setBentoSettingsForm({ ...bentoSettingsForm, row2LayoutSwapSeconds: Number(v) || 0 })}
+                                    placeholder="e.g. 12"
+                                />
+                            </div>
+
+                            <SaveButton onClick={handleSaveBentoGrid} loading={saving === 'bento'} />
                         </div>
                     </AccordionItem>
                 </div>
@@ -418,9 +487,8 @@ function AccordionItem({
             >
                 <span className="text-sm font-medium text-[#f5f5f5]">{title}</span>
                 <ChevronDown
-                    className={`h-4 w-4 text-[#666] transition-transform duration-200 ${
-                        isOpen ? 'rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 text-[#666] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''
+                        }`}
                 />
             </button>
             {isOpen && (
