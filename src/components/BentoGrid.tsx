@@ -38,8 +38,10 @@ function GridItem({
     baseIntervalS: number,
 }) {
     const [imgIndex, setImgIndex] = useState(0);
+    const hasImages = category.images.length > 0;
 
     useEffect(() => {
+        if (!hasImages) return;
         const minMs = Math.max(3, baseIntervalS - 2) * 1000;
         const maxMs = (baseIntervalS + 4) * 1000;
         const intervalTime = Math.random() * (maxMs - minMs) + minMs;
@@ -47,7 +49,7 @@ function GridItem({
             setImgIndex((prev) => (prev + 1) % category.images.length);
         }, intervalTime);
         return () => clearInterval(timer);
-    }, [category.images.length, baseIntervalS]);
+    }, [category.images.length, baseIntervalS, hasImages]);
 
     return (
         <motion.div
@@ -55,21 +57,30 @@ function GridItem({
             animate={{ flex: weight }}
             transition={{ duration: 4, ease: "easeInOut" }}
             onClick={() => onClick(category.id)}
-            className={`relative h-full overflow-hidden group cursor-pointer ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`}
+            className={`relative h-full overflow-hidden group cursor-pointer ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'}`}
         >
-            <AnimatePresence mode="popLayout">
-                <motion.img
-                    key={imgIndex}
-                    src={category.images[imgIndex]}
-                    alt={category.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 0.7, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 3, ease: "easeInOut" }}
-                    referrerPolicy="no-referrer"
-                />
-            </AnimatePresence>
+            {hasImages ? (
+                <AnimatePresence mode="popLayout">
+                    <motion.img
+                        key={imgIndex}
+                        src={category.images[imgIndex]}
+                        alt={category.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 0.7, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 3, ease: "easeInOut" }}
+                        referrerPolicy="no-referrer"
+                    />
+                </AnimatePresence>
+            ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-40">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    <span className={`text-xs tracking-widest uppercase ${isDark ? 'text-white' : 'text-zinc-600'}`}>No photos yet</span>
+                </div>
+            )}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-700" />
             <motion.div
@@ -86,7 +97,6 @@ function GridItem({
     );
 }
 
-/* Mobile-only card with taller aspect ratio and better touch target */
 function MobileGridItem({
     category,
     onClick,
@@ -101,8 +111,10 @@ function MobileGridItem({
     baseIntervalS: number;
 }) {
     const [imgIndex, setImgIndex] = useState(0);
+    const hasImages = category.images.length > 0;
 
     useEffect(() => {
+        if (!hasImages) return;
         const minMs = Math.max(3, baseIntervalS - 2) * 1000;
         const maxMs = (baseIntervalS + 4) * 1000;
         const intervalTime = Math.random() * (maxMs - minMs) + minMs;
@@ -110,31 +122,40 @@ function MobileGridItem({
             setImgIndex((prev) => (prev + 1) % category.images.length);
         }, intervalTime);
         return () => clearInterval(timer);
-    }, [category.images.length, baseIntervalS]);
+    }, [category.images.length, baseIntervalS, hasImages]);
 
     return (
         <motion.div
             onClick={() => onClick(category.id)}
-            className={`relative overflow-hidden rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-200 ${isDark ? 'bg-zinc-900' : 'bg-zinc-100'}`}
+            className={`relative overflow-hidden rounded-2xl cursor-pointer active:scale-[0.97] transition-transform duration-200 ${isDark ? 'bg-zinc-900' : 'bg-zinc-200'}`}
             style={{ aspectRatio: index === 0 ? '16/12' : '3/4' }}
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5, delay: index * 0.08 }}
         >
-            <AnimatePresence mode="popLayout">
-                <motion.img
-                    key={imgIndex}
-                    src={category.images[imgIndex]}
-                    alt={category.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 0.8, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 3, ease: "easeInOut" }}
-                    referrerPolicy="no-referrer"
-                />
-            </AnimatePresence>
+            {hasImages ? (
+                <AnimatePresence mode="popLayout">
+                    <motion.img
+                        key={imgIndex}
+                        src={category.images[imgIndex]}
+                        alt={category.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 0.8, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 3, ease: "easeInOut" }}
+                        referrerPolicy="no-referrer"
+                    />
+                </AnimatePresence>
+            ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 opacity-40">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                    <span className={`text-xs tracking-widest uppercase ${isDark ? 'text-white' : 'text-zinc-600'}`}>No photos yet</span>
+                </div>
+            )}
 
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
 
@@ -149,6 +170,7 @@ function MobileGridItem({
         </motion.div>
     );
 }
+
 
 // Helper to calculate dynamic rows of max length
 function calculateRows<T>(items: T[], maxPerRow: number): T[][] {
@@ -205,12 +227,8 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                             console.error(`Error fetching photos for category ${cat.name}:`, err);
                         }
 
-                        // If category has no photos or fetch failed, use placeholder
-                        if (images.length === 0) {
-                            images.push(`https://picsum.photos/seed/${cat.slug}1/1200/800`);
-                            images.push(`https://picsum.photos/seed/${cat.slug}2/1200/800`);
-                            images.push(`https://picsum.photos/seed/${cat.slug}3/1200/800`);
-                        }
+                        // If category has no photos, just leave images as empty array
+                        // The GridItem will show an empty state message
                         return { id: cat.slug, title: cat.name, images };
                     })
                 );

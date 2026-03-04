@@ -16,6 +16,7 @@ export interface Photo {
     order: number;
     createdAt: Date;
     googlePhotosId?: string;
+    googleDriveId?: string;
     width?: number;
     height?: number;
 }

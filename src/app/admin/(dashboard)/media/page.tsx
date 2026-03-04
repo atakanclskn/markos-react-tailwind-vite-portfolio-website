@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
-import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn } from '@/lib/firestore';
+import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn, addPhoto, getCollectionCount } from '@/lib/firestore';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import type { Category, Photo } from '@/types';
 
@@ -101,17 +101,29 @@ export default function MediaPage() {
                         fileId: file.id,
                         fileName: file.name,
                         mimeType: file.mimeType,
-                        categoryId: selectedCategoryId,
                     }),
                 });
 
                 const data = await res.json();
                 if (data.error) {
+                    console.error(`Failed to upload ${file.name}:`, data.error);
                     errors.push(`${file.name}: ${data.error}`);
                 } else {
+                    // Save to Firestore client-side using the client Firebase SDK
+                    const photoCount = await getCollectionCount('photos');
+                    await addPhoto({
+                        categoryId: selectedCategoryId,
+                        storageUrl: data.storageUrl,
+                        thumbnailUrl: data.thumbnailUrl,
+                        googleDriveId: file.id,
+                        width: 0,
+                        height: 0,
+                        order: photoCount,
+                    });
                     synced++;
                 }
             } catch (err) {
+                console.error(`Network error for ${file.name}:`, err);
                 errors.push(`${file.name}: network error`);
             }
         }
@@ -168,8 +180,8 @@ export default function MediaPage() {
             {toast && (
                 <div
                     className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${toast.type === 'success'
-                            ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                            : 'border-red-500/20 bg-red-500/10 text-red-400'
+                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                        : 'border-red-500/20 bg-red-500/10 text-red-400'
                         }`}
                 >
                     {toast.type === 'success' ? (

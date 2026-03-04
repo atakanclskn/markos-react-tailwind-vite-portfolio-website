@@ -54,17 +54,21 @@ export async function deleteCategory(id: string) {
 
 // --- Photos ---
 export async function getPhotosByCategory(categoryId: string): Promise<Photo[]> {
+    // Using only 'where' (no orderBy) to avoid needing a composite Firestore index.
+    // We sort client-side instead.
     const q = query(
         collection(db, 'photos'),
-        where('categoryId', '==', categoryId),
-        orderBy('order', 'asc')
+        where('categoryId', '==', categoryId)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
+    const photos = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt?.toDate(),
     })) as Photo[];
+
+    // Sort by 'order' ascending client-side
+    return photos.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
 export async function getAllPhotos(): Promise<Photo[]> {
