@@ -6,16 +6,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { getCategories, getPhotosByCategory, getBentoGridSettings } from '@/lib/firestore';
 import type { Category, Photo, BentoGridSettings } from '@/types';
 
-// Fallback categories when Firestore is empty
-const FALLBACK_CATEGORIES = [
-    { id: "landscape", title: "Landscape", images: ["https://picsum.photos/seed/land1/1200/800", "https://picsum.photos/seed/land2/1200/800", "https://picsum.photos/seed/land3/1200/800"] },
-    { id: "portrait", title: "Portrait", images: ["https://picsum.photos/seed/port1/800/1200", "https://picsum.photos/seed/port2/800/1200", "https://picsum.photos/seed/port3/800/1200"] },
-    { id: "animal", title: "Animal", images: ["https://picsum.photos/seed/anim1/1000/1000", "https://picsum.photos/seed/anim2/1000/1000", "https://picsum.photos/seed/anim3/1000/1000"] },
-    { id: "fashion", title: "Fashion", images: ["https://picsum.photos/seed/fash1/800/1200", "https://picsum.photos/seed/fash2/800/1200", "https://picsum.photos/seed/fash3/800/1200"] },
-    { id: "product", title: "Product", images: ["https://picsum.photos/seed/prod1/1000/800", "https://picsum.photos/seed/prod2/1000/800", "https://picsum.photos/seed/prod3/1000/800"] },
-    { id: "wedding", title: "Party & Wedding", images: ["https://picsum.photos/seed/wed1/1200/800", "https://picsum.photos/seed/wed2/1200/800", "https://picsum.photos/seed/wed3/1200/800"] },
-    { id: "bw", title: "B&W", images: ["https://picsum.photos/seed/bw1/1000/1000", "https://picsum.photos/seed/bw2/1000/1000", "https://picsum.photos/seed/bw3/1000/1000"] },
-];
+// Remove FALLBACK_CATEGORIES to prevent layout snapping on load
 
 // Default animation settings (used as fallback or initial fast render)
 const DEFAULT_SETTINGS: BentoGridSettings = {
@@ -162,10 +153,11 @@ function MobileGridItem({
 export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const [categories, setCategories] = useState<CategoryWithImages[]>(FALLBACK_CATEGORIES);
+    const [categories, setCategories] = useState<CategoryWithImages[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [settings, setSettings] = useState<BentoGridSettings>(DEFAULT_SETTINGS);
-    const [row1Weights, setRow1Weights] = useState(() => getRandomWeights(3));
-    const [row2Weights, setRow2Weights] = useState(() => getRandomWeights(4));
+    const [row1Weights, setRow1Weights] = useState<number[]>([]);
+    const [row2Weights, setRow2Weights] = useState<number[]>([]);
 
     // Fetch categories and their photos from Firestore
     useEffect(() => {
@@ -178,8 +170,10 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 }
 
                 const cats = await getCategories();
-                console.log('--- BentoGrid fetched categories ---', cats.length, cats.map(c => c.name));
-                if (cats.length === 0) return;
+                if (cats.length === 0) {
+                    setIsLoading(false);
+                    return;
+                }
 
                 const withImages: CategoryWithImages[] = await Promise.all(
                     cats.map(async (cat) => {
@@ -210,6 +204,8 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 setRow2Weights(getRandomWeights(withImages.length - mid));
             } catch (e) {
                 console.error('Error fetching categories for BentoGrid:', e);
+            } finally {
+                setIsLoading(false);
             }
         })();
     }, []);
@@ -247,12 +243,25 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
         };
     }, [categories, settings.animationIntervalSeconds]);
 
+    if (isLoading) {
+        return (
+            <section id="categories" className="py-20 md:py-32 px-4 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+                <div className="animate-pulse space-y-8">
+                    <div className="h-12 w-64 bg-white/5 rounded-md" />
+                    <div className="w-full aspect-video bg-white/5 rounded-3xl" />
+                </div>
+            </section>
+        );
+    }
+
+    if (categories.length === 0) return null;
+
     return (
         <section id="categories" className="py-20 md:py-32 px-4 md:px-12 max-w-[1600px] mx-auto">
             <div className="mb-10 md:mb-16 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-6">
                 <div>
                     <h2 className="text-3xl md:text-6xl font-bold tracking-tighter">
-                        PORTFOLIO <span className="text-sm font-normal text-red-500">[{categories.length} loaded]</span>
+                        PORTFOLIO
                     </h2>
                     <div className="w-16 md:w-24 h-[1px] bg-[var(--color-foreground)] mt-4 md:mt-6 opacity-20" />
                 </div>
