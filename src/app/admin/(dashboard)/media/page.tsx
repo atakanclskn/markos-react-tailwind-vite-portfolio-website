@@ -28,6 +28,7 @@ import {
     updatePhoto,
 } from '@/lib/firestore';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
+import CustomDropdown from '@/components/admin/CustomDropdown';
 import type { Photo } from '@/types';
 
 // ─── Reusable Modals ────────────────────────────────────────────────────────
@@ -130,17 +131,12 @@ function EditPhotoModal({
                     {/* Category */}
                     <div>
                         <label className="mb-1.5 block text-sm text-[#a0a0a0]">Category</label>
-                        <select
+                        <CustomDropdown
+                            options={categories.map(c => ({ value: c.id, label: c.name }))}
                             value={categoryId}
-                            onChange={(e) => setCategoryId(e.target.value)}
-                            className="w-full rounded-lg border border-white/[0.06] bg-[#111] px-3 py-2.5 text-sm text-[#f5f5f5] outline-none transition-colors focus:border-[#c8a96e]/40"
-                        >
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>
-                                    {cat.name}
-                                </option>
-                            ))}
-                        </select>
+                            onChange={(val: string) => setCategoryId(val)}
+                            placeholder="Select category..."
+                        />
                     </div>
 
                     {/* Description */}
@@ -474,16 +470,17 @@ export default function MediaPage() {
                             {/* Category selection shown for both modes */}
                             <div>
                                 <label className="mb-1.5 block text-sm text-[#a0a0a0]">1. Select Target Category</label>
-                                <select
-                                    value={selectedCategoryId}
-                                    onChange={(e) => setSelectedCategoryId(e.target.value)}
-                                    className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5 text-sm text-[#f5f5f5] outline-none focus:border-[#c8a96e]/40 sm:max-w-xs"
-                                >
-                                    <option value="">Select category...</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                    ))}
-                                </select>
+                                <div className="sm:max-w-xs">
+                                    <CustomDropdown
+                                        options={[
+                                            { value: '', label: 'Select category...' },
+                                            ...categories.map(c => ({ value: c.id, label: c.name }))
+                                        ]}
+                                        value={selectedCategoryId}
+                                        onChange={(val: string) => setSelectedCategoryId(val)}
+                                        placeholder="Select category..."
+                                    />
+                                </div>
                             </div>
 
                             {/* Google Drive mode */}
@@ -566,16 +563,17 @@ export default function MediaPage() {
                         <h3 className="text-sm font-medium text-[#a0a0a0]">
                             Synced Photos ({filteredPhotos.length})
                         </h3>
-                        <select
-                            value={filterCategory}
-                            onChange={(e) => setFilterCategory(e.target.value)}
-                            className="rounded-lg border border-white/[0.06] bg-[#111] px-3 py-1.5 text-sm text-[#f5f5f5] outline-none focus:border-[#c8a96e]/40"
-                        >
-                            <option value="all">All Categories</option>
-                            {categories.map((cat) => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                            ))}
-                        </select>
+                        <div className="w-48">
+                            <CustomDropdown
+                                options={[
+                                    { value: 'all', label: 'All Categories' },
+                                    ...categories.map(c => ({ value: c.id, label: c.name }))
+                                ]}
+                                value={filterCategory}
+                                onChange={(val: string) => setFilterCategory(val)}
+                                placeholder="All Categories"
+                            />
+                        </div>
                     </div>
 
                     {loading ? (
