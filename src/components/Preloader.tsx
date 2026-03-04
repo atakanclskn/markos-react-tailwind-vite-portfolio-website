@@ -5,18 +5,8 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useTheme } from '@/context/ThemeContext';
 import { getPreloaderSettings } from '@/lib/firestore';
 
-// Demo placeholder images for development
-// Demo placeholder images for development
-const DEFAULT_IMAGES = [
-    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80',
-    'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800&q=80',
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80',
-    'https://images.unsplash.com/photo-1518173946687-a243486a29b0?w=800&q=80',
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80',
-    'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=800&q=80',
-    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80',
-    'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80',
-];
+// No default images; relies entirely on Firestore configuration
+const DEFAULT_IMAGES: string[] = [];
 
 const SLIDE_INTERVAL = 3500;
 const EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
@@ -189,12 +179,14 @@ export default function Preloader() {
                                         : 'none',
                                 }}
                             >
-                                <img
-                                    src={getImg(imgIndex)}
-                                    alt=""
-                                    className="h-full w-full object-cover"
-                                    loading="eager"
-                                />
+                                {getImg(imgIndex) ? (
+                                    <img
+                                        src={getImg(imgIndex)}
+                                        alt=""
+                                        className="h-full w-full object-cover"
+                                        loading="eager"
+                                    />
+                                ) : null}
                             </div>
                         );
                     })}
