@@ -78,6 +78,7 @@ export interface SocialLink {
 
 // --- SEO Settings ---
 export interface SEOSettings {
+    siteName: string;
     metaTitle: string;
     metaDescription: string;
     keywords: string;

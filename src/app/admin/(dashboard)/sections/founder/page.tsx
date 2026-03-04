@@ -6,7 +6,7 @@ import { useAdminStore } from '@/store/adminStore';
 import { getFounderInfo, updateFounderInfo } from '@/lib/firestore';
 import type { FounderInfo, FounderStat } from '@/types';
 import { InputField, SaveButton, DriveIcon } from '../components';
-import { Loader2, X, LogIn, LogOut, HardDrive } from 'lucide-react';
+import { Loader2, X, LogIn, LogOut, HardDrive, Plus, Trash2 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import AdminSplitView from '@/components/admin/AdminSplitView';
@@ -119,6 +119,16 @@ export default function FounderSectionPage() {
         setFounderForm({ ...founderForm, stats: updated });
     };
 
+    const addStat = () => {
+        setFounderForm({ ...founderForm, stats: [...founderForm.stats, { value: '', label: '' }] });
+    };
+
+    const removeStat = (index: number) => {
+        const updated = [...founderForm.stats];
+        updated.splice(index, 1);
+        setFounderForm({ ...founderForm, stats: updated });
+    };
+
     if (loading) {
         return (
             <>
@@ -161,10 +171,24 @@ export default function FounderSectionPage() {
                     </div>
 
                     <div>
-                        <label className="mb-2 block text-sm text-[#a0a0a0]">Statistics</label>
-                        <div className="grid gap-3 sm:grid-cols-3">
+                        <div className="mb-3 flex items-center justify-between">
+                            <label className="block text-sm text-[#a0a0a0]">Statistics</label>
+                            <button
+                                onClick={addStat}
+                                className="flex items-center gap-1.5 rounded-lg border border-white/[0.06] bg-[#141414] px-3 py-1.5 text-xs text-[#f5f5f5] transition-colors hover:bg-white/[0.04] hover:text-[#c8a96e]"
+                            >
+                                <Plus className="h-3.5 w-3.5" /> Add Stat
+                            </button>
+                        </div>
+                        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                             {founderForm.stats.map((stat, i) => (
-                                <div key={i} className="rounded-lg border border-white/[0.06] bg-[#111] p-3">
+                                <div key={i} className="group relative rounded-lg border border-white/[0.06] bg-[#111] p-3">
+                                    <button
+                                        onClick={() => removeStat(i)}
+                                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full border border-white/[0.06] bg-[#1a1a1a] text-red-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-500/10"
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </button>
                                     <input type="text" value={stat.value} onChange={(e) => updateStat(i, 'value', e.target.value)} placeholder="e.g. 10+" className="mb-2 w-full rounded-md border border-white/[0.06] bg-[#0a0a0a] px-3 py-1.5 text-center text-lg font-bold text-[#c8a96e] placeholder-[#333] outline-none focus:border-[#c8a96e]/40" />
                                     <input type="text" value={stat.label} onChange={(e) => updateStat(i, 'label', e.target.value)} placeholder="e.g. Years Experience" className="w-full rounded-md border border-white/[0.06] bg-[#0a0a0a] px-3 py-1.5 text-center text-xs text-[#a0a0a0] placeholder-[#333] outline-none focus:border-[#c8a96e]/40" />
                                 </div>

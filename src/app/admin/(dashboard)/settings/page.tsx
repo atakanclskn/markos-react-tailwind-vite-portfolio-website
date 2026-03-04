@@ -23,6 +23,7 @@ import {
 } from '@/lib/firestore';
 import type { SEOSettings, FooterContent, SocialLink, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
+import { InputField } from '../sections/components';
 
 const PREMIUM_COLORS = [
     { name: 'Pure White (Default)', hex: '#ffffff' },
@@ -43,6 +44,7 @@ export default function SettingsPage() {
 
     // Local form states
     const [seoForm, setSeoForm] = useState<SEOSettings>({
+        siteName: '',
         metaTitle: '',
         metaDescription: '',
         keywords: '',
@@ -200,8 +202,8 @@ export default function SettingsPage() {
                                             type="button"
                                             onClick={() => setAppearanceForm({ ...appearanceForm, brandColor: preset.hex })}
                                             className={`h-10 w-10 rounded-full border-2 transition-transform ${appearanceForm.brandColor.toLowerCase() === preset.hex.toLowerCase()
-                                                    ? 'border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.3)]'
-                                                    : 'border-transparent hover:scale-105'
+                                                ? 'border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.3)]'
+                                                : 'border-transparent hover:scale-105'
                                                 }`}
                                             style={{ backgroundColor: preset.hex }}
                                             title={preset.name}
@@ -277,16 +279,19 @@ export default function SettingsPage() {
                     <div className="space-y-4 p-5">
                         <div>
                             <label className="mb-1.5 block text-sm text-[#a0a0a0]">Meta Title</label>
-                            <input
-                                type="text"
+                            <InputField
+                                label="Site Name (Base Title)"
+                                value={seoForm.siteName}
+                                onChange={(val: string) => setSeoForm({ ...seoForm, siteName: val })}
+                                placeholder="e.g. Markos Studio"
+                            />
+                            <p className="mt-1 text-xs text-[#666] -translate-y-2">Used as the base suffix for page titles in the browser tab.</p>
+
+                            <InputField
+                                label="Meta Title"
                                 value={seoForm.metaTitle}
-                                onChange={(e) =>
-                                    setSeoForm({ ...seoForm, metaTitle: e.target.value })
-                                }
-                                placeholder="Markos Studio | Premium Photography"
-                                className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
-                                    text-sm text-[#f5f5f5] placeholder-[#444] outline-none
-                                    transition-colors focus:border-[#c8a96e]/40 focus:ring-1 focus:ring-[#c8a96e]/20"
+                                onChange={(val: string) => setSeoForm({ ...seoForm, metaTitle: val })}
+                                placeholder="Brand Name | Tagline"
                             />
                             <p className="mt-1 text-xs text-[#555]">
                                 {seoForm.metaTitle.length}/60 characters recommended
