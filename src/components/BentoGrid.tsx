@@ -150,14 +150,34 @@ function MobileGridItem({
     );
 }
 
+// Helper to calculate dynamic rows of max length
+function calculateRows<T>(items: T[], maxPerRow: number): T[][] {
+    const rows: T[][] = [];
+    const numRows = Math.ceil(items.length / maxPerRow);
+    if (numRows === 0) return rows;
+
+    const baseCount = Math.floor(items.length / numRows);
+    let remainder = items.length % numRows;
+    let startIndex = 0;
+
+    for (let i = 0; i < numRows; i++) {
+        const rowSize = baseCount + (remainder > 0 ? 1 : 0);
+        remainder--;
+        rows.push(items.slice(startIndex, startIndex + rowSize));
+        startIndex += rowSize;
+    }
+    return rows;
+}
+
 export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const [categories, setCategories] = useState<CategoryWithImages[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [settings, setSettings] = useState<BentoGridSettings>(DEFAULT_SETTINGS);
-    const [row1Weights, setRow1Weights] = useState<number[]>([]);
-    const [row2Weights, setRow2Weights] = useState<number[]>([]);
+    const [rowWeights, setRowWeights] = useState<number[][]>([]);
+
+    const gridRows = useMemo(() => calculateRows(categories, 4), [categories]);
 
     // Fetch categories and their photos from Firestore
     useEffect(() => {
@@ -198,10 +218,9 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 console.log('--- BentoGrid withImages array ---', withImages.length, withImages.map(c => c.title));
 
                 setCategories(withImages);
-                // Reset weights for the new row sizes
-                const mid = Math.ceil(withImages.length / 2);
-                setRow1Weights(getRandomWeights(mid));
-                setRow2Weights(getRandomWeights(withImages.length - mid));
+                // Initialize weights matching the calculated rows array
+                const computedRows = calculateRows(withImages, 4);
+                setRowWeights(computedRows.map(r => getRandomWeights(r.length)));
             } catch (e) {
                 console.error('Error fetching categories for BentoGrid:', e);
             } finally {
@@ -210,38 +229,28 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
         })();
     }, []);
 
-    // Dynamically split into two rows
-    const midpoint = Math.ceil(categories.length / 2);
-    const ROW1 = categories.slice(0, midpoint);
-    const ROW2 = categories.slice(midpoint);
-
     // Grid karelerinin boyutlarını asenkron ve tek tek değiştiren effect
     useEffect(() => {
-        // Üst satır için bağımsız döngü
-        const timer1 = setInterval(() => {
-            setRow1Weights((prev) => {
-                const next = [...prev];
-                const randomIndex = Math.floor(Math.random() * next.length);
-                next[randomIndex] = Math.random() * 2 + 1;
-                return next;
-            });
-        }, (settings.animationIntervalSeconds + 3) * 1000);
+        if (gridRows.length === 0) return;
 
-        // Alt satır için bağımsız döngü
-        const timer2 = setInterval(() => {
-            setRow2Weights((prev) => {
-                const next = [...prev];
-                const randomIndex = Math.floor(Math.random() * next.length);
-                next[randomIndex] = Math.random() * 2 + 1;
-                return next;
-            });
-        }, (settings.animationIntervalSeconds + 6) * 1000);
+        const timers = gridRows.map((_, rowIndex) => {
+            const intervalTime = (settings.animationIntervalSeconds + (rowIndex * 3)) * 1000;
+            return setInterval(() => {
+                setRowWeights((prev) => {
+                    const next = [...prev];
+                    if (!next[rowIndex]) return next;
+                    const newRowWeights = [...next[rowIndex]];
+                    if (newRowWeights.length === 0) return next;
+                    const randomIndex = Math.floor(Math.random() * newRowWeights.length);
+                    newRowWeights[randomIndex] = Math.random() * 2 + 1;
+                    next[rowIndex] = newRowWeights;
+                    return next;
+                });
+            }, intervalTime);
+        });
 
-        return () => {
-            clearInterval(timer1);
-            clearInterval(timer2);
-        };
-    }, [categories, settings.animationIntervalSeconds]);
+        return () => timers.forEach(clearInterval);
+    }, [gridRows.length, settings.animationIntervalSeconds]);
 
     if (isLoading) {
         return (
@@ -299,35 +308,28 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 </div>
             </div>
 
-            {/* Desktop: Animated 16:9 Bento Grid */}
-            <div className={`hidden md:flex w-full aspect-video rounded-3xl overflow-hidden flex-col gap-2 shadow-2xl transition-colors duration-500 ${isDark ? 'bg-black/50 border border-white/5' : 'bg-white border border-black/10'
-                }`}>
-                {/* Row 1 */}
-                <div className="flex-1 flex gap-2 w-full">
-                    {ROW1.map((cat, i) => (
-                        <GridItem
-                            key={cat.id}
-                            category={cat}
-                            weight={row1Weights[i]}
-                            onClick={onCategoryClick}
-                            isDark={isDark}
-                            baseIntervalS={settings.animationIntervalSeconds}
-                        />
-                    ))}
-                </div>
-                {/* Row 2 */}
-                <div className="flex-1 flex gap-2 w-full">
-                    {ROW2.map((cat, i) => (
-                        <GridItem
-                            key={cat.id}
-                            category={cat}
-                            weight={row2Weights[i]}
-                            onClick={onCategoryClick}
-                            isDark={isDark}
-                            baseIntervalS={settings.animationIntervalSeconds}
-                        />
-                    ))}
-                </div>
+            {/* Desktop: Animated Bento Grid */}
+            <div
+                className={`hidden md:flex w-full rounded-3xl overflow-hidden flex-col gap-2 shadow-2xl transition-colors duration-500 ${isDark ? 'bg-black/50 border border-white/5' : 'bg-white border border-black/10'}`}
+                style={{
+                    aspectRatio: gridRows.length <= 2 ? '16/9' : undefined,
+                    height: gridRows.length > 2 ? `${gridRows.length * 300}px` : undefined
+                }}
+            >
+                {gridRows.map((rowCats, rowIndex) => (
+                    <div key={rowIndex} className="flex-1 flex gap-2 w-full">
+                        {rowCats.map((cat, i) => (
+                            <GridItem
+                                key={cat.id}
+                                category={cat}
+                                weight={rowWeights[rowIndex]?.[i] || 1}
+                                onClick={onCategoryClick}
+                                isDark={isDark}
+                                baseIntervalS={settings.animationIntervalSeconds}
+                            />
+                        ))}
+                    </div>
+                ))}
             </div>
         </section>
     );

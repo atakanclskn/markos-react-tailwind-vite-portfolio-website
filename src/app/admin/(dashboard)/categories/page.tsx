@@ -27,6 +27,7 @@ export default function CategoriesPage() {
     const { categories, setCategories } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
     const [editName, setEditName] = useState('');
     const [newName, setNewName] = useState('');
     const [adding, setAdding] = useState(false);
@@ -114,13 +115,16 @@ export default function CategoriesPage() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this category? This will not delete the photos.')) return;
+        setSaving(true);
         try {
             await deleteCategoryFn(id);
             setCategories(categories.filter((c) => c.id !== id));
+            setDeletingId(null);
             showToast('Category deleted.');
         } catch (err) {
             console.error('Failed to delete category:', err);
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -298,6 +302,29 @@ export default function CategoriesPage() {
                                             <X className="h-4 w-4" />
                                         </button>
                                     </div>
+                                ) : deletingId === cat.id ? (
+                                    <div className="flex items-center gap-1 overflow-hidden">
+                                        <button
+                                            onClick={() => handleDelete(cat.id)}
+                                            disabled={saving}
+                                            className="flex animate-in slide-in-from-right-2 duration-200 items-center justify-center rounded-lg p-2 text-red-500 transition-colors hover:bg-red-500/10"
+                                            title="Confirm Delete"
+                                        >
+                                            {saving ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <Check className="h-4 w-4" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => setDeletingId(null)}
+                                            disabled={saving}
+                                            className="flex animate-in slide-in-from-right-4 duration-200 items-center justify-center rounded-lg p-2 text-[#666] transition-colors hover:bg-white/[0.04]"
+                                            title="Cancel"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    </div>
                                 ) : (
                                     <div className="flex items-center gap-1">
                                         <button
@@ -308,8 +335,8 @@ export default function CategoriesPage() {
                                             <Pencil className="h-4 w-4" />
                                         </button>
                                         <button
-                                            onClick={() => handleDelete(cat.id)}
-                                            className="rounded-lg p-2 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400"
+                                            onClick={() => setDeletingId(cat.id)}
+                                            className="rounded-lg p-2 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400 focus:outline-none"
                                             title="Delete"
                                         >
                                             <Trash2 className="h-4 w-4" />
