@@ -31,6 +31,16 @@ import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import CustomDropdown from '@/components/admin/CustomDropdown';
 import type { Photo } from '@/types';
 
+function DriveIcon({ className }: { className?: string }) {
+    return (
+        <img
+            src="https://img.icons8.com/?size=100&id=3NOIXpWW8crC&format=png&color=FFFFFF"
+            alt="Google Drive"
+            className={className}
+        />
+    );
+}
+
 // ─── Reusable Modals ────────────────────────────────────────────────────────
 function ConfirmModal({
     open,
@@ -423,25 +433,27 @@ export default function MediaPage() {
                                     : 'Select photos directly from your computer and upload them to a category.'}
                             </p>
                         </div>
-                        {!session ? (
-                            <button
-                                onClick={() => signIn('google')}
-                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
-                            >
-                                <LogIn className="h-4 w-4" />
-                                <span>Connect Google</span>
-                            </button>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <span className="text-xs text-[#666]">{session.user?.email}</span>
+                        {uploadMode === 'drive' && (
+                            !session ? (
                                 <button
-                                    onClick={() => signOut()}
-                                    className="flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/20"
-                                    title="Disconnect Google"
+                                    onClick={() => signIn('google')}
+                                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
                                 >
-                                    <LogOut className="h-4 w-4" />
+                                    <LogIn className="h-4 w-4" />
+                                    <span>Connect Google</span>
                                 </button>
-                            </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-[#666]">{session.user?.email}</span>
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-500 transition-colors hover:bg-red-500/20"
+                                        title="Disconnect Google"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            )
                         )}
                     </div>
 
@@ -456,7 +468,7 @@ export default function MediaPage() {
                                         : 'text-[#666] hover:text-[#a0a0a0]'
                                         }`}
                                 >
-                                    <Cloud className="h-3.5 w-3.5" />
+                                    <DriveIcon className="h-4 w-4" />
                                     Google Drive
                                 </button>
                                 <button
@@ -492,12 +504,12 @@ export default function MediaPage() {
                                 <div>
                                     <label className="mb-1.5 block text-sm text-[#a0a0a0]">2. Pick Photos from Google Drive</label>
                                     <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handlePickerSelected}>
-                                        <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]">
-                                            <FolderOpen className="h-4 w-4" />
+                                        <button className="flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5 text-sm text-[#f5f5f5] transition-colors hover:bg-white/[0.04]">
+                                            <DriveIcon className="h-4 w-4" />
                                             <span>
                                                 {pickedFiles.length > 0
-                                                    ? `${pickedFiles.length} photo(s) selected — click to change`
-                                                    : 'Open Google Drive Picker'}
+                                                    ? `${pickedFiles.length} photo(s) selected`
+                                                    : 'Google Drive'}
                                             </span>
                                         </button>
                                     </GooglePicker>
@@ -508,7 +520,7 @@ export default function MediaPage() {
                             {uploadMode === 'computer' && (
                                 <div>
                                     <label className="mb-1.5 block text-sm text-[#a0a0a0]">2. Select Photos from Your Computer</label>
-                                    <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5] w-fit">
+                                    <label className="flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-white/[0.06] px-4 py-2.5 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]">
                                         <HardDrive className="h-4 w-4" />
                                         <span>
                                             {localFiles.length > 0
@@ -557,12 +569,13 @@ export default function MediaPage() {
                                     {syncProgress.message}
                                 </div>
                             )}
-                        </div>
-                    )}
-                </div>
+                        </div >
+                    )
+                    }
+                </div >
 
                 {/* Photos Grid */}
-                <div>
+                < div >
                     <div className="mb-4 flex items-center justify-between">
                         <h3 className="text-sm font-medium text-[#a0a0a0]">
                             Synced Photos ({filteredPhotos.length})
@@ -580,57 +593,59 @@ export default function MediaPage() {
                         </div>
                     </div>
 
-                    {loading ? (
-                        <div className="flex h-48 items-center justify-center">
-                            <Loader2 className="h-6 w-6 animate-spin text-[#c8a96e]" />
-                        </div>
-                    ) : filteredPhotos.length === 0 ? (
-                        <div className="flex h-48 flex-col items-center justify-center gap-3 text-[#444]">
-                            <ImageIcon className="h-10 w-10" />
-                            <p className="text-sm">No photos found</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-                            {filteredPhotos.map((photo) => (
-                                <div
-                                    key={photo.id}
-                                    className="group relative aspect-square overflow-hidden rounded-lg border border-white/[0.06]"
-                                >
-                                    <img
-                                        src={photo.thumbnailUrl || photo.storageUrl}
-                                        alt={photo.description || ''}
-                                        className="h-full w-full object-cover"
-                                    />
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 flex flex-col justify-between bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                                        {/* Category badge */}
-                                        <span className="self-start rounded bg-black/50 px-1.5 py-0.5 text-xs text-[#a0a0a0]">
-                                            {getCategoryName(photo.categoryId)}
-                                        </span>
-                                        {/* Action buttons */}
-                                        <div className="flex items-center justify-end gap-1.5">
-                                            <button
-                                                onClick={() => setEditTarget(photo)}
-                                                className="rounded-lg bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
-                                                title="Edit photo"
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" />
-                                            </button>
-                                            <button
-                                                onClick={() => setDeleteTarget(photo)}
-                                                className="rounded-lg bg-red-500/20 p-1.5 text-red-400 transition-colors hover:bg-red-500/40"
-                                                title="Delete photo"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" />
-                                            </button>
+                    {
+                        loading ? (
+                            <div className="flex h-48 items-center justify-center">
+                                <Loader2 className="h-6 w-6 animate-spin text-[#c8a96e]" />
+                            </div>
+                        ) : filteredPhotos.length === 0 ? (
+                            <div className="flex h-48 flex-col items-center justify-center gap-3 text-[#444]">
+                                <ImageIcon className="h-10 w-10" />
+                                <p className="text-sm">No photos found</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+                                {filteredPhotos.map((photo) => (
+                                    <div
+                                        key={photo.id}
+                                        className="group relative aspect-square overflow-hidden rounded-lg border border-white/[0.06]"
+                                    >
+                                        <img
+                                            src={photo.thumbnailUrl || photo.storageUrl}
+                                            alt={photo.description || ''}
+                                            className="h-full w-full object-cover"
+                                        />
+                                        {/* Overlay */}
+                                        <div className="absolute inset-0 flex flex-col justify-between bg-black/60 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                                            {/* Category badge */}
+                                            <span className="self-start rounded bg-black/50 px-1.5 py-0.5 text-xs text-[#a0a0a0]">
+                                                {getCategoryName(photo.categoryId)}
+                                            </span>
+                                            {/* Action buttons */}
+                                            <div className="flex items-center justify-end gap-1.5">
+                                                <button
+                                                    onClick={() => setEditTarget(photo)}
+                                                    className="rounded-lg bg-white/10 p-1.5 text-white/70 transition-colors hover:bg-white/20 hover:text-white"
+                                                    title="Edit photo"
+                                                >
+                                                    <Pencil className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setDeleteTarget(photo)}
+                                                    className="rounded-lg bg-red-500/20 p-1.5 text-red-400 transition-colors hover:bg-red-500/40"
+                                                    title="Delete photo"
+                                                >
+                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+                                ))}
+                            </div>
+                        )
+                    }
+                </div >
+            </div >
         </>
     );
 }
