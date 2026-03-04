@@ -12,13 +12,16 @@ import {
     X,
     AlertCircle,
     CheckCircle2,
+    LogIn,
 } from 'lucide-react';
+import { useSession, signIn } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
 import { getAllPhotos, getCategories, deletePhoto as deletePhotoFn } from '@/lib/firestore';
 import { deleteFile } from '@/lib/storage';
 import type { GooglePhotosAlbum, Category, Photo } from '@/types';
 
 export default function MediaPage() {
+    const { data: session } = useSession();
     const { photos, setPhotos, categories, setCategories, syncProgress, setSyncProgress } =
         useAdminStore();
 
@@ -173,11 +176,10 @@ export default function MediaPage() {
             {/* Toast */}
             {toast && (
                 <div
-                    className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${
-                        toast.type === 'success'
+                    className={`fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${toast.type === 'success'
                             ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
                             : 'border-red-500/20 bg-red-500/10 text-red-400'
-                    }`}
+                        }`}
                 >
                     {toast.type === 'success' ? (
                         <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -200,23 +202,35 @@ export default function MediaPage() {
                                 Google Photos Sync
                             </h3>
                             <p className="mt-1 text-sm text-[#666]">
-                                Fetch albums, select a target category, and sync photos to Firebase Storage.
+                                Connect your Google account, fetch albums, and sync photos to Firebase.
                             </p>
                         </div>
-                        <button
-                            onClick={fetchAlbums}
-                            disabled={albumsLoading}
-                            className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
-                                text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
-                                disabled:opacity-50 sm:w-auto"
-                        >
-                            {albumsLoading ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                                <Download className="h-4 w-4" />
-                            )}
-                            <span>Fetch Albums</span>
-                        </button>
+
+                        {!session ? (
+                            <button
+                                onClick={() => signIn('google')}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5
+                                    text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
+                            >
+                                <LogIn className="h-4 w-4" />
+                                <span>Connect Google Photos</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={fetchAlbums}
+                                disabled={albumsLoading}
+                                className="flex w-full items-center justify-center gap-2 rounded-lg border border-white/[0.06] px-3.5 py-2
+                                    text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]
+                                    disabled:opacity-50 sm:w-auto"
+                            >
+                                {albumsLoading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Download className="h-4 w-4" />
+                                )}
+                                <span>Fetch Albums</span>
+                            </button>
+                        )}
                     </div>
 
                     {/* Album & Category Selection */}
@@ -285,13 +299,12 @@ export default function MediaPage() {
                             {/* Progress */}
                             {syncProgress.status !== 'idle' && (
                                 <div
-                                    className={`rounded-lg border px-4 py-3 text-sm ${
-                                        syncProgress.status === 'syncing'
+                                    className={`rounded-lg border px-4 py-3 text-sm ${syncProgress.status === 'syncing'
                                             ? 'border-blue-500/20 bg-blue-500/5 text-blue-400'
                                             : syncProgress.status === 'complete'
-                                              ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
-                                              : 'border-red-500/20 bg-red-500/5 text-red-400'
-                                    }`}
+                                                ? 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400'
+                                                : 'border-red-500/20 bg-red-500/5 text-red-400'
+                                        }`}
                                 >
                                     {syncProgress.message}
                                 </div>

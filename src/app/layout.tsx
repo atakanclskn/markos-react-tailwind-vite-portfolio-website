@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import AuthProvider from '@/components/admin/AuthProvider';
 
 import { Outfit, Monoton } from 'next/font/google';
 
@@ -48,7 +49,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${outfit.variable} ${monoton.variable}`}>
       <body className="antialiased">
-        <ThemeProvider>{children}</ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

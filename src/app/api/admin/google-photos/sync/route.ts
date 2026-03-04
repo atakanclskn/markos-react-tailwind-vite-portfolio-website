@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getStorage } from 'firebase-admin/storage';
 import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 
 // Initialize Firebase Admin (server-side)
 function getAdminApp() {
@@ -64,11 +66,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const accessToken = process.env.GOOGLE_PHOTOS_ACCESS_TOKEN;
+        const session = await getServerSession(authOptions) as any;
+        const accessToken = session?.accessToken;
+
         if (!accessToken) {
             return NextResponse.json(
-                { error: 'Google Photos access token is not configured.' },
-                { status: 500 }
+                { error: 'Unauthorized. Please connect your Google account first.' },
+                { status: 401 }
             );
         }
 
