@@ -173,7 +173,7 @@ export default function SectionsPage() {
 
                 if (!res.ok) throw new Error('Failed to upload local image');
                 const data = await res.json();
-                photoUrl = data.url;
+                photoUrl = data.storageUrl;
             } else if (uploadMode === 'drive' && pickedDriveFile) {
                 // Upload drive file to ImgBB
                 if (!accessToken) throw new Error('Missing Google access token');
@@ -194,7 +194,7 @@ export default function SectionsPage() {
                 }
 
                 const data = await res.json();
-                photoUrl = data.url;
+                photoUrl = data.storageUrl;
             }
 
             const data = { ...founderForm, photoUrl };
