@@ -178,13 +178,20 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                 }
 
                 const cats = await getCategories();
+                console.log('--- BentoGrid fetched categories ---', cats.length, cats.map(c => c.name));
                 if (cats.length === 0) return;
 
                 const withImages: CategoryWithImages[] = await Promise.all(
                     cats.map(async (cat) => {
-                        const photos = await getPhotosByCategory(cat.id!);
-                        const images = photos.slice(0, 3).map(p => p.storageUrl);
-                        // If category has no photos, use placeholder
+                        let images: string[] = [];
+                        try {
+                            const photos = await getPhotosByCategory(cat.id!);
+                            images = photos.slice(0, 3).map(p => p.storageUrl);
+                        } catch (err) {
+                            console.error(`Error fetching photos for category ${cat.name}:`, err);
+                        }
+
+                        // If category has no photos or fetch failed, use placeholder
                         if (images.length === 0) {
                             images.push(`https://picsum.photos/seed/${cat.slug}1/1200/800`);
                             images.push(`https://picsum.photos/seed/${cat.slug}2/1200/800`);
@@ -193,6 +200,8 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
                         return { id: cat.slug, title: cat.name, images };
                     })
                 );
+
+                console.log('--- BentoGrid withImages array ---', withImages.length, withImages.map(c => c.title));
 
                 setCategories(withImages);
                 // Reset weights for the new row sizes
@@ -243,7 +252,7 @@ export default function BentoGrid({ onCategoryClick }: BentoGridProps) {
             <div className="mb-10 md:mb-16 flex flex-col md:flex-row items-start md:items-end justify-between gap-4 md:gap-6">
                 <div>
                     <h2 className="text-3xl md:text-6xl font-bold tracking-tighter">
-                        PORTFOLIO
+                        PORTFOLIO <span className="text-sm font-normal text-red-500">[{categories.length} loaded]</span>
                     </h2>
                     <div className="w-16 md:w-24 h-[1px] bg-[var(--color-foreground)] mt-4 md:mt-6 opacity-20" />
                 </div>
