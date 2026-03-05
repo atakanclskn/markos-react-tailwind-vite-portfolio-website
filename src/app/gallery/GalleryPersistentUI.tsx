@@ -89,7 +89,7 @@ export default function GalleryPersistentUI({ children }: { children: React.Reac
             )}
 
             {/* Page Content transitions */}
-            <div className="mx-auto max-w-5xl px-4 pt-24 sm:px-6 min-h-[70vh]">
+            <div className="w-full pt-20 min-h-[70vh]">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={pathname}

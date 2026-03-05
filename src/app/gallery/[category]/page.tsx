@@ -61,11 +61,11 @@ export default function GalleryPage() {
     }
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
             {images.map((photo, index) => (
                 <motion.div
                     key={photo.id || index}
-                    className="group relative overflow-hidden rounded-xl bg-neutral-100 dark:bg-neutral-900 aspect-square"
+                    className="group relative overflow-hidden bg-neutral-100 dark:bg-neutral-900 aspect-square"
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6, delay: index * 0.03 }}
