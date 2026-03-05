@@ -21,6 +21,7 @@ import type { SEOSettings, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
 import { InputField, SaveButton } from '../sections/components';
 import { useSession } from 'next-auth/react';
+import { useWebHaptics } from 'web-haptics/react';
 
 const PREMIUM_COLORS = [
     { name: 'Pure White (Default)', hex: '#ffffff' },
@@ -33,6 +34,7 @@ const PREMIUM_COLORS = [
 
 
 export default function SettingsPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { seoSettings, setSEOSettings } = useAdminStore();
 
@@ -97,6 +99,7 @@ export default function SettingsPage() {
             showToast('SEO settings saved.');
         } catch (err) {
             console.error('Failed to save SEO:', err);
+            trigger("error");
         } finally {
             setSavingSEO(false);
         }
@@ -115,6 +118,7 @@ export default function SettingsPage() {
             showToast('Appearance settings saved. Brand color updated.');
         } catch (err) {
             console.error('Failed to save appearance:', err);
+            trigger("error");
         } finally {
             setSavingAppearance(false);
         }

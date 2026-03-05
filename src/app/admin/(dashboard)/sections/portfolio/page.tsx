@@ -8,8 +8,10 @@ import type { BentoGridSettings } from '@/types';
 import { SliderField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function PortfolioSettingsPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { bentoGridSettings, setBentoGridSettings } = useAdminStore();
     const [loading, setLoading] = useState(true);

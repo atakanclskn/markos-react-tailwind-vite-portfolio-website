@@ -12,6 +12,7 @@ import AdminSplitView from '@/components/admin/AdminSplitView';
 import Hero from '@/components/Hero';
 
 export default function HeroSectionPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { heroContent, setHeroContent } = useAdminStore();
     const [loading, setLoading] = useState(true);
