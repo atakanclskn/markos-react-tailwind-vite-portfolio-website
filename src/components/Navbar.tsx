@@ -7,6 +7,7 @@ import ScrollProgress from './ScrollProgress';
 
 interface NavbarProps {
     visible: boolean;
+    staticMode?: boolean;
 }
 
 const LEFT_LINKS = [
@@ -21,7 +22,7 @@ const RIGHT_LINKS = [
 
 const ALL_LINKS = [...LEFT_LINKS, ...RIGHT_LINKS];
 
-export default function Navbar({ visible }: NavbarProps) {
+export default function Navbar({ visible, staticMode = false }: NavbarProps) {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const { theme } = useTheme();
@@ -95,20 +96,24 @@ export default function Navbar({ visible }: NavbarProps) {
                     <motion.nav
                         className="relative flex items-center justify-center px-6 py-4 md:px-12 lg:px-20"
                         style={{
-                            backgroundColor: theme === 'dark'
-                                ? useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)'])
-                                : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)']),
-                            backdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-                            WebkitBackdropFilter: scrolled ? 'blur(20px) saturate(180%)' : 'none',
-                            borderBottom: theme === 'dark'
-                                ? useTransform(navItemsOpacity, [0, 1], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.06)'])
-                                : useTransform(navItemsOpacity, [0, 1], ['rgba(0,0,0,0)', 'rgba(0,0,0,0.06)']),
+                            backgroundColor: staticMode
+                                ? (theme === 'dark' ? 'rgba(10, 10, 10, 0.7)' : 'rgba(250, 250, 250, 0.8)')
+                                : (theme === 'dark'
+                                    ? useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)'])
+                                    : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)'])),
+                            backdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
+                            WebkitBackdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
+                            borderBottom: staticMode
+                                ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
+                                : (theme === 'dark'
+                                    ? useTransform(navItemsOpacity, [0, 1], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.06)'])
+                                    : useTransform(navItemsOpacity, [0, 1], ['rgba(0,0,0,0)', 'rgba(0,0,0,0.06)'])),
                         }}
                     >
                         {/* Left Nav Links */}
                         <motion.div
                             className="hidden flex-1 items-center justify-end gap-8 md:flex"
-                            style={{ opacity: navItemsOpacity }}
+                            style={{ opacity: staticMode ? 1 : navItemsOpacity }}
                         >
                             {LEFT_LINKS.map((link) => (
                                 <a
@@ -134,8 +139,8 @@ export default function Navbar({ visible }: NavbarProps) {
                         <motion.div
                             className="mx-8 flex flex-col items-center leading-none md:mx-12"
                             style={{
-                                scale: logoScale,
-                                y: logoY,
+                                scale: staticMode ? 1 : logoScale,
+                                y: staticMode ? 0 : logoY,
                                 originY: 0.5,
                                 originX: 0.5
                             }}
@@ -144,7 +149,7 @@ export default function Navbar({ visible }: NavbarProps) {
                                 className="text-xl tracking-[0.2em] sm:text-2xl"
                                 style={{
                                     fontFamily: 'var(--font-monoton)',
-                                    color: logoColor,
+                                    color: staticMode ? finalTextColor : logoColor,
                                 }}
                             >
                                 MARKOS
@@ -153,7 +158,7 @@ export default function Navbar({ visible }: NavbarProps) {
                                 className="text-[0.6rem] tracking-[0.4em] uppercase sm:text-[0.75rem]"
                                 style={{
                                     fontFamily: 'var(--font-outfit)',
-                                    color: logoSubColor,
+                                    color: staticMode ? finalSubColor : logoSubColor,
                                     marginTop: '2px',
                                 }}
                             >
@@ -164,7 +169,7 @@ export default function Navbar({ visible }: NavbarProps) {
                         {/* Right Nav Links */}
                         <motion.div
                             className="hidden flex-1 items-center justify-start gap-8 md:flex"
-                            style={{ opacity: navItemsOpacity }}
+                            style={{ opacity: staticMode ? 1 : navItemsOpacity }}
                         >
                             {RIGHT_LINKS.map((link) => (
                                 <a

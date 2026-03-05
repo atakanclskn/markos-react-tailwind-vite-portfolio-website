@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { getLegalContent, updateLegalContent } from '@/lib/firestore';
 import type { LegalContent } from '@/types';
-import { TextAreaField, SaveButton } from './sections/components';
+import { TextAreaField, SaveButton } from '../sections/components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import Navbar from '@/components/Navbar';
@@ -131,8 +131,8 @@ export default function LegalSettingsPage() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors duration-200 ${activeTab === tab
-                                    ? 'border-[#c8a96e] text-[#c8a96e]'
-                                    : 'border-transparent text-[#666] hover:text-[#a0a0a0] hover:border-white/10'
+                                ? 'border-[#c8a96e] text-[#c8a96e]'
+                                : 'border-transparent text-[#666] hover:text-[#a0a0a0] hover:border-white/10'
                                 }`}
                         >
                             {tab.charAt(0).toUpperCase() + tab.slice(1)}
