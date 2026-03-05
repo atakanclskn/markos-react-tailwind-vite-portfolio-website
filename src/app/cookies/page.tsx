@@ -1,6 +1,8 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getLegalContent } from '@/lib/firestore';
+import ReactMarkdown from 'react-markdown';
+import { DEFAULT_COOKIES } from '@/lib/defaultLegal';
 
 export const metadata = {
     title: 'Cookie Policy - Markos Studio',
@@ -9,13 +11,13 @@ export const metadata = {
 
 export default async function CookiesPage() {
     const rawData = await getLegalContent();
-    const content = rawData?.cookies || 'As is common practice with almost all professional websites, this site uses cookies...';
+    const content = rawData?.cookies || DEFAULT_COOKIES;
 
     return (
         <main className="min-h-screen bg-[var(--color-surface-dark)] text-[#f5f5f5] transition-colors duration-500 light:bg-[var(--color-surface-light)] light:text-[#0a0a0a]">
             {/* Header / Navbar spacing */}
             <div className="relative z-50">
-                <Navbar visible />
+                <Navbar visible staticMode />
             </div>
 
             <div className="mx-auto max-w-4xl px-6 py-32 md:px-12 md:py-40">
@@ -27,9 +29,7 @@ export default async function CookiesPage() {
                 </div>
 
                 <div className="prose prose-invert prose-lg max-w-none text-white/70 light:prose-neutral light:text-black/70" style={{ fontFamily: 'var(--font-outfit)' }}>
-                    {content.split('\n').map((paragraph, idx) => (
-                        <p key={idx} className="min-h-[1.5rem] whitespace-pre-wrap">{paragraph}</p>
-                    ))}
+                    <ReactMarkdown>{content}</ReactMarkdown>
                 </div>
             </div>
 

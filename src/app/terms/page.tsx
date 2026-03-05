@@ -1,6 +1,8 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { getLegalContent } from '@/lib/firestore';
+import ReactMarkdown from 'react-markdown';
+import { DEFAULT_TERMS } from '@/lib/defaultLegal';
 
 export const metadata = {
     title: 'Terms & Conditions - Markos Studio',
@@ -9,13 +11,13 @@ export const metadata = {
 
 export default async function TermsPage() {
     const rawData = await getLegalContent();
-    const content = rawData?.terms || 'By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement...';
+    const content = rawData?.terms || DEFAULT_TERMS;
 
     return (
         <main className="min-h-screen bg-[var(--color-surface-dark)] text-[#f5f5f5] transition-colors duration-500 light:bg-[var(--color-surface-light)] light:text-[#0a0a0a]">
             {/* Header / Navbar spacing */}
             <div className="relative z-50">
-                <Navbar visible />
+                <Navbar visible staticMode />
             </div>
 
             <div className="mx-auto max-w-4xl px-6 py-32 md:px-12 md:py-40">
@@ -27,9 +29,7 @@ export default async function TermsPage() {
                 </div>
 
                 <div className="prose prose-invert prose-lg max-w-none text-white/70 light:prose-neutral light:text-black/70" style={{ fontFamily: 'var(--font-outfit)' }}>
-                    {content.split('\n').map((paragraph, idx) => (
-                        <p key={idx} className="min-h-[1.5rem] whitespace-pre-wrap">{paragraph}</p>
-                    ))}
+                    <ReactMarkdown>{content}</ReactMarkdown>
                 </div>
             </div>
 

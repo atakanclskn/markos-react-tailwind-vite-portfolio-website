@@ -9,6 +9,8 @@ import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import ReactMarkdown from 'react-markdown';
+import { DEFAULT_PRIVACY, DEFAULT_TERMS, DEFAULT_COOKIES } from '@/lib/defaultLegal';
 
 export default function LegalSettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -38,9 +40,9 @@ export default function LegalSettingsPage() {
                 } else {
                     // Populate with some defaults if completely empty
                     setLegalForm({
-                        privacy: 'Welcome to Markos Studio. We respect your privacy and are committed to protecting your personal data...',
-                        terms: 'By accessing and using this website, you accept and agree to be bound by the terms and provision of this agreement...',
-                        cookies: 'As is common practice with almost all professional websites, this site uses cookies...',
+                        privacy: DEFAULT_PRIVACY,
+                        terms: DEFAULT_TERMS,
+                        cookies: DEFAULT_COOKIES,
                     });
                 }
             } catch (err) {
@@ -88,7 +90,7 @@ export default function LegalSettingsPage() {
         return (
             <div className="w-full h-full relative isolate overflow-y-auto bg-[var(--color-surface-dark)] text-[#f5f5f5]">
                 <div className="relative z-50 pointer-events-none">
-                    <Navbar visible />
+                    <Navbar visible staticMode />
                 </div>
                 <div className="mx-auto max-w-4xl px-6 py-32 md:px-12 md:py-40">
                     <div className="mb-12 border-b border-white/10 pb-8">
@@ -99,9 +101,7 @@ export default function LegalSettingsPage() {
                     </div>
                     {/* Render newlines as distinct paragraphs for rough markdown-like preview */}
                     <div className="prose prose-invert prose-lg max-w-none text-white/70" style={{ fontFamily: 'var(--font-outfit)' }}>
-                        {content.split('\n').map((paragraph, idx) => (
-                            <p key={idx} className="min-h-[1.5rem] whitespace-pre-wrap">{paragraph}</p>
-                        ))}
+                        <ReactMarkdown>{content}</ReactMarkdown>
                     </div>
                 </div>
                 <div className="pointer-events-none">
