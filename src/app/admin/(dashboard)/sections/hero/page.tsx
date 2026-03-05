@@ -3,14 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
-import { getHeroContent, updateHeroContent } from '@/lib/firestore';
+import { getHeroContent, updateHeroContent, logAuditAction } from '@/lib/firestore';
 import type { HeroContent } from '@/types';
+import { useSession } from 'next-auth/react';
 import { InputField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import Hero from '@/components/Hero';
 
 export default function HeroSectionPage() {
+    const { data: session } = useSession();
     const { heroContent, setHeroContent } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -45,6 +47,10 @@ export default function HeroSectionPage() {
         try {
             await updateHeroContent(heroForm);
             setHeroContent(heroForm);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('UPDATE', 'Updated HERO Section', 'Changes saved to database.', adminEmail);
+
             showToast('Hero section saved successfully.');
         } catch (err) {
             console.error('Failed to save hero:', err);
