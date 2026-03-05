@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useAdminStore } from '@/store/adminStore';
+import { useWebHaptics } from 'web-haptics/react';
+
 import {
     getAllPhotos,
     getCategories,
@@ -152,6 +154,7 @@ function EditPhotoModal({
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function GalleryPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { photos, setPhotos, categories, setCategories, syncProgress, setSyncProgress } =
         useAdminStore();
@@ -188,11 +191,11 @@ export default function GalleryPage() {
 
     const showToast = useCallback((type: 'success' | 'error', message: string) => {
         if (type === 'error') {
-            haptic(HapticType.Error);
+            trigger("error");
         }
         setToast({ type, message });
         setTimeout(() => setToast(null), 3000);
-    }, []);
+    }, [trigger]);
 
     useEffect(() => {
         const fetchData = async () => {

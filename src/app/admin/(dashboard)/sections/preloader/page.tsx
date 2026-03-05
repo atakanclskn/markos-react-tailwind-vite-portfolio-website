@@ -11,10 +11,12 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import GoogleButton from '@/components/admin/GoogleButton';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function PreloaderPage() {
     const { preloaderSettings, setPreloaderSettings } = useAdminStore();
     const { data: session } = useSession();
+    const { trigger } = useWebHaptics();
     const accessToken = (session as any)?.accessToken as string | undefined;
 
     const [loading, setLoading] = useState(true);
@@ -86,6 +88,7 @@ export default function PreloaderPage() {
             }]);
         } catch (err) {
             showToast('Upload failed.');
+            trigger("error");
         } finally {
             setUploadingImage(false);
             e.target.value = '';
@@ -118,6 +121,7 @@ export default function PreloaderPage() {
             setImages(prev => [...prev, ...newImages]);
         } catch (err) {
             showToast('Google Drive upload failed.');
+            trigger("error");
         } finally {
             setUploadingImage(false);
         }
