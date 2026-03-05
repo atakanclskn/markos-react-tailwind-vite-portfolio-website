@@ -91,6 +91,12 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
     // They start fading in after 25% of viewport scroll and finish at 50%.
     const navItemsOpacity = useTransform(scrollY, [scrollEnd * 0.5, scrollEnd], [0, 1]);
 
+    // Pre-calculate the background color transforms unconditionally
+    const bgDarkTransparent = useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)']);
+    const bgLightTransparent = useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)']);
+    const borderDarkTransparent = useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(255,255,255,0)', '1px solid rgba(255,255,255,0.06)']);
+    const borderLightTransparent = useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(0,0,0,0)', '1px solid rgba(0,0,0,0.06)']);
+
     return (
         <AnimatePresence>
             {visible && (
@@ -105,18 +111,14 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                         style={{
                             backgroundColor: (staticMode || mobileMenuOpen)
                                 ? (theme === 'dark' ? 'rgba(10, 10, 10, 0.7)' : 'rgba(250, 250, 250, 0.8)')
-                                : (theme === 'dark'
-                                    ? useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)'])
-                                    : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)'])),
+                                : (theme === 'dark' ? bgDarkTransparent : bgLightTransparent),
                             backdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
                             WebkitBackdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
                             borderBottom: mobileMenuOpen
                                 ? 'none'
                                 : staticMode
                                     ? (theme === 'dark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)')
-                                    : (theme === 'dark'
-                                        ? useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(255,255,255,0)', '1px solid rgba(255,255,255,0.06)'])
-                                        : useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(0,0,0,0)', '1px solid rgba(0,0,0,0.06)'])),
+                                    : (theme === 'dark' ? borderDarkTransparent : borderLightTransparent),
                         }}
                     >
                         {/* Left Nav Links */}

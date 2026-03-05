@@ -61,7 +61,7 @@ export default function GalleryPage() {
     }
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
             {images.map((photo, index) => (
                 <motion.div
                     key={photo.id || index}
@@ -88,25 +88,17 @@ export default function GalleryPage() {
                         }}
                     >
                         <div className="transform translate-y-4 transition-transform duration-500 group-hover:translate-y-0 text-white">
-                            {photo.description && (
-                                <>
-                                    <h3
-                                        className="text-2xl md:text-4xl lg:text-5xl font-light mb-2 md:mb-4 tracking-tight"
-                                        style={{
-                                            fontFamily: 'var(--font-playfair)', // Use elegant serif if available, fallback handled in CSS
-                                            textShadow: '0 2px 10px rgba(0,0,0,0.3)'
-                                        }}
-                                    >
-                                        {photo.description}
-                                    </h3>
-                                    <p
-                                        className="text-xs md:text-sm font-medium tracking-widest uppercase text-white/80"
-                                        style={{ fontFamily: 'var(--font-outfit)' }}
-                                    >
-                                        {categoryLabel}
-                                    </p>
-                                </>
-                            )}
+                            <>
+                                <h3
+                                    className="text-lg md:text-xl lg:text-2xl font-medium mb-1 md:mb-2 tracking-tight"
+                                    style={{
+                                        fontFamily: 'var(--font-outfit)',
+                                        textShadow: '0 2px 10px rgba(0,0,0,0.5)'
+                                    }}
+                                >
+                                    {photo.description}
+                                </h3>
+                            </>
                         </div>
                     </div>
                 </motion.div>
