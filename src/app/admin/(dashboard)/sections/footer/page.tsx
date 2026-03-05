@@ -12,8 +12,10 @@ import {
 import type { FooterContent, SocialLink } from '@/types';
 import { InputField, SaveButton, ConfirmModal } from '../components';
 import { useSession } from 'next-auth/react';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function FooterSettingsPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { footerContent, setFooterContent } = useAdminStore();
 
@@ -63,6 +65,7 @@ export default function FooterSettingsPage() {
             showToast('Footer settings saved.');
         } catch (err) {
             console.error('Failed to save footer:', err);
+            trigger("error");
         } finally {
             setSaving(false);
         }

@@ -12,8 +12,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import ReactMarkdown from 'react-markdown';
 import { DEFAULT_PRIVACY, DEFAULT_TERMS, DEFAULT_COOKIES } from '@/lib/defaultLegal';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function LegalSettingsPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -67,6 +69,7 @@ export default function LegalSettingsPage() {
             showToast('Legal policies saved successfully.');
         } catch (err) {
             console.error('Failed to save legal info:', err);
+            trigger("error");
             showToast('Error saving policies.');
         } finally {
             setSaving(false);

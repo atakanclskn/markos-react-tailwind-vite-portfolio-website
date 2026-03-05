@@ -26,8 +26,10 @@ import {
 } from '@/lib/firestore';
 import type { ContactMessage } from '@/types';
 import { ConfirmModal } from '../sections/components';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function MessagesPage() {
+    const { trigger } = useWebHaptics();
     const {
         messages,
         setMessages,
@@ -78,6 +80,7 @@ export default function MessagesPage() {
                 updateMessage(msg.id, { read: true });
             } catch (err) {
                 console.error('Failed to mark message as read:', err);
+                trigger("error");
             }
         }
     };
@@ -88,6 +91,7 @@ export default function MessagesPage() {
             updateMessage(msg.id, { starred: !msg.starred });
         } catch (err) {
             console.error('Failed to toggle star:', err);
+            trigger("error");
         }
     };
 
@@ -97,6 +101,7 @@ export default function MessagesPage() {
             updateMessage(msg.id, { archived: !msg.archived });
         } catch (err) {
             console.error('Failed to toggle archive:', err);
+            trigger("error");
         }
     };
 
@@ -115,6 +120,7 @@ export default function MessagesPage() {
             }
         } catch (err) {
             console.error('Failed to delete message:', err);
+            trigger("error");
         } finally {
             setIsDeleting(false);
             setMessageToDelete(null);

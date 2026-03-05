@@ -10,8 +10,10 @@ import { InputField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import ContactSection from '@/components/ContactSection';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function ContactSectionPage() {
+    const { trigger } = useWebHaptics();
     const { data: session } = useSession();
     const { contactInfo, setContactInfo } = useAdminStore();
     const [loading, setLoading] = useState(true);
@@ -56,6 +58,7 @@ export default function ContactSectionPage() {
             showToast('Contact section saved successfully.');
         } catch (err) {
             console.error('Failed to save contact:', err);
+            trigger("error");
         } finally {
             setSaving(false);
         }

@@ -8,12 +8,14 @@ import type { FounderInfo, FounderStat } from '@/types';
 import { InputField, SaveButton, DriveIcon } from '../components';
 import { Loader2, X, LogIn, LogOut, HardDrive, Plus, Trash2 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { useWebHaptics } from 'web-haptics/react';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import FounderSection from '@/components/FounderSection';
 import GoogleButton from '@/components/admin/GoogleButton';
 
 export default function FounderSectionPage() {
+    const { trigger } = useWebHaptics();
     const { founderInfo, setFounderInfo } = useAdminStore();
     const { data: session } = useSession();
     const accessToken = (session as any)?.accessToken as string | undefined;
@@ -96,6 +98,7 @@ export default function FounderSectionPage() {
             showToast('Founder section saved successfully.');
         } catch (err: any) {
             console.error('Failed to save founder:', err);
+            trigger("error");
             showToast(err.message || 'Failed to save Founder Info');
         } finally {
             setSaving(false);
