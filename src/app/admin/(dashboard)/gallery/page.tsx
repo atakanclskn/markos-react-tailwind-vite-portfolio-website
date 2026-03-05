@@ -171,6 +171,7 @@ export default function GalleryPage() {
     const [isSyncing, setIsSyncing] = useState(false);
     const [uploadMode, setUploadMode] = useState<'drive' | 'computer'>('drive');
     const [localFiles, setLocalFiles] = useState<File[]>([]);
+    const [mobileAlbumsOpen, setMobileAlbumsOpen] = useState(false);
 
     // Modals
     const [deleteTarget, setDeleteTarget] = useState<Photo | null>(null);
@@ -481,18 +482,29 @@ export default function GalleryPage() {
             <div className="mx-auto flex h-[calc(100vh-64px)] max-w-[1600px] flex-col gap-6 overflow-hidden p-6 lg:flex-row lg:p-8">
                 {/* ─── Left Sidebar: Albums/Categories ─── */}
                 <div className="flex w-full shrink-0 flex-col gap-4 overflow-y-auto lg:w-[320px] custom-scrollbar pb-20">
-                    <div className="rounded-xl border border-white/[0.06] bg-[#111] overflow-hidden">
-                        <div className="flex items-center justify-between border-b border-white/[0.06] p-4">
-                            <h3 className="text-base font-semibold text-[#f5f5f5]">Albums</h3>
-                            <button
-                                onClick={() => setAddingCat(true)}
-                                className="rounded p-1 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]"
-                                title="Add Category"
-                            >
-                                <Plus className="h-4 w-4" />
-                            </button>
+                    {/* ─── Left Side: Albums Sidebar ─── */}
+                    <div className="w-full lg:w-64 shrink-0 rounded-xl border border-white/[0.06] bg-[#111]">
+                        <div
+                            className="flex items-center justify-between border-b border-white/[0.06] p-4 cursor-pointer lg:cursor-default select-none lg:select-auto"
+                            onClick={() => setMobileAlbumsOpen(!mobileAlbumsOpen)}
+                        >
+                            <h3 className="text-base font-semibold text-[#f5f5f5]">
+                                Albums <span className="text-xs text-[#666] lg:hidden mb-0.5 ml-2 font-normal">({categories.length + 1})</span>
+                            </h3>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); setAddingCat(true); }}
+                                    className="rounded p-1 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]"
+                                    title="Add Category"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </button>
+                                <button className="lg:hidden rounded p-1 text-[#666]">
+                                    {mobileAlbumsOpen ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+                                </button>
+                            </div>
                         </div>
-                        <div className="p-3 space-y-1 relative">
+                        <div className={`p-3 space-y-1 relative ${mobileAlbumsOpen ? 'block' : 'hidden lg:block'}`}>
                             {addingCat && (
                                 <div className="mb-3 flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-2">
                                     <input
@@ -512,7 +524,7 @@ export default function GalleryPage() {
                             )}
 
                             <button
-                                onClick={() => setFilterCategory('all')}
+                                onClick={() => { setFilterCategory('all'); setMobileAlbumsOpen(false); }}
                                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${filterCategory === 'all' ? 'bg-[#c8a96e]/10 text-[#c8a96e]' : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
                                     }`}
                             >
@@ -532,7 +544,7 @@ export default function GalleryPage() {
                                         </div>
                                     ) : (
                                         <>
-                                            <button onClick={() => setFilterCategory(cat.id)} className="flex-1 text-left flex items-center gap-3 min-w-0 pr-2">
+                                            <button onClick={() => { setFilterCategory(cat.id); setMobileAlbumsOpen(false); }} className="flex-1 text-left flex items-center gap-3 min-w-0 pr-2">
                                                 <FolderOpen className="h-4 w-4 shrink-0" />
                                                 <span className="truncate">{cat.name}</span>
                                             </button>
