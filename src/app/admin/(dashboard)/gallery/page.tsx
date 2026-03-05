@@ -39,6 +39,7 @@ import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import CustomDropdown from '@/components/admin/CustomDropdown';
 import type { Photo, Category } from '@/types';
 import { ConfirmModal } from '../sections/components';
+import GoogleButton from '@/components/admin/GoogleButton';
 
 function DriveIcon({ className }: { className?: string }) {
     return (
@@ -607,13 +608,12 @@ export default function GalleryPage() {
                             </div>
                             {uploadMode === 'drive' && (
                                 !session ? (
-                                    <button
-                                        onClick={() => signIn('google')}
-                                        className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:w-auto"
-                                    >
-                                        <LogIn className="h-4 w-4" />
-                                        <span>Connect Google</span>
-                                    </button>
+                                    <div className="w-full sm:w-auto">
+                                        <GoogleButton
+                                            text="Connect Google Drive"
+                                            onClick={() => signIn('google')}
+                                        />
+                                    </div>
                                 ) : (
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs text-[#666]">{session.user?.email}</span>

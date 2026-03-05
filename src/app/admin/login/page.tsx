@@ -6,6 +6,8 @@ import { auth } from '@/lib/firebase';
 import { logAuditAction } from '@/lib/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import GoogleButton from '@/components/admin/GoogleButton';
+import { signIn } from 'next-auth/react';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -130,6 +132,17 @@ export default function LoginPage() {
                             <span>Sign In</span>
                         )}
                     </button>
+
+                    <div className="relative flex items-center py-2 text-sm text-[#666]">
+                        <div className="flex-grow border-t border-white/[0.06]"></div>
+                        <span className="shrink-0 px-4">or</span>
+                        <div className="flex-grow border-t border-white/[0.06]"></div>
+                    </div>
+
+                    <GoogleButton
+                        text="Sign in with Google"
+                        onClick={() => signIn('google', { callbackUrl: '/admin' })}
+                    />
                 </form>
             </div>
         </div>
