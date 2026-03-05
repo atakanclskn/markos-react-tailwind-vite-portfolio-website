@@ -36,15 +36,10 @@ export default function GalleryPage() {
         })();
     }, [categorySlug]);
 
-    if (loading) {
-        return (
-            <div className="flex h-[50vh] w-full items-center justify-center">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-brand)] border-t-transparent" />
-            </div>
-        );
-    }
+    // Removed full-screen loading spinner.
+    // We will handle loading state gracefully by fading the grid instead.
 
-    if (images.length === 0) {
+    if (!loading && images.length === 0) {
         return (
             <div className="flex min-h-[50vh] items-center justify-center">
                 <p
@@ -61,7 +56,9 @@ export default function GalleryPage() {
     }
 
     return (
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0">
+        <div
+            className={`w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-0 transition-opacity duration-300 ${loading ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}
+        >
             {images.map((photo, index) => (
                 <motion.div
                     key={photo.id || index}
