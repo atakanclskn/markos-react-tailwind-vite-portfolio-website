@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { logAuditAction } from '@/lib/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
@@ -21,6 +22,7 @@ export default function LoginPage() {
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
+            await logAuditAction('LOGIN', 'Admin Accessed Panel', 'User successfully authenticated and entered the dashboard.', email);
             router.replace('/admin');
         } catch (err: unknown) {
             const firebaseError = err as { code?: string };
