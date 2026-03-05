@@ -24,6 +24,7 @@ import type {
     FounderInfo,
     FooterContent,
     SEOSettings,
+    LegalContent,
 } from '@/types';
 
 // --- Categories ---
@@ -262,4 +263,18 @@ export async function getPreloaderSettings(): Promise<PreloaderSettings | null> 
 
 export async function updatePreloaderSettings(data: PreloaderSettings) {
     return setDoc(doc(db, 'siteContent', 'preloader'), data as DocumentData, { merge: true });
+}
+
+// --- Legal Settings ---
+export async function getLegalContent(): Promise<LegalContent | null> {
+    const docRef = doc(db, 'settings', 'legal');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data() as LegalContent;
+    }
+    return null;
+}
+
+export async function updateLegalContent(data: LegalContent) {
+    return setDoc(doc(db, 'settings', 'legal'), data, { merge: true });
 }

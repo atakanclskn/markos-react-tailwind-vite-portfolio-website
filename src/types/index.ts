@@ -94,6 +94,13 @@ export interface SiteSettings {
     footer: FooterContent;
 }
 
+// --- Legal Settings ---
+export interface LegalContent {
+    privacy: string;
+    terms: string;
+    cookies: string;
+}
+
 // --- Google Photos ---
 export interface GooglePhotosAlbum {
     id: string;

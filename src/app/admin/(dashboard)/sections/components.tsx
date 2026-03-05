@@ -59,6 +59,35 @@ export function InputField({
     );
 }
 
+export function TextAreaField({
+    label,
+    value,
+    onChange,
+    placeholder,
+    rows = 6,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    placeholder?: string;
+    rows?: number;
+}) {
+    return (
+        <div>
+            <label className="mb-1.5 block text-sm text-[#a0a0a0]">{label}</label>
+            <textarea
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                rows={rows}
+                className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
+                    text-sm text-[#f5f5f5] placeholder-[#444] outline-none resize-y
+                    transition-colors focus:border-[#c8a96e]/40 focus:ring-1 focus:ring-[#c8a96e]/20"
+            />
+        </div>
+    );
+}
+
 export function SliderField({
     label,
     value,

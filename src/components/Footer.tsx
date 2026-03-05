@@ -107,6 +107,51 @@ export default function Footer() {
                         </div>
                     </div>
 
+                    {/* Legal */}
+                    <div>
+                        <h4
+                            className="mb-4 text-xs font-semibold tracking-[0.3em] uppercase"
+                            style={{
+                                fontFamily: 'var(--font-outfit)',
+                                color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+                            }}
+                        >
+                            Legal
+                        </h4>
+                        <div className="flex flex-col gap-3">
+                            <a
+                                href="/privacy"
+                                className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
+                                style={{
+                                    fontFamily: 'var(--font-outfit)',
+                                    color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                                }}
+                            >
+                                Privacy Policy
+                            </a>
+                            <a
+                                href="/terms"
+                                className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
+                                style={{
+                                    fontFamily: 'var(--font-outfit)',
+                                    color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                                }}
+                            >
+                                Terms & Conditions
+                            </a>
+                            <a
+                                href="/cookies"
+                                className="text-sm transition-colors duration-300 hover:text-[var(--color-brand)]"
+                                style={{
+                                    fontFamily: 'var(--font-outfit)',
+                                    color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                                }}
+                            >
+                                Cookie Policy
+                            </a>
+                        </div>
+                    </div>
+
                     {/* Theme Toggle */}
                     <div className="flex flex-col items-start md:items-end">
                         <h4

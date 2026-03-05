@@ -41,6 +41,7 @@ const NAV_GROUPS = [
         title: 'Global',
         items: [
             { label: 'Messages', href: '/admin/messages', icon: Mail },
+            { label: 'Legal Policies', href: '/admin/legal', icon: FileText },
             { label: 'Settings', href: '/admin/settings', icon: Settings },
         ],
     },
