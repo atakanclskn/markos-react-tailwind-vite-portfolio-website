@@ -35,7 +35,7 @@ export default function Footer() {
             }}
         >
             <div className="mx-auto max-w-6xl">
-                <div className="grid gap-12 md:grid-cols-3">
+                <div className="grid gap-12 md:grid-cols-4">
                     {/* Brand */}
                     <div>
                         <div className="mb-4 flex flex-col leading-none">
@@ -181,29 +181,15 @@ export default function Footer() {
                         borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
                     }}
                 >
-                    <div className="flex flex-col items-center gap-4 text-center md:flex-row md:gap-8 md:text-left">
-                        <p
-                            className="text-xs"
-                            style={{
-                                fontFamily: 'var(--font-outfit)',
-                                color:
-                                    theme === 'dark'
-                                        ? 'rgba(255,255,255,0.3)'
-                                        : 'rgba(0,0,0,0.3)',
-                            }}
-                        >
-                            {copyright}
-                        </p>
-
-                        {/* Legal Links */}
-                        <div className="flex items-center gap-4 text-xs font-light">
-                            <a href="/privacy" className="transition-colors hover:text-[var(--color-brand)]" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Privacy Policy</a>
-                            <span style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>|</span>
-                            <a href="/terms" className="transition-colors hover:text-[var(--color-brand)]" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Terms & Conditions</a>
-                            <span style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }}>|</span>
-                            <a href="/cookies" className="transition-colors hover:text-[var(--color-brand)]" style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Cookie Policy</a>
-                        </div>
-                    </div>
+                    <p
+                        className="text-xs"
+                        style={{
+                            fontFamily: 'var(--font-outfit)',
+                            color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                        }}
+                    >
+                        {copyright}
+                    </p>
 
                     <p
                         className="text-xs"

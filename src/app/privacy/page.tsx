@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
         <main className="min-h-screen bg-[var(--color-surface-dark)] text-[#f5f5f5] transition-colors duration-500 light:bg-[var(--color-surface-light)] light:text-[#0a0a0a]">
             {/* Header / Navbar spacing */}
             <div className="relative z-50">
-                <Navbar />
+                <Navbar visible />
             </div>
 
             <div className="mx-auto max-w-4xl px-6 py-32 md:px-12 md:py-40">
