@@ -5,26 +5,21 @@ import Topbar from '@/components/admin/Topbar';
 import {
     Save,
     Loader2,
-    Plus,
-    Trash2,
     X,
     Globe,
-    Link as LinkIcon,
     Palette,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 import {
     getSEOSettings,
     updateSEOSettings,
-    getFooterContent,
-    updateFooterContent,
     getAppearanceSettings,
     updateAppearanceSettings,
     logAuditAction,
 } from '@/lib/firestore';
-import type { SEOSettings, FooterContent, SocialLink, AppearanceSettings } from '@/types';
+import type { SEOSettings, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
-import { InputField, ConfirmModal } from '../sections/components';
+import { InputField } from '../sections/components';
 
 const PREMIUM_COLORS = [
     { name: 'Pure White (Default)', hex: '#ffffff' },
@@ -39,13 +34,11 @@ import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
-    const { seoSettings, setSEOSettings, footerContent, setFooterContent } = useAdminStore();
+    const { seoSettings, setSEOSettings } = useAdminStore();
 
     const [loading, setLoading] = useState(true);
     const [savingSEO, setSavingSEO] = useState(false);
-    const [savingFooter, setSavingFooter] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
-    const [deleteLinkIndex, setDeleteLinkIndex] = useState<number | null>(null);
 
     // Local form states
     const [seoForm, setSeoForm] = useState<SEOSettings>({
@@ -54,10 +47,7 @@ export default function SettingsPage() {
         metaDescription: '',
         keywords: '',
     });
-    const [footerForm, setFooterForm] = useState<FooterContent>({
-        copyright: '',
-        socialLinks: [],
-    });
+
 
     const { brandColor, setBrandColor } = useTheme();
     const [appearanceForm, setAppearanceForm] = useState<AppearanceSettings>({
@@ -74,18 +64,13 @@ export default function SettingsPage() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [seo, footer, appearance] = await Promise.all([
+                const [seo, appearance] = await Promise.all([
                     getSEOSettings(),
-                    getFooterContent(),
                     getAppearanceSettings()
                 ]);
                 if (seo) {
                     setSEOSettings(seo);
                     setSeoForm(seo);
-                }
-                if (footer) {
-                    setFooterContent(footer);
-                    setFooterForm(footer);
                 }
                 if (appearance) {
                     setAppearanceForm(appearance);
@@ -118,30 +103,11 @@ export default function SettingsPage() {
         }
     };
 
-    // --- Footer ---
-    const handleSaveFooter = async () => {
-        setSavingFooter(true);
-        try {
-            await updateFooterContent(footerForm);
-            setFooterContent(footerForm);
-
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('SETTINGS', 'Updated Footer Details', `Modified footer content or social links.`, adminEmail);
-
-            showToast('Footer settings saved.');
-        } catch (err) {
-            console.error('Failed to save footer:', err);
-        } finally {
-            setSavingFooter(false);
-        }
-    };
-
     // --- Appearance ---
     const handleSaveAppearance = async () => {
         setSavingAppearance(true);
         try {
             await updateAppearanceSettings(appearanceForm);
-            // Instantly apply globally to the page via Context without reload
             setBrandColor(appearanceForm.brandColor);
 
             const adminEmail = session?.user?.email || 'Unknown User';
@@ -153,32 +119,6 @@ export default function SettingsPage() {
         } finally {
             setSavingAppearance(false);
         }
-    };
-
-    const addSocialLink = () => {
-        setFooterForm({
-            ...footerForm,
-            socialLinks: [...footerForm.socialLinks, { iconName: '', url: '' }],
-        });
-    };
-
-    const updateSocialLink = (index: number, field: keyof SocialLink, value: string) => {
-        const updated = [...footerForm.socialLinks];
-        updated[index] = { ...updated[index], [field]: value };
-        setFooterForm({ ...footerForm, socialLinks: updated });
-    };
-
-    const removeSocialLink = (index: number) => {
-        setDeleteLinkIndex(index);
-    };
-
-    const confirmDeleteSocialLink = () => {
-        if (deleteLinkIndex === null) return;
-        setFooterForm({
-            ...footerForm,
-            socialLinks: footerForm.socialLinks.filter((_, i) => i !== deleteLinkIndex),
-        });
-        setDeleteLinkIndex(null);
     };
 
     if (loading) {
@@ -377,119 +317,7 @@ export default function SettingsPage() {
                         </div>
                     </div>
                 </section>
-
-                {/* Footer Settings */}
-                <section className="rounded-xl border border-white/[0.06] bg-[#111] overflow-hidden">
-                    <div className="flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
-                        <LinkIcon className="h-4 w-4 text-[#c8a96e]" />
-                        <h3 className="text-sm font-semibold text-[#f5f5f5]">Footer Settings</h3>
-                    </div>
-                    <div className="space-y-4 p-5">
-                        <div>
-                            <label className="mb-1.5 block text-sm text-[#a0a0a0]">
-                                Copyright Text
-                            </label>
-                            <input
-                                type="text"
-                                value={footerForm.copyright}
-                                onChange={(e) =>
-                                    setFooterForm({ ...footerForm, copyright: e.target.value })
-                                }
-                                placeholder="2025 Markos Studio. All rights reserved."
-                                className="w-full rounded-lg border border-white/[0.06] bg-[#141414] px-4 py-2.5
-                                    text-sm text-[#f5f5f5] placeholder-[#444] outline-none
-                                    transition-colors focus:border-[#c8a96e]/40 focus:ring-1 focus:ring-[#c8a96e]/20"
-                            />
-                        </div>
-
-                        {/* Social Media Links */}
-                        <div>
-                            <div className="mb-3 flex items-center justify-between">
-                                <label className="text-sm text-[#a0a0a0]">Social Media Links</label>
-                                <button
-                                    onClick={addSocialLink}
-                                    className="flex items-center gap-1.5 rounded-lg border border-dashed border-white/[0.1] px-3 py-1.5
-                                        text-xs text-[#666] transition-colors hover:border-[#c8a96e]/30 hover:text-[#a0a0a0]"
-                                >
-                                    <Plus className="h-3 w-3" />
-                                    <span>Add Link</span>
-                                </button>
-                            </div>
-
-                            {footerForm.socialLinks.length === 0 ? (
-                                <p className="text-xs text-[#555]">
-                                    No social links added yet. Click &quot;Add Link&quot; to start.
-                                </p>
-                            ) : (
-                                <div className="space-y-3">
-                                    {footerForm.socialLinks.map((link, index) => (
-                                        <div
-                                            key={index}
-                                            className="flex flex-col gap-3 rounded-lg border border-white/[0.06] bg-[#0c0c0c] p-3 sm:flex-row sm:items-center"
-                                        >
-                                            <div className="flex flex-1 flex-col gap-3 sm:flex-row">
-                                                <input
-                                                    type="text"
-                                                    value={link.iconName}
-                                                    onChange={(e) =>
-                                                        updateSocialLink(index, 'iconName', e.target.value)
-                                                    }
-                                                    placeholder="Icon name (e.g. Instagram)"
-                                                    className="w-full rounded-md border border-white/[0.06] bg-[#141414] px-3 py-1.5
-                                                        text-sm text-[#f5f5f5] placeholder-[#444] outline-none
-                                                        focus:border-[#c8a96e]/40 sm:w-40"
-                                                />
-                                                <input
-                                                    type="url"
-                                                    value={link.url}
-                                                    onChange={(e) =>
-                                                        updateSocialLink(index, 'url', e.target.value)
-                                                    }
-                                                    placeholder="https://..."
-                                                    className="flex-1 rounded-md border border-white/[0.06] bg-[#141414] px-3 py-1.5
-                                                        text-sm text-[#f5f5f5] placeholder-[#444] outline-none
-                                                        focus:border-[#c8a96e]/40"
-                                                />
-                                            </div>
-                                            <button
-                                                onClick={() => removeSocialLink(index)}
-                                                className="self-end rounded-md p-1.5 text-[#555] transition-colors hover:bg-red-500/10 hover:text-red-400 sm:self-center"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex justify-end pt-2">
-                            <button
-                                onClick={handleSaveFooter}
-                                disabled={savingFooter}
-                                className="flex items-center gap-2 rounded-lg bg-[#c8a96e] px-4 py-2
-                                    text-sm font-medium text-[#0a0a0a] transition-all duration-200
-                                    hover:bg-[#e0c992] disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {savingFooter ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Save className="h-4 w-4" />
-                                )}
-                                <span>Save Footer</span>
-                            </button>
-                        </div>
-                    </div>
-                </section>
             </div>
-
-            <ConfirmModal
-                open={deleteLinkIndex !== null}
-                title="Delete Social Link"
-                message="Are you sure you want to delete this social media link? This action cannot be undone."
-                onConfirm={confirmDeleteSocialLink}
-                onCancel={() => setDeleteLinkIndex(null)}
-            />
         </>
     );
 }

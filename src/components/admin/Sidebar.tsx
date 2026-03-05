@@ -19,6 +19,7 @@ import {
     MonitorPlay,
     Shield,
     BarChart3,
+    Link as LinkIcon,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 
@@ -30,6 +31,7 @@ const NAV_GROUPS = [
             { label: 'Hero Area', href: '/admin/sections/hero', icon: MonitorPlay },
             { label: 'About (Founder)', href: '/admin/sections/founder', icon: User },
             { label: 'Contact Section', href: '/admin/sections/contact', icon: Smartphone },
+            { label: 'Footer', href: '/admin/sections/footer', icon: LinkIcon },
         ],
     },
     {
