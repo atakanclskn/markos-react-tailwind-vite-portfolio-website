@@ -10,6 +10,7 @@ import { InputField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import Hero from '@/components/Hero';
+import { useWebHaptics } from 'web-haptics/react';
 
 export default function HeroSectionPage() {
     const { trigger } = useWebHaptics();
