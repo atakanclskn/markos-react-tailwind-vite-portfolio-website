@@ -142,7 +142,7 @@ export default function Preloader() {
     return (
         <motion.div
             ref={sectionRef}
-            className="relative z-40 flex h-[100vh] w-full items-center justify-center overflow-hidden"
+            className="relative z-40 flex h-[100dvh] w-full items-center justify-center overflow-hidden"
             style={{ backgroundColor: bgColor, transition: 'background-color 0.5s ease' }}
         >
             {/* Background overlay */}
@@ -173,7 +173,7 @@ export default function Preloader() {
                                 className="flex-shrink-0 overflow-hidden rounded-xl"
                                 style={{
                                     width: isCenter ? '32vw' : `${SIDE_W}vw`,
-                                    height: isCenter ? '50vh' : '38vh',
+                                    height: isCenter ? '50dvh' : '38dvh',
                                     transition: isAnimating
                                         ? `width 1.8s ${EASING}, height 1.8s ${EASING}`
                                         : 'none',

@@ -137,7 +137,7 @@ export default function FounderSection({ previewData }: { previewData?: FounderI
                         </p>
 
                         {/* Stats */}
-                        <div className="mt-10 grid grid-cols-3 gap-6">
+                        <div className="mt-10 grid grid-cols-2 gap-6 sm:grid-cols-3">
                             {stats.map((stat) => (
                                 <div key={stat.label}>
                                     <p

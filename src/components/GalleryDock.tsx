@@ -41,7 +41,7 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
             transition={{ duration: 0.6, delay: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
             <div
-                className="flex items-center gap-1.5 rounded-full px-3 py-2.5 shadow-2xl sm:gap-2 sm:px-4"
+                className="no-scrollbar flex max-w-[90vw] overflow-x-auto items-center gap-1.5 rounded-full px-3 py-2.5 shadow-2xl sm:max-w-none sm:gap-2 sm:px-4 sm:overflow-visible"
                 style={{
                     backgroundColor: theme === 'dark'
                         ? 'rgba(20, 20, 20, 0.85)'
@@ -60,7 +60,7 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
                         <button
                             key={cat.slug}
                             onClick={() => router.push(`/gallery/${cat.slug}`)}
-                            className="relative rounded-full px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-300 sm:px-4 sm:py-2 sm:text-sm"
+                            className="relative flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-300 sm:px-4 sm:py-2 sm:text-sm"
                             style={{
                                 fontFamily: 'var(--font-outfit)',
                                 color: isActive

@@ -194,3 +194,17 @@ body.light ::placeholder {
 .scroll-light-anim {
   animation: scroll-light 1.5s linear infinite;
 }
+
+/* --- Utilities --- */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+}
