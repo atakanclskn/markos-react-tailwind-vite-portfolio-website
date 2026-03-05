@@ -91,7 +91,7 @@ export default function GalleryPersistentUI({ children }: { children: React.Reac
             )}
 
             {/* Page Content transitions */}
-            <div className="w-full pt-20 min-h-[70vh]">
+            <div className="w-full min-h-[70vh]">
                 <AnimatePresence mode="popLayout" custom={direction} initial={false}>
                     <motion.div
                         key={pathname}
