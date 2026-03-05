@@ -5,7 +5,6 @@ import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
 import { getFounderInfo, updateFounderInfo, logAuditAction } from '@/lib/firestore';
 import type { FounderInfo, FounderStat } from '@/types';
-import { useSession } from 'next-auth/react';
 import { InputField, SaveButton, DriveIcon } from '../components';
 import { Loader2, X, LogIn, LogOut, HardDrive, Plus, Trash2 } from 'lucide-react';
 import { useSession, signIn, signOut } from 'next-auth/react';
@@ -14,7 +13,6 @@ import AdminSplitView from '@/components/admin/AdminSplitView';
 import FounderSection from '@/components/FounderSection';
 
 export default function FounderSectionPage() {
-    const { data: session } = useSession();
     const { founderInfo, setFounderInfo } = useAdminStore();
     const { data: session } = useSession();
     const accessToken = (session as any)?.accessToken as string | undefined;

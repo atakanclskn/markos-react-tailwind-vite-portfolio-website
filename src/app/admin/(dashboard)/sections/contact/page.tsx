@@ -3,14 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
-import { getContactInfo, updateContactInfo } from '@/lib/firestore';
+import { getContactInfo, updateContactInfo, logAuditAction } from '@/lib/firestore';
 import type { ContactInfo } from '@/types';
+import { useSession } from 'next-auth/react';
 import { InputField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import ContactSection from '@/components/ContactSection';
 
 export default function ContactSectionPage() {
+    const { data: session } = useSession();
     const { contactInfo, setContactInfo } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -47,6 +49,10 @@ export default function ContactSectionPage() {
         try {
             await updateContactInfo(contactForm);
             setContactInfo(contactForm);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('UPDATE', 'Updated CONTACT Section', 'Changes saved to database.', adminEmail);
+
             showToast('Contact section saved successfully.');
         } catch (err) {
             console.error('Failed to save contact:', err);

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
-import { getPreloaderSettings, updatePreloaderSettings } from '@/lib/firestore';
+import { getPreloaderSettings, updatePreloaderSettings, logAuditAction } from '@/lib/firestore';
 import type { PreloaderSettings, PreloaderImage } from '@/types';
 import { SaveButton, DriveIcon } from '../components';
 import { Loader2, X, Trash2, GripVertical, LogIn, LogOut, HardDrive, Plus } from 'lucide-react';
@@ -53,6 +53,10 @@ export default function PreloaderPage() {
             const data: PreloaderSettings = { images };
             await updatePreloaderSettings(data);
             setPreloaderSettings(data);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('UPDATE', 'Updated PRELOADER Images', `Saved ${images.length} images to the loading screen.`, adminEmail);
+
             showToast('Preloader settings saved successfully.');
         } catch (err) {
             console.error('Failed to save preloader settings:', err);

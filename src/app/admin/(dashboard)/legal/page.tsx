@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
-import { getLegalContent, updateLegalContent } from '@/lib/firestore';
+import { getLegalContent, updateLegalContent, logAuditAction } from '@/lib/firestore';
 import type { LegalContent } from '@/types';
+import { useSession } from 'next-auth/react';
 import { TextAreaField, SaveButton } from '../sections/components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
@@ -13,6 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import { DEFAULT_PRIVACY, DEFAULT_TERMS, DEFAULT_COOKIES } from '@/lib/defaultLegal';
 
 export default function LegalSettingsPage() {
+    const { data: session } = useSession();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
@@ -58,6 +60,10 @@ export default function LegalSettingsPage() {
         setSaving(true);
         try {
             await updateLegalContent(legalForm);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('UPDATE', 'Updated Legal Policies', `Modified the ${activeTab} policy text.`, adminEmail);
+
             showToast('Legal policies saved successfully.');
         } catch (err) {
             console.error('Failed to save legal info:', err);

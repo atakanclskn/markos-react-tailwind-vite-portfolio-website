@@ -20,6 +20,7 @@ import {
     updateFooterContent,
     getAppearanceSettings,
     updateAppearanceSettings,
+    logAuditAction,
 } from '@/lib/firestore';
 import type { SEOSettings, FooterContent, SocialLink, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
@@ -34,7 +35,10 @@ const PREMIUM_COLORS = [
     { name: 'Midnight Blue', hex: '#191970' },
 ];
 
+import { useSession } from 'next-auth/react';
+
 export default function SettingsPage() {
+    const { data: session } = useSession();
     const { seoSettings, setSEOSettings, footerContent, setFooterContent } = useAdminStore();
 
     const [loading, setLoading] = useState(true);
@@ -102,6 +106,10 @@ export default function SettingsPage() {
         try {
             await updateSEOSettings(seoForm);
             setSEOSettings(seoForm);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('SETTINGS', 'Updated SEO Settings', `Changed site meta information.`, adminEmail);
+
             showToast('SEO settings saved.');
         } catch (err) {
             console.error('Failed to save SEO:', err);
@@ -116,6 +124,10 @@ export default function SettingsPage() {
         try {
             await updateFooterContent(footerForm);
             setFooterContent(footerForm);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('SETTINGS', 'Updated Footer Details', `Modified footer content or social links.`, adminEmail);
+
             showToast('Footer settings saved.');
         } catch (err) {
             console.error('Failed to save footer:', err);
@@ -131,6 +143,10 @@ export default function SettingsPage() {
             await updateAppearanceSettings(appearanceForm);
             // Instantly apply globally to the page via Context without reload
             setBrandColor(appearanceForm.brandColor);
+
+            const adminEmail = session?.user?.email || 'Admin';
+            await logAuditAction('SETTINGS', 'Updated Appearance', `Brand color set to ${appearanceForm.brandColor}`, adminEmail);
+
             showToast('Appearance settings saved. Brand color updated.');
         } catch (err) {
             console.error('Failed to save appearance:', err);
