@@ -50,7 +50,7 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
 
             {/* Right Side: Live Preview Area */}
             {showPreview && (
-                <div className="flex-1 flex flex-col bg-black overflow-hidden relative">
+                <div className="flex-1 flex flex-col bg-black overflow-hidden relative min-h-0">
                     <div className="absolute top-4 left-4 z-50 rounded-md bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 text-xs text-[#a0a0a0]">
                         Live Preview Mode
                     </div>
@@ -62,7 +62,7 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
                         Back to Editor
                     </button>
                     {/* Fake browser chrome or simple wrapper */}
-                    <div className="flex-1 w-full h-full overflow-y-auto overflow-x-hidden isolate">
+                    <div className="flex-1 w-full overflow-y-auto overflow-x-hidden isolate" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {preview}
                     </div>
                 </div>

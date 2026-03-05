@@ -149,7 +149,7 @@ export default function PreloaderPage() {
                 </div>
             )}
 
-            <div className="mx-auto max-w-3xl p-6 lg:p-8">
+            <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
                 <div className="mb-6">
                     <h2 className="text-lg font-semibold text-[#f5f5f5]">Preloader Carousel Images</h2>
                     <p className="mt-1 text-sm text-[#a0a0a0]">
@@ -158,11 +158,11 @@ export default function PreloaderPage() {
                     </p>
                 </div>
 
-                <div className="rounded-xl border border-white/[0.06] bg-[#111] p-6 space-y-6">
+                <div className="rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-6 space-y-6">
 
                     {/* Add Image Controls */}
                     <div className="rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-4">
-                        <div className="mb-4 flex items-center justify-between">
+                        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <label className="text-sm font-medium text-[#f5f5f5]">Add Images</label>
                             {uploadMode === 'drive' && (
                                 !session ? (
@@ -178,29 +178,31 @@ export default function PreloaderPage() {
                             )}
                         </div>
 
-                        <div className="mb-4 flex gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
+                        <div className="mb-4 flex flex-col sm:flex-row gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
                             <button onClick={() => setUploadMode('drive')} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'drive' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                <DriveIcon className="h-4 w-4" /> Google Drive
+                                <DriveIcon className="h-4 w-4 shrink-0" /> <span className="truncate">Google Drive</span>
                             </button>
                             <button onClick={() => setUploadMode('computer')} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'computer' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                <HardDrive className="h-3.5 w-3.5" /> From Computer
+                                <HardDrive className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Computer File</span>
                             </button>
                         </div>
 
-                        <div className="flex items-center justify-center h-20 border-2 border-dashed border-white/[0.1] rounded-lg hover:border-[#c8a96e]/50 transition-colors">
+                        <div className="flex items-center justify-center min-h-[5rem] p-4 text-center border-2 border-dashed border-white/[0.1] rounded-lg hover:border-[#c8a96e]/50 transition-colors">
                             {uploadingImage ? (
                                 <div className="flex items-center gap-2 text-[#c8a96e]"><Loader2 className="h-5 w-5 animate-spin" /> Uploading...</div>
                             ) : uploadMode === 'drive' && session ? (
                                 <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handleDriveFileSelect}>
                                     <button className="flex w-full h-full items-center justify-center gap-2 text-sm text-[#f5f5f5]">
-                                        <Plus className="h-5 w-5 text-[#c8a96e]" /> Select multiple photos from Drive
+                                        <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
+                                        <span>Select multiple photos from Drive</span>
                                     </button>
                                 </GooglePicker>
                             ) : uploadMode === 'drive' && !session ? (
                                 <p className="text-sm text-[#666]">Sign in to Google to pick photos.</p>
                             ) : (
                                 <label className="flex w-full h-full cursor-pointer items-center justify-center gap-2 text-sm text-[#f5f5f5]">
-                                    <Plus className="h-5 w-5 text-[#c8a96e]" /> Select a file from your computer
+                                    <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
+                                    <span>Select a file from your computer</span>
                                     <input type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
                                 </label>
                             )}

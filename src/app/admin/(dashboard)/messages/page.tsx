@@ -25,6 +25,7 @@ import {
     deleteMessage as deleteMessageFn,
 } from '@/lib/firestore';
 import type { ContactMessage } from '@/types';
+import { ConfirmModal } from '../sections/components';
 
 export default function MessagesPage() {
     const {
@@ -40,6 +41,8 @@ export default function MessagesPage() {
 
     const [loading, setLoading] = useState(true);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [messageToDelete, setMessageToDelete] = useState<ContactMessage | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchMessages = async () => {
         setLoading(true);
@@ -98,12 +101,23 @@ export default function MessagesPage() {
     };
 
     const handleDelete = async (msg: ContactMessage) => {
-        if (!confirm('Are you sure you want to delete this message?')) return;
+        setMessageToDelete(msg);
+    };
+
+    const confirmDelete = async () => {
+        if (!messageToDelete) return;
+        setIsDeleting(true);
         try {
-            await deleteMessageFn(msg.id);
-            removeMessage(msg.id);
+            await deleteMessageFn(messageToDelete.id);
+            removeMessage(messageToDelete.id);
+            if (selectedMessageId === messageToDelete.id) {
+                setSelectedMessageId(null);
+            }
         } catch (err) {
             console.error('Failed to delete message:', err);
+        } finally {
+            setIsDeleting(false);
+            setMessageToDelete(null);
         }
     };
 
@@ -148,17 +162,24 @@ export default function MessagesPage() {
                 }
             />
 
+            <ConfirmModal
+                open={!!messageToDelete}
+                title="Delete Message"
+                message={`Are you sure you want to delete the message from ${messageToDelete?.name}? This action cannot be undone.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setMessageToDelete(null)}
+            />
+
             {/* Mobile: Filters as horizontal tabs */}
             <div className="flex border-b border-white/[0.06] bg-[#0c0c0c] px-2 md:hidden">
                 {FILTERS.map((f) => (
                     <button
                         key={f.key}
                         onClick={() => setMessageFilter(f.key)}
-                        className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${
-                            messageFilter === f.key
-                                ? 'border-b-2 border-[#c8a96e] text-[#c8a96e]'
-                                : 'text-[#a0a0a0]'
-                        }`}
+                        className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-medium transition-colors ${messageFilter === f.key
+                            ? 'border-b-2 border-[#c8a96e] text-[#c8a96e]'
+                            : 'text-[#a0a0a0]'
+                            }`}
                     >
                         <f.icon className="h-3.5 w-3.5" />
                         <span>{f.label}</span>
@@ -182,11 +203,10 @@ export default function MessagesPage() {
                             <button
                                 key={f.key}
                                 onClick={() => setMessageFilter(f.key)}
-                                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
-                                    messageFilter === f.key
-                                        ? 'bg-[#c8a96e]/10 text-[#c8a96e]'
-                                        : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
-                                }`}
+                                className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${messageFilter === f.key
+                                    ? 'bg-[#c8a96e]/10 text-[#c8a96e]'
+                                    : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
+                                    }`}
                             >
                                 <f.icon className="h-4 w-4" />
                                 <span>{f.label}</span>
@@ -201,9 +221,8 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Middle Column: Message List - hidden on mobile when message selected */}
-                <div className={`w-full overflow-y-auto border-r border-white/[0.06] md:w-[340px] md:shrink-0 ${
-                    selectedMessageId ? 'hidden md:block' : ''
-                }`}>
+                <div className={`w-full overflow-y-auto border-r border-white/[0.06] md:w-[340px] md:shrink-0 ${selectedMessageId ? 'hidden md:block' : ''
+                    }`}>
                     {loading ? (
                         <div className="flex items-center justify-center py-20">
                             <Loader2 className="h-5 w-5 animate-spin text-[#c8a96e]" />
@@ -219,19 +238,17 @@ export default function MessagesPage() {
                                 <button
                                     key={msg.id}
                                     onClick={() => handleSelectMessage(msg)}
-                                    className={`w-full px-4 py-3.5 text-left transition-colors ${
-                                        selectedMessageId === msg.id
-                                            ? 'bg-white/[0.04]'
-                                            : 'hover:bg-white/[0.02]'
-                                    }`}
+                                    className={`w-full px-4 py-3.5 text-left transition-colors ${selectedMessageId === msg.id
+                                        ? 'bg-white/[0.04]'
+                                        : 'hover:bg-white/[0.02]'
+                                        }`}
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <p
-                                            className={`text-sm truncate ${
-                                                msg.read
-                                                    ? 'text-[#a0a0a0] font-normal'
-                                                    : 'text-[#f5f5f5] font-semibold'
-                                            }`}
+                                            className={`text-sm truncate ${msg.read
+                                                ? 'text-[#a0a0a0] font-normal'
+                                                : 'text-[#f5f5f5] font-semibold'
+                                                }`}
                                         >
                                             {msg.name}
                                         </p>
@@ -245,9 +262,8 @@ export default function MessagesPage() {
                                         </div>
                                     </div>
                                     <p
-                                        className={`mt-0.5 text-xs truncate ${
-                                            msg.read ? 'text-[#666]' : 'text-[#a0a0a0]'
-                                        }`}
+                                        className={`mt-0.5 text-xs truncate ${msg.read ? 'text-[#666]' : 'text-[#a0a0a0]'
+                                            }`}
                                     >
                                         {msg.subject}
                                     </p>
@@ -261,9 +277,8 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Right Column: Message Detail - full width on mobile */}
-                <div className={`flex-1 overflow-y-auto ${
-                    selectedMessageId ? '' : 'hidden md:flex'
-                }`}>
+                <div className={`flex-1 overflow-y-auto ${selectedMessageId ? '' : 'hidden md:flex'
+                    }`}>
                     {selectedMessage ? (
                         <div className="p-4 sm:p-6 lg:p-8">
                             {/* Mobile back button */}
@@ -340,15 +355,15 @@ export default function MessagesPage() {
                                         <p className="text-sm text-[#a0a0a0]">
                                             {selectedMessage.createdAt
                                                 ? new Date(selectedMessage.createdAt).toLocaleDateString(
-                                                      'en-US',
-                                                      {
-                                                          year: 'numeric',
-                                                          month: 'long',
-                                                          day: 'numeric',
-                                                          hour: '2-digit',
-                                                          minute: '2-digit',
-                                                      }
-                                                  )
+                                                    'en-US',
+                                                    {
+                                                        year: 'numeric',
+                                                        month: 'long',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                    }
+                                                )
                                                 : ''}
                                         </p>
                                     </div>
