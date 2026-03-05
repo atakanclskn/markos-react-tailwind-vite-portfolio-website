@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { useGalleryStore } from '@/store/galleryStore';
 import GalleryDock from '@/components/GalleryDock';
 import { getCategories } from '@/lib/firestore';
 
@@ -11,6 +12,7 @@ export default function GalleryPersistentUI({ children }: { children: React.Reac
     const pathname = usePathname();
     const router = useRouter();
     const { theme } = useTheme();
+    const direction = useGalleryStore(state => state.direction);
 
     // Extract category slug from pathname e.g. /gallery/landscape -> landscape
     const categorySlug = pathname?.split('/').pop() || '';
@@ -90,15 +92,30 @@ export default function GalleryPersistentUI({ children }: { children: React.Reac
 
             {/* Page Content transitions */}
             <div className="w-full pt-20 min-h-[70vh]">
-                <AnimatePresence mode="wait">
+                <AnimatePresence mode="popLayout" custom={direction} initial={false}>
                     <motion.div
                         key={pathname}
-                        initial={{ opacity: 0, x: 60 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -60 }}
+                        custom={direction}
+                        initial="enter"
+                        animate="center"
+                        exit="exit"
+                        variants={{
+                            enter: (dir: number) => ({
+                                x: dir > 0 ? '100vw' : '-100vw',
+                                opacity: 1,
+                            }),
+                            center: {
+                                x: 0,
+                                opacity: 1,
+                            },
+                            exit: (dir: number) => ({
+                                x: dir > 0 ? '-100vw' : '100vw',
+                                opacity: 1,
+                            }),
+                        }}
                         transition={{
-                            duration: 0.6,
-                            ease: [0.22, 1, 0.36, 1] // Custom ease-out curve for premium feel
+                            duration: 0.7,
+                            ease: [0.22, 1, 0.36, 1] // Premium smooth easing
                         }}
                         className="w-full"
                     >
