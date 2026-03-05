@@ -103,18 +103,20 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                     <motion.nav
                         className="relative flex items-center justify-center px-6 py-4 md:px-12 lg:px-20"
                         style={{
-                            backgroundColor: staticMode
+                            backgroundColor: (staticMode || mobileMenuOpen)
                                 ? (theme === 'dark' ? 'rgba(10, 10, 10, 0.7)' : 'rgba(250, 250, 250, 0.8)')
                                 : (theme === 'dark'
                                     ? useTransform(navItemsOpacity, [0, 1], ['rgba(10, 10, 10, 0)', 'rgba(10, 10, 10, 0.7)'])
                                     : useTransform(navItemsOpacity, [0, 1], ['rgba(250, 250, 250, 0)', 'rgba(250, 250, 250, 0.8)'])),
                             backdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
                             WebkitBackdropFilter: scrolled || staticMode ? 'blur(20px) saturate(180%)' : 'none',
-                            borderBottom: staticMode
-                                ? (theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')
-                                : (theme === 'dark'
-                                    ? useTransform(navItemsOpacity, [0, 1], ['rgba(255,255,255,0)', 'rgba(255,255,255,0.06)'])
-                                    : useTransform(navItemsOpacity, [0, 1], ['rgba(0,0,0,0)', 'rgba(0,0,0,0.06)'])),
+                            borderBottom: mobileMenuOpen
+                                ? 'none'
+                                : staticMode
+                                    ? (theme === 'dark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)')
+                                    : (theme === 'dark'
+                                        ? useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(255,255,255,0)', '1px solid rgba(255,255,255,0.06)'])
+                                        : useTransform(navItemsOpacity, [0, 1], ['1px solid rgba(0,0,0,0)', '1px solid rgba(0,0,0,0.06)'])),
                         }}
                     >
                         {/* Left Nav Links */}
@@ -203,6 +205,7 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                         {/* Mobile Menu Button - Always visible on mobile after preloader */}
                         <motion.button
                             className="absolute right-6 z-50 flex flex-col gap-[5px] md:hidden"
+                            style={{ opacity: staticMode ? 1 : navItemsOpacity }}
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                             aria-label="Toggle menu"
                         >
@@ -231,53 +234,23 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                     <AnimatePresence>
                         {mobileMenuOpen && (
                             <motion.div
-                                className="fixed inset-0 top-0 left-0 z-40 flex flex-col md:hidden"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
+                                className="absolute top-full left-0 w-full z-40 flex flex-col md:hidden overflow-hidden"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
                                 transition={{ duration: 0.3 }}
                                 style={{
                                     backgroundColor:
                                         theme === 'dark'
-                                            ? 'rgba(10, 10, 10, 0.97)'
-                                            : 'rgba(250, 250, 250, 0.97)',
-                                    backdropFilter: 'blur(24px) saturate(180%)',
-                                    WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+                                            ? 'rgba(10, 10, 10, 0.7)'
+                                            : 'rgba(250, 250, 250, 0.8)',
+                                    backdropFilter: 'blur(20px) saturate(180%)',
+                                    WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                                    borderBottom: theme === 'dark' ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
                                 }}
                             >
-                                {/* Close button area (same height as navbar) */}
-                                <div className="flex items-center justify-end px-6 py-4">
-                                    <button
-                                        onClick={() => setMobileMenuOpen(false)}
-                                        aria-label="Close menu"
-                                        className="flex flex-col gap-[5px]"
-                                    >
-                                        <motion.span
-                                            className="block h-[1.5px] w-6 rounded-full"
-                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
-                                            initial={{ rotate: 0, y: 0 }}
-                                            animate={{ rotate: 45, y: 6.5 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
-                                        <motion.span
-                                            className="block h-[1.5px] w-6 rounded-full"
-                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
-                                            initial={{ opacity: 1 }}
-                                            animate={{ opacity: 0 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
-                                        <motion.span
-                                            className="block h-[1.5px] w-6 rounded-full"
-                                            style={{ backgroundColor: theme === 'dark' ? '#f5f5f5' : '#0a0a0a' }}
-                                            initial={{ rotate: 0, y: 0 }}
-                                            animate={{ rotate: -45, y: -6.5 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
-                                    </button>
-                                </div>
-
                                 {/* Links */}
-                                <div className="flex flex-1 flex-col items-center justify-center gap-8">
+                                <div className="flex flex-col items-center justify-center gap-6 py-10 pb-12">
                                     {ALL_LINKS.map((link, i) => (
                                         <motion.a
                                             key={link.label}
@@ -294,14 +267,14 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                                                     }
                                                 }, 350);
                                             }}
-                                            className="text-2xl font-medium tracking-[0.2em] uppercase"
+                                            className="text-lg font-medium tracking-[0.2em] uppercase"
                                             style={{
                                                 fontFamily: 'var(--font-outfit)',
                                                 color: theme === 'dark' ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)',
                                             }}
-                                            initial={{ opacity: 0, y: 20 }}
+                                            initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: i * 0.1, duration: 0.4 }}
+                                            transition={{ delay: i * 0.05, duration: 0.3 }}
                                         >
                                             {link.label}
                                         </motion.a>
