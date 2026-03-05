@@ -31,10 +31,9 @@ const NAV_GROUPS = [
         ],
     },
     {
-        title: 'Media',
+        title: 'Gallery',
         items: [
-            { label: 'Media Sync', href: '/admin/media', icon: Image },
-            { label: 'Categories', href: '/admin/categories', icon: FolderOpen },
+            { label: 'Manage Albums', href: '/admin/gallery', icon: Image },
         ],
     },
     {
