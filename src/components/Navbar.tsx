@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
 import ScrollProgress from './ScrollProgress';
+import Link from 'next/link';
 
 interface NavbarProps {
     visible: boolean;
@@ -136,35 +137,37 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
                         </motion.div>
 
                         {/* Center Logo */}
-                        <motion.div
-                            className="mx-8 flex flex-col items-center leading-none md:mx-12"
-                            style={{
-                                scale: staticMode ? 1 : logoScale,
-                                y: staticMode ? 0 : logoY,
-                                originY: 0.5,
-                                originX: 0.5
-                            }}
-                        >
-                            <motion.h1
-                                className="text-xl tracking-[0.2em] sm:text-2xl"
+                        <Link href="/">
+                            <motion.div
+                                className="mx-8 flex flex-col items-center leading-none md:mx-12 cursor-pointer"
                                 style={{
-                                    fontFamily: 'var(--font-monoton)',
-                                    color: staticMode ? finalTextColor : logoColor,
+                                    scale: staticMode ? 1 : logoScale,
+                                    y: staticMode ? 0 : logoY,
+                                    originY: 0.5,
+                                    originX: 0.5
                                 }}
                             >
-                                MARKOS
-                            </motion.h1>
-                            <motion.span
-                                className="text-[0.6rem] tracking-[0.4em] uppercase sm:text-[0.75rem]"
-                                style={{
-                                    fontFamily: 'var(--font-outfit)',
-                                    color: staticMode ? finalSubColor : logoSubColor,
-                                    marginTop: '2px',
-                                }}
-                            >
-                                STUDIO
-                            </motion.span>
-                        </motion.div>
+                                <motion.h1
+                                    className="text-xl tracking-[0.2em] sm:text-2xl"
+                                    style={{
+                                        fontFamily: 'var(--font-monoton)',
+                                        color: staticMode ? finalTextColor : logoColor,
+                                    }}
+                                >
+                                    MARKOS
+                                </motion.h1>
+                                <motion.span
+                                    className="text-[0.6rem] tracking-[0.4em] uppercase sm:text-[0.75rem]"
+                                    style={{
+                                        fontFamily: 'var(--font-outfit)',
+                                        color: staticMode ? finalSubColor : logoSubColor,
+                                        marginTop: '2px',
+                                    }}
+                                >
+                                    STUDIO
+                                </motion.span>
+                            </motion.div>
+                        </Link>
 
                         {/* Right Nav Links */}
                         <motion.div

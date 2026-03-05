@@ -50,7 +50,7 @@ export default function LoginPage() {
                         style={{ backgroundColor: 'color-mix(in srgb, var(--color-brand) 15%, transparent)' }}
                     >
                         <span
-                            className="text-3xl leading-none pt-1 pr-1"
+                            className="text-3xl leading-none"
                             style={{ fontFamily: 'var(--font-monoton)', color: 'var(--color-brand)' }}
                         >
                             M
