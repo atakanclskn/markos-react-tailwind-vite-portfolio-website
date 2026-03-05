@@ -20,25 +20,25 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
             {/* Left Side: Form Controls */}
             <div className={`flex flex-col border-r border-white/[0.06] transition-all duration-300 ${showPreview ? 'hidden lg:flex lg:w-[450px] xl:w-[500px]' : 'w-full'}`}>
                 {/* Fixed Sub-header for Preview Toggle */}
-                <div className="flex items-center justify-between border-b border-white/[0.06] bg-[#0c0c0c] px-4 py-3 sm:px-6 shrink-0">
+                <div className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-white/[0.06] bg-[#0a0a0a]/80 px-4 backdrop-blur-xl sm:h-16 sm:px-6 shrink-0">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setMobileSidebarOpen(true)}
-                            className="rounded-lg p-1.5 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#a0a0a0] lg:hidden"
+                            className="rounded-lg p-2 text-[#666] transition-colors hover:bg-white/[0.04] hover:text-[#a0a0a0] lg:hidden"
                         >
                             <Menu className="h-5 w-5" />
                         </button>
-                        <span className="text-sm font-medium text-[#f5f5f5]">{title || 'Editor'}</span>
+                        <h2 className="text-base font-semibold text-[#f5f5f5] sm:text-lg">{title || 'Editor'}</h2>
                     </div>
                     <button
                         onClick={() => setShowPreview(!showPreview)}
-                        className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${showPreview
-                            ? 'bg-[#c8a96e] text-[#0a0a0a]'
-                            : 'bg-white/[0.06] text-[#f5f5f5] hover:bg-white/[0.1]'
+                        className={`flex items-center gap-2 rounded-lg border border-white/[0.06] px-2.5 py-1.5 text-sm transition-all duration-200 sm:px-3.5 sm:py-2 ${showPreview
+                            ? 'bg-[#c8a96e] text-[#0a0a0a] border-[#c8a96e]'
+                            : 'text-[#a0a0a0] hover:bg-white/[0.04] hover:text-[#f5f5f5]'
                             }`}
                     >
-                        {showPreview ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-                        {showPreview ? 'Hide Preview' : 'Show Preview'}
+                        {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        <span className="hidden sm:inline">{showPreview ? 'Hide Preview' : 'Show Preview'}</span>
                     </button>
                 </div>
 
