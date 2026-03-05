@@ -30,10 +30,15 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
 
     const { scrollY } = useScroll();
     const [vh, setVh] = useState(0);
+    const [vw, setVw] = useState(0);
 
     useEffect(() => {
         setVh(window.innerHeight);
-        const handleResize = () => setVh(window.innerHeight);
+        setVw(window.innerWidth);
+        const handleResize = () => {
+            setVh(window.innerHeight);
+            setVw(window.innerWidth);
+        };
         window.addEventListener('resize', handleResize);
 
         function handleScroll() {
@@ -61,8 +66,9 @@ export default function Navbar({ visible, staticMode = false }: NavbarProps) {
     // The logo will complete its animation after 50% of the viewport height has been scrolled.
     const scrollEnd = vh ? vh * 0.5 : 400;
 
-    // Scale from 3 to 1
-    const logoScale = useTransform(scrollY, [0, scrollEnd], [3, 1]);
+    // Scale from large to 1 (smaller on mobile to avoid overflow)
+    const mobileScale = vw && vw < 768 ? 2 : 3;
+    const logoScale = useTransform(scrollY, [0, scrollEnd], [mobileScale, 1]);
 
     // Translate Y from center of screen to 0. Logo sits naturally in nav (~40px top).
     // Center of screen is vh/2. Offset is vh/2 - 40px down.

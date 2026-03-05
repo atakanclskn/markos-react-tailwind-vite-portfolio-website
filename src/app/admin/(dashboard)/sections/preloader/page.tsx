@@ -143,131 +143,138 @@ export default function PreloaderPage() {
         <>
             <Topbar title="Preloader Settings" />
             {toast && (
-                <div className="fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 shadow-lg">
-                    <span>{toast}</span>
-                    <button onClick={() => setToast(null)}><X className="h-3.5 w-3.5" /></button>
+                <div className="fixed right-4 left-4 sm:left-auto sm:right-6 top-20 z-50 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 shadow-lg">
+                    <span className="truncate">{toast}</span>
+                    <button onClick={() => setToast(null)} className="shrink-0"><X className="h-3.5 w-3.5" /></button>
                 </div>
             )}
 
-            <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8 w-full overflow-hidden">
-                <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-[#f5f5f5]">Preloader Carousel Images</h2>
-                    <p className="mt-1 text-sm text-[#a0a0a0]">
-                        These images will appear in the high-speed carousel when users first load your website.
-                        We recommend adding at least 8 images for a seamless loop.
-                    </p>
-                </div>
-
-                <div className="rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-6 space-y-6">
-
-                    {/* Add Image Controls */}
-                    <div className="rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-3 sm:p-4">
-                        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-                            <label className="text-sm font-medium text-[#f5f5f5]">Add Images</label>
-                            {uploadMode === 'drive' && (
-                                !session ? (
-                                    <button onClick={() => signIn('google')} className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700">
-                                        <LogIn className="h-3.5 w-3.5" /> Connect Google
-                                    </button>
-                                ) : (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-[#666]">{session.user?.email}</span>
-                                        <button onClick={() => signOut()} className="flex items-center rounded-lg border border-red-500/20 bg-red-500/10 px-2 py-1.5 text-xs text-red-500 hover:bg-red-500/20"><LogOut className="h-3.5 w-3.5" /></button>
-                                    </div>
-                                )
-                            )}
-                        </div>
-
-                        <div className="mb-4 flex flex-col sm:flex-row gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
-                            <button onClick={() => setUploadMode('drive')} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'drive' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                <DriveIcon className="h-4 w-4 shrink-0" /> <span className="truncate">Google Drive</span>
-                            </button>
-                            <button onClick={() => setUploadMode('computer')} className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${uploadMode === 'computer' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                <HardDrive className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">Computer File</span>
-                            </button>
-                        </div>
-
-                        <div className="flex items-center justify-center min-h-[5rem] p-4 text-center border-2 border-dashed border-white/[0.1] rounded-lg hover:border-[#c8a96e]/50 transition-colors">
-                            {uploadingImage ? (
-                                <div className="flex items-center gap-2 text-[#c8a96e]"><Loader2 className="h-5 w-5 animate-spin" /> Uploading...</div>
-                            ) : uploadMode === 'drive' && session ? (
-                                <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handleDriveFileSelect}>
-                                    <button className="flex w-full h-full items-center justify-center gap-2 text-sm text-[#f5f5f5]">
-                                        <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
-                                        <span className="truncate">Select multiple from Drive</span>
-                                    </button>
-                                </GooglePicker>
-                            ) : uploadMode === 'drive' && !session ? (
-                                <p className="text-sm text-[#666]">Sign in to Google to pick photos.</p>
-                            ) : (
-                                <label className="flex w-full h-full cursor-pointer items-center justify-center gap-2 text-sm text-[#f5f5f5]">
-                                    <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
-                                    <span className="truncate">Select a file from computer</span>
-                                    <input type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
-                                </label>
-                            )}
-                        </div>
+            <div className="w-full overflow-x-hidden">
+                <div className="mx-auto max-w-3xl px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+                    {/* Header */}
+                    <div className="mb-5 sm:mb-6">
+                        <h2 className="text-base sm:text-lg font-semibold text-[#f5f5f5]">Preloader Carousel Images</h2>
+                        <p className="mt-1 text-xs sm:text-sm text-[#a0a0a0] leading-relaxed">
+                            These images will appear in the high-speed carousel when users first load your website.
+                            We recommend adding at least 8 images for a seamless loop.
+                        </p>
                     </div>
 
-                    {/* Image List */}
-                    <div>
-                        <div className="mb-3 flex items-center justify-between">
-                            <label className="text-sm font-medium text-[#f5f5f5]">Carousel Order</label>
-                            <span className="text-xs text-[#a0a0a0]">{images.length} images connected</span>
-                        </div>
+                    {/* Main Card */}
+                    <div className="rounded-xl border border-white/[0.06] bg-[#111] p-3 sm:p-5 lg:p-6 space-y-5 sm:space-y-6">
 
-                        {images.length === 0 ? (
-                            <div className="p-8 text-center border border-white/[0.06] rounded-xl bg-[#141414]">
-                                <p className="text-[#666] text-sm">No images selected yet. Using default fallback images.</p>
-                            </div>
-                        ) : (
-                            <DragDropContext onDragEnd={handleDragEnd}>
-                                <Droppable droppableId="preloader-images" direction="vertical">
-                                    {(provided: any) => (
-                                        <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
-                                            {images.map((img, index) => (
-                                                <Draggable key={img.id} draggableId={img.id} index={index}>
-                                                    {(provided: any, snapshot: any) => (
-                                                        <div
-                                                            ref={provided.innerRef}
-                                                            {...provided.draggableProps}
-                                                            className={`flex items-center gap-2 sm:gap-4 rounded-lg border border-white/[0.06] bg-[#141414] p-2 sm:p-3 transition-colors ${snapshot.isDragging ? 'border-[#c8a96e]/50 shadow-lg' : 'hover:border-white/[0.1]'
-                                                                }`}
-                                                        >
-                                                            <div {...provided.dragHandleProps} className="cursor-grab p-1 text-[#666] hover:text-[#f5f5f5] active:cursor-grabbing">
-                                                                <GripVertical className="h-4 w-4" />
-                                                            </div>
-                                                            <img
-                                                                src={img.thumbnailUrl}
-                                                                alt=""
-                                                                className="h-10 w-14 sm:h-12 sm:w-16 shrink-0 rounded object-cover"
-                                                                loading="lazy"
-                                                            />
-                                                            <div className="flex-1 min-w-0 pr-2">
-                                                                <p className="truncate text-[10px] sm:text-xs text-[#666]">
-                                                                    {img.storageUrl}
-                                                                </p>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => handleDelete(img.id)}
-                                                                className="rounded-lg p-2 text-[#666] transition-colors hover:bg-red-500/10 hover:text-red-500"
-                                                                title="Delete image"
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    )}
-                                                </Draggable>
-                                            ))}
-                                            {provided.placeholder}
+                        {/* ── Add Image Controls ── */}
+                        <div className="rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-3 sm:p-4">
+                            {/* Header row */}
+                            <div className="mb-3 sm:mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                                <label className="text-sm font-medium text-[#f5f5f5]">Add Images</label>
+                                {uploadMode === 'drive' && (
+                                    !session ? (
+                                        <button onClick={() => signIn('google')} className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700">
+                                            <LogIn className="h-3.5 w-3.5 shrink-0" /> Connect Google
+                                        </button>
+                                    ) : (
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="text-xs text-[#666] truncate max-w-[150px]">{session.user?.email}</span>
+                                            <button onClick={() => signOut()} className="flex items-center shrink-0 rounded-lg border border-red-500/20 bg-red-500/10 px-2 py-1.5 text-xs text-red-500 hover:bg-red-500/20"><LogOut className="h-3.5 w-3.5" /></button>
                                         </div>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                        )}
-                    </div>
+                                    )
+                                )}
+                            </div>
 
-                    <SaveButton onClick={handleSave} loading={saving} />
+                            {/* Mode Toggle */}
+                            <div className="mb-3 sm:mb-4 flex gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
+                                <button onClick={() => setUploadMode('drive')} className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors ${uploadMode === 'drive' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
+                                    <DriveIcon className="h-4 w-4 shrink-0" /> <span>Drive</span>
+                                </button>
+                                <button onClick={() => setUploadMode('computer')} className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors ${uploadMode === 'computer' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
+                                    <HardDrive className="h-3.5 w-3.5 shrink-0" /> <span>Computer</span>
+                                </button>
+                            </div>
+
+                            {/* Upload Area */}
+                            <div className="flex items-center justify-center min-h-[4.5rem] sm:min-h-[5rem] p-3 sm:p-4 text-center border-2 border-dashed border-white/[0.1] rounded-lg hover:border-[#c8a96e]/50 transition-colors">
+                                {uploadingImage ? (
+                                    <div className="flex items-center gap-2 text-[#c8a96e]"><Loader2 className="h-5 w-5 animate-spin" /> <span className="text-sm">Uploading...</span></div>
+                                ) : uploadMode === 'drive' && session ? (
+                                    <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handleDriveFileSelect}>
+                                        <button className="flex w-full h-full items-center justify-center gap-2 text-xs sm:text-sm text-[#f5f5f5]">
+                                            <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
+                                            <span>Select from Drive</span>
+                                        </button>
+                                    </GooglePicker>
+                                ) : uploadMode === 'drive' && !session ? (
+                                    <p className="text-xs sm:text-sm text-[#666]">Sign in to Google to pick photos.</p>
+                                ) : (
+                                    <label className="flex w-full h-full cursor-pointer items-center justify-center gap-2 text-xs sm:text-sm text-[#f5f5f5]">
+                                        <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
+                                        <span>Select a file</span>
+                                        <input type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
+                                    </label>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* ── Image List ── */}
+                        <div>
+                            <div className="mb-3 flex items-center justify-between">
+                                <label className="text-sm font-medium text-[#f5f5f5]">Carousel Order</label>
+                                <span className="text-xs text-[#a0a0a0]">{images.length} images</span>
+                            </div>
+
+                            {images.length === 0 ? (
+                                <div className="p-6 sm:p-8 text-center border border-white/[0.06] rounded-xl bg-[#141414]">
+                                    <p className="text-[#666] text-xs sm:text-sm">No images selected yet. Using default fallback images.</p>
+                                </div>
+                            ) : (
+                                <DragDropContext onDragEnd={handleDragEnd}>
+                                    <Droppable droppableId="preloader-images" direction="vertical">
+                                        {(provided: any) => (
+                                            <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                                                {images.map((img, index) => (
+                                                    <Draggable key={img.id} draggableId={img.id} index={index}>
+                                                        {(provided: any, snapshot: any) => (
+                                                            <div
+                                                                ref={provided.innerRef}
+                                                                {...provided.draggableProps}
+                                                                className={`flex items-center gap-2 rounded-lg border border-white/[0.06] bg-[#141414] p-2 transition-colors ${snapshot.isDragging ? 'border-[#c8a96e]/50 shadow-lg' : 'hover:border-white/[0.1]'
+                                                                    }`}
+                                                            >
+                                                                <div {...provided.dragHandleProps} className="cursor-grab p-0.5 sm:p-1 text-[#666] hover:text-[#f5f5f5] active:cursor-grabbing shrink-0">
+                                                                    <GripVertical className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                                                </div>
+                                                                <img
+                                                                    src={img.thumbnailUrl}
+                                                                    alt=""
+                                                                    className="h-9 w-12 sm:h-12 sm:w-16 shrink-0 rounded object-cover"
+                                                                    loading="lazy"
+                                                                />
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="truncate text-[10px] sm:text-xs text-[#555]">
+                                                                        {img.storageUrl}
+                                                                    </p>
+                                                                </div>
+                                                                <button
+                                                                    onClick={() => handleDelete(img.id)}
+                                                                    className="shrink-0 rounded-lg p-1.5 sm:p-2 text-[#666] transition-colors hover:bg-red-500/10 hover:text-red-500"
+                                                                    title="Delete image"
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </Draggable>
+                                                ))}
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            )}
+                        </div>
+
+                        <SaveButton onClick={handleSave} loading={saving} />
+                    </div>
                 </div>
             </div>
         </>

@@ -16,9 +16,8 @@ export default function AdminDashboardLayout({
             <div className="flex min-h-screen bg-[#0a0a0a]">
                 <Sidebar />
                 <main
-                    className={`flex-1 transition-all duration-300 ${
-                        sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]'
-                    }`}
+                    className={`flex-1 min-w-0 overflow-x-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-[72px]' : 'lg:ml-[260px]'
+                        }`}
                 >
                     {children}
                 </main>
