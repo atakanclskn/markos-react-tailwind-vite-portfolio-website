@@ -149,7 +149,7 @@ export default function PreloaderPage() {
                 </div>
             )}
 
-            <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8">
+            <div className="mx-auto max-w-3xl p-4 sm:p-6 lg:p-8 w-full overflow-hidden">
                 <div className="mb-6">
                     <h2 className="text-lg font-semibold text-[#f5f5f5]">Preloader Carousel Images</h2>
                     <p className="mt-1 text-sm text-[#a0a0a0]">
@@ -161,7 +161,7 @@ export default function PreloaderPage() {
                 <div className="rounded-xl border border-white/[0.06] bg-[#111] p-4 sm:p-6 space-y-6">
 
                     {/* Add Image Controls */}
-                    <div className="rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-4">
+                    <div className="rounded-lg border border-white/[0.06] bg-[#1a1a1a] p-3 sm:p-4">
                         <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
                             <label className="text-sm font-medium text-[#f5f5f5]">Add Images</label>
                             {uploadMode === 'drive' && (
@@ -194,7 +194,7 @@ export default function PreloaderPage() {
                                 <GooglePicker accessToken={accessToken || ''} onPhotosSelected={handleDriveFileSelect}>
                                     <button className="flex w-full h-full items-center justify-center gap-2 text-sm text-[#f5f5f5]">
                                         <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
-                                        <span>Select multiple photos from Drive</span>
+                                        <span className="truncate">Select multiple from Drive</span>
                                     </button>
                                 </GooglePicker>
                             ) : uploadMode === 'drive' && !session ? (
@@ -202,7 +202,7 @@ export default function PreloaderPage() {
                             ) : (
                                 <label className="flex w-full h-full cursor-pointer items-center justify-center gap-2 text-sm text-[#f5f5f5]">
                                     <Plus className="h-5 w-5 text-[#c8a96e] shrink-0" />
-                                    <span>Select a file from your computer</span>
+                                    <span className="truncate">Select a file from computer</span>
                                     <input type="file" accept="image/*" onChange={handlePhotoSelect} className="hidden" />
                                 </label>
                             )}
@@ -231,7 +231,7 @@ export default function PreloaderPage() {
                                                         <div
                                                             ref={provided.innerRef}
                                                             {...provided.draggableProps}
-                                                            className={`flex items-center gap-4 rounded-lg border border-white/[0.06] bg-[#141414] p-3 transition-colors ${snapshot.isDragging ? 'border-[#c8a96e]/50 shadow-lg' : 'hover:border-white/[0.1]'
+                                                            className={`flex items-center gap-2 sm:gap-4 rounded-lg border border-white/[0.06] bg-[#141414] p-2 sm:p-3 transition-colors ${snapshot.isDragging ? 'border-[#c8a96e]/50 shadow-lg' : 'hover:border-white/[0.1]'
                                                                 }`}
                                                         >
                                                             <div {...provided.dragHandleProps} className="cursor-grab p-1 text-[#666] hover:text-[#f5f5f5] active:cursor-grabbing">
@@ -240,11 +240,11 @@ export default function PreloaderPage() {
                                                             <img
                                                                 src={img.thumbnailUrl}
                                                                 alt=""
-                                                                className="h-12 w-16 rounded object-cover"
+                                                                className="h-10 w-14 sm:h-12 sm:w-16 shrink-0 rounded object-cover"
                                                                 loading="lazy"
                                                             />
-                                                            <div className="flex-1 overflow-hidden">
-                                                                <p className="truncate text-xs text-[#666]">
+                                                            <div className="flex-1 min-w-0 pr-2">
+                                                                <p className="truncate text-[10px] sm:text-xs text-[#666]">
                                                                     {img.storageUrl}
                                                                 </p>
                                                             </div>
