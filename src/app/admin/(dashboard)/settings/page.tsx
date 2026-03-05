@@ -23,7 +23,7 @@ import {
 } from '@/lib/firestore';
 import type { SEOSettings, FooterContent, SocialLink, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
-import { InputField } from '../sections/components';
+import { InputField, ConfirmModal } from '../sections/components';
 
 const PREMIUM_COLORS = [
     { name: 'Pure White (Default)', hex: '#ffffff' },
@@ -41,6 +41,7 @@ export default function SettingsPage() {
     const [savingSEO, setSavingSEO] = useState(false);
     const [savingFooter, setSavingFooter] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
+    const [deleteLinkIndex, setDeleteLinkIndex] = useState<number | null>(null);
 
     // Local form states
     const [seoForm, setSeoForm] = useState<SEOSettings>({
@@ -152,10 +153,16 @@ export default function SettingsPage() {
     };
 
     const removeSocialLink = (index: number) => {
+        setDeleteLinkIndex(index);
+    };
+
+    const confirmDeleteSocialLink = () => {
+        if (deleteLinkIndex === null) return;
         setFooterForm({
             ...footerForm,
-            socialLinks: footerForm.socialLinks.filter((_, i) => i !== index),
+            socialLinks: footerForm.socialLinks.filter((_, i) => i !== deleteLinkIndex),
         });
+        setDeleteLinkIndex(null);
     };
 
     if (loading) {
@@ -459,6 +466,14 @@ export default function SettingsPage() {
                     </div>
                 </section>
             </div>
+
+            <ConfirmModal
+                open={deleteLinkIndex !== null}
+                title="Delete Social Link"
+                message="Are you sure you want to delete this social media link? This action cannot be undone."
+                onConfirm={confirmDeleteSocialLink}
+                onCancel={() => setDeleteLinkIndex(null)}
+            />
         </>
     );
 }

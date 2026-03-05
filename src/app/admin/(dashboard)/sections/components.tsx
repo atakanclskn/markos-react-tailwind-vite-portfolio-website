@@ -174,3 +174,42 @@ export function DriveIcon({ className }: { className?: string }) {
         />
     );
 }
+
+export function ConfirmModal({
+    open,
+    title,
+    message,
+    onConfirm,
+    onCancel,
+}: {
+    open: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    onCancel: () => void;
+}) {
+    if (!open) return null;
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onCancel} />
+            <div className="relative w-full max-w-sm rounded-2xl border border-white/[0.08] bg-[#161616] p-6 shadow-2xl mx-4">
+                <h3 className="mb-2 text-base font-semibold text-[#f5f5f5]">{title}</h3>
+                <p className="mb-6 text-sm text-[#888]">{message}</p>
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={onCancel}
+                        className="rounded-lg border border-white/[0.08] px-4 py-2 text-sm text-[#a0a0a0] transition-colors hover:bg-white/[0.04] hover:text-[#f5f5f5]"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-500"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
