@@ -19,7 +19,8 @@ import {
 } from '@/lib/firestore';
 import type { SEOSettings, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
-import { InputField } from '../sections/components';
+import { InputField, SaveButton } from '../sections/components';
+import { useSession } from 'next-auth/react';
 
 const PREMIUM_COLORS = [
     { name: 'Pure White (Default)', hex: '#ffffff' },
@@ -30,7 +31,6 @@ const PREMIUM_COLORS = [
     { name: 'Midnight Blue', hex: '#191970' },
 ];
 
-import { useSession } from 'next-auth/react';
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -47,7 +47,6 @@ export default function SettingsPage() {
         metaDescription: '',
         keywords: '',
     });
-
 
     const { brandColor, setBrandColor } = useTheme();
     const [appearanceForm, setAppearanceForm] = useState<AppearanceSettings>({
@@ -241,7 +240,6 @@ export default function SettingsPage() {
                     </div>
                     <div className="space-y-4 p-5">
                         <div>
-                            <label className="mb-1.5 block text-sm text-[#a0a0a0]">Meta Title</label>
                             <InputField
                                 label="Site Name (Base Title)"
                                 value={seoForm.siteName}
@@ -299,22 +297,7 @@ export default function SettingsPage() {
                             <p className="mt-1 text-xs text-[#555]">Comma-separated values</p>
                         </div>
 
-                        <div className="flex justify-end pt-2">
-                            <button
-                                onClick={handleSaveSEO}
-                                disabled={savingSEO}
-                                className="flex items-center gap-2 rounded-lg bg-[#c8a96e] px-4 py-2
-                                    text-sm font-medium text-[#0a0a0a] transition-all duration-200
-                                    hover:bg-[#e0c992] disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {savingSEO ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Save className="h-4 w-4" />
-                                )}
-                                <span>Save SEO</span>
-                            </button>
-                        </div>
+                        <SaveButton onClick={handleSaveSEO} loading={savingSEO} />
                     </div>
                 </section>
             </div>

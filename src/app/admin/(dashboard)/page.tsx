@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import Topbar from '@/components/admin/Topbar';
 import {
     Mail,
@@ -175,9 +176,9 @@ export default function DashboardPage() {
                 <div className="mt-8">
                     <div className="mb-4 flex items-center justify-between">
                         <h4 className="text-sm font-medium text-[#a0a0a0]">Recent Activity</h4>
-                        <a href="/admin/audit-logs" className="text-xs font-medium text-[#c8a96e] hover:underline">
+                        <Link href="/admin/audit-logs" className="text-xs font-medium text-[#c8a96e] hover:underline">
                             View All Logs
-                        </a>
+                        </Link>
                     </div>
                     {loading ? (
                         <div className="flex h-32 items-center justify-center rounded-xl border border-white/[0.06] bg-[#111]">
@@ -229,7 +230,7 @@ function QuickAction({
     description: string;
 }) {
     return (
-        <a
+        <Link
             href={href}
             className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-[#111] p-4
                 transition-all duration-200 hover:border-[#c8a96e]/20 hover:bg-[#141414]"
@@ -241,6 +242,6 @@ function QuickAction({
                 <p className="text-sm font-medium text-[#f5f5f5]">{label}</p>
                 <p className="text-xs text-[#666]">{description}</p>
             </div>
-        </a>
+        </Link>
     );
 }

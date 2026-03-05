@@ -3,12 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
-import { getBentoGridSettings, updateBentoGridSettings } from '@/lib/firestore';
+import { getBentoGridSettings, updateBentoGridSettings, logAuditAction } from '@/lib/firestore';
 import type { BentoGridSettings } from '@/types';
 import { SliderField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function PortfolioSettingsPage() {
+    const { data: session } = useSession();
     const { bentoGridSettings, setBentoGridSettings } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -45,6 +47,10 @@ export default function PortfolioSettingsPage() {
         try {
             await updateBentoGridSettings(bentoSettingsForm);
             setBentoGridSettings(bentoSettingsForm);
+
+            const adminEmail = session?.user?.email || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated Portfolio Settings', `Animation interval set to ${bentoSettingsForm.animationIntervalSeconds}s`, adminEmail);
+
             showToast('Portfolio Grid settings saved successfully.');
         } catch (err) {
             console.error('Failed to save bento grid settings:', err);
