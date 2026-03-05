@@ -25,6 +25,8 @@ import type {
     FooterContent,
     SEOSettings,
     LegalContent,
+    AuditLog,
+    AuditActionType,
 } from '@/types';
 
 // --- Categories ---
@@ -300,4 +302,42 @@ export async function getLegalContent(): Promise<LegalContent | null> {
 
 export async function updateLegalContent(data: LegalContent) {
     return setDoc(doc(db, 'settings', 'legal'), data, { merge: true });
+}
+
+// --- System Audit Logs ---
+export async function logAuditAction(
+    type: AuditActionType,
+    action: string,
+    details: string,
+    user: string
+): Promise<void> {
+    try {
+        await addDoc(collection(db, 'audit_logs'), {
+            type,
+            action,
+            details,
+            user,
+            timestamp: serverTimestamp(),
+        });
+    } catch (error) {
+        console.error("Error logging audit action:", error);
+    }
+}
+
+export async function getAuditLogs(): Promise<AuditLog[]> {
+    try {
+        const q = query(
+            collection(db, 'audit_logs'),
+            orderBy('timestamp', 'desc')
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+            timestamp: doc.data().timestamp?.toDate(),
+        })) as AuditLog[];
+    } catch (error) {
+        console.error("Error fetching audit logs: ", error);
+        return [];
+    }
 }

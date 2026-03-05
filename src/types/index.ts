@@ -134,3 +134,15 @@ export interface PreloaderImage {
 export interface PreloaderSettings {
     images: PreloaderImage[];
 }
+
+// --- System Audit Logs ---
+export type AuditActionType = 'LOGIN' | 'CREATE' | 'UPDATE' | 'DELETE' | 'SETTINGS' | 'SYSTEM';
+
+export interface AuditLog {
+    id?: string;
+    type: AuditActionType;
+    action: string;
+    details: string;
+    user: string;
+    timestamp: Date;
+}

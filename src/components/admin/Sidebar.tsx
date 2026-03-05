@@ -17,6 +17,8 @@ import {
     PlaySquare,
     Smartphone,
     MonitorPlay,
+    Shield,
+    BarChart3,
 } from 'lucide-react';
 import { useAdminStore } from '@/store/adminStore';
 
@@ -40,6 +42,8 @@ const NAV_GROUPS = [
         title: 'Global',
         items: [
             { label: 'Messages', href: '/admin/messages', icon: Mail },
+            { label: 'System Audit Logs', href: '/admin/audit-logs', icon: Shield },
+            { label: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
             { label: 'Legal Policies', href: '/admin/legal', icon: FileText },
             { label: 'Settings', href: '/admin/settings', icon: Settings },
         ],
