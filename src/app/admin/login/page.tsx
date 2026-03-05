@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import GoogleButton from '@/components/admin/GoogleButton';
 import { signIn } from 'next-auth/react';
+import { haptic, HapticType } from 'web-haptics';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -39,6 +40,8 @@ export default function LoginPage() {
             } else {
                 setError('An unexpected error occurred. Please try again.');
             }
+            // Trigger haptic feedback for mobile devices (web-haptics)
+            haptic(HapticType.Error);
         } finally {
             setLoading(false);
         }

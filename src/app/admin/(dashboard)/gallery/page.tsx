@@ -187,6 +187,9 @@ export default function GalleryPage() {
     }, [filterCategory]);
 
     const showToast = useCallback((type: 'success' | 'error', message: string) => {
+        if (type === 'error') {
+            haptic(HapticType.Error);
+        }
         setToast({ type, message });
         setTimeout(() => setToast(null), 3000);
     }, []);
