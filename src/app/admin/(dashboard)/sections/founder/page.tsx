@@ -85,6 +85,10 @@ export default function FounderSectionPage() {
             const data = { ...founderForm, photoUrl };
             await updateFounderInfo(data);
             setFounderInfo(data);
+
+            const adminEmail = session?.user?.email || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated FOUNDER Section', 'Changes saved to database.', adminEmail);
+
             setPhotoFile(null);
             setPickedDriveFile(null);
             setPhotoPreview(photoUrl);

@@ -61,7 +61,7 @@ export default function LegalSettingsPage() {
         try {
             await updateLegalContent(legalForm);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('UPDATE', 'Updated Legal Policies', `Modified the ${activeTab} policy text.`, adminEmail);
 
             showToast('Legal policies saved successfully.');

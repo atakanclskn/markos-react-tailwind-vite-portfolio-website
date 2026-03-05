@@ -50,7 +50,7 @@ export default function ContactSectionPage() {
             await updateContactInfo(contactForm);
             setContactInfo(contactForm);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('UPDATE', 'Updated CONTACT Section', 'Changes saved to database.', adminEmail);
 
             showToast('Contact section saved successfully.');

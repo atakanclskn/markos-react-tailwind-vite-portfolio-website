@@ -107,7 +107,7 @@ export default function SettingsPage() {
             await updateSEOSettings(seoForm);
             setSEOSettings(seoForm);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('SETTINGS', 'Updated SEO Settings', `Changed site meta information.`, adminEmail);
 
             showToast('SEO settings saved.');
@@ -125,7 +125,7 @@ export default function SettingsPage() {
             await updateFooterContent(footerForm);
             setFooterContent(footerForm);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('SETTINGS', 'Updated Footer Details', `Modified footer content or social links.`, adminEmail);
 
             showToast('Footer settings saved.');
@@ -144,7 +144,7 @@ export default function SettingsPage() {
             // Instantly apply globally to the page via Context without reload
             setBrandColor(appearanceForm.brandColor);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('SETTINGS', 'Updated Appearance', `Brand color set to ${appearanceForm.brandColor}`, adminEmail);
 
             showToast('Appearance settings saved. Brand color updated.');

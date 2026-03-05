@@ -48,7 +48,7 @@ export default function HeroSectionPage() {
             await updateHeroContent(heroForm);
             setHeroContent(heroForm);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('UPDATE', 'Updated HERO Section', 'Changes saved to database.', adminEmail);
 
             showToast('Hero section saved successfully.');

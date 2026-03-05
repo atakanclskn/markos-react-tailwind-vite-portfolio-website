@@ -54,7 +54,7 @@ export default function PreloaderPage() {
             await updatePreloaderSettings(data);
             setPreloaderSettings(data);
 
-            const adminEmail = session?.user?.email || 'Admin';
+            const adminEmail = session?.user?.email || 'Unknown User';
             await logAuditAction('UPDATE', 'Updated PRELOADER Images', `Saved ${images.length} images to the loading screen.`, adminEmail);
 
             showToast('Preloader settings saved successfully.');
