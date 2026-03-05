@@ -87,16 +87,6 @@ export default function AuditLogsPage() {
             <Topbar title="System Audit Logs" />
 
             <div className="p-6 space-y-6">
-                <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10">
-                        <Shield className="h-5 w-5 text-purple-500" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-semibold text-[#f5f5f5]">Security Monitoring</h1>
-                        <p className="text-sm text-[#a0a0a0]">Traceability across system activities.</p>
-                    </div>
-                </div>
-
                 {/* Filters Bar */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl border border-white/[0.06] bg-[#121212]">
                     {/* Type Filter */}

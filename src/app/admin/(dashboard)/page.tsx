@@ -10,11 +10,14 @@ import {
     TrendingUp,
     Loader2,
     RefreshCw,
+    Shield,
 } from 'lucide-react';
 import {
     getCollectionCount,
     getUnreadMessageCount,
+    getAuditLogs,
 } from '@/lib/firestore';
+import type { AuditLog } from '@/types';
 import { useAdminStore } from '@/store/adminStore';
 
 interface StatCard {
@@ -28,17 +31,21 @@ interface StatCard {
 export default function DashboardPage() {
     const { stats, setStats } = useAdminStore();
     const [loading, setLoading] = useState(true);
+    const [recentLogs, setRecentLogs] = useState<AuditLog[]>([]);
 
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const [totalMessages, unreadMessages, totalPhotos, totalCategories] = await Promise.all([
+            const [totalMessages, unreadMessages, totalPhotos, totalCategories, logs] = await Promise.all([
                 getCollectionCount('messages'),
                 getUnreadMessageCount(),
                 getCollectionCount('photos'),
                 getCollectionCount('categories'),
+                getAuditLogs(),
             ]);
             setStats({ totalMessages, unreadMessages, totalPhotos, totalCategories });
+            // Show only top 5 recent logs for the dashboard widget
+            setRecentLogs(logs.slice(0, 5));
         } catch (err) {
             console.error('Failed to fetch dashboard stats:', err);
         } finally {
@@ -150,18 +157,60 @@ export default function DashboardPage() {
                             description="Check your inbox"
                         />
                         <QuickAction
-                            href="/admin/media"
+                            href="/admin/gallery"
                             icon={Image}
-                            label="Sync Photos"
-                            description="Sync from Google Photos"
+                            label="Manage Gallery"
+                            description="Upload or edit photos"
                         />
                         <QuickAction
-                            href="/admin/categories"
-                            icon={FolderOpen}
-                            label="Manage Categories"
-                            description="Add or edit categories"
+                            href="/admin/audit-logs"
+                            icon={Shield}
+                            label="Security Logs"
+                            description="Review system events"
                         />
                     </div>
+                </div>
+
+                {/* Recent Activity Widget */}
+                <div className="mt-8">
+                    <div className="mb-4 flex items-center justify-between">
+                        <h4 className="text-sm font-medium text-[#a0a0a0]">Recent Activity</h4>
+                        <a href="/admin/audit-logs" className="text-xs font-medium text-[#c8a96e] hover:underline">
+                            View All Logs
+                        </a>
+                    </div>
+                    {loading ? (
+                        <div className="flex h-32 items-center justify-center rounded-xl border border-white/[0.06] bg-[#111]">
+                            <Loader2 className="h-5 w-5 animate-spin text-[#c8a96e]" />
+                        </div>
+                    ) : (
+                        <div className="rounded-xl border border-white/[0.06] bg-[#111] overflow-hidden">
+                            {recentLogs.length > 0 ? (
+                                <div className="divide-y divide-white/[0.04]">
+                                    {recentLogs.map((log) => (
+                                        <div key={log.id} className="flex items-center justify-between p-4 hover:bg-white/[0.02]">
+                                            <div>
+                                                <p className="text-sm font-medium text-[#f5f5f5]">{log.action}</p>
+                                                <p className="text-xs text-[#a0a0a0] mt-0.5 line-clamp-1">{log.details}</p>
+                                            </div>
+                                            <div className="text-right shrink-0 ml-4">
+                                                <p className="text-xs font-medium text-[#c8a96e]">{log.user}</p>
+                                                <p className="text-[11px] text-[#666] mt-0.5">
+                                                    {new Intl.DateTimeFormat('en-GB', {
+                                                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                                                    }).format(log.timestamp)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-8 text-center text-sm text-[#666]">
+                                    No recent activity found.
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </>
