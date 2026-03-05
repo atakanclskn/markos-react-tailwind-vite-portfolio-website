@@ -15,7 +15,7 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
     const { setMobileSidebarOpen } = useAdminStore();
 
     return (
-        <div className="flex h-[calc(100vh-64px)] w-full flex-col lg:flex-row bg-[#0a0a0a]">
+        <div className="flex min-h-[calc(100vh-64px)] lg:h-[calc(100vh-64px)] w-full flex-col lg:flex-row bg-[#0a0a0a]">
 
             {/* Left Side: Form Controls */}
             <div className={`flex flex-col border-r border-white/[0.06] transition-all duration-300 ${showPreview ? 'hidden lg:flex lg:w-[450px] xl:w-[500px]' : 'w-full'}`}>
@@ -43,7 +43,7 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
                 </div>
 
                 {/* Scrollable Form Content */}
-                <div className="flex-1 overflow-y-auto w-full relative">
+                <div className="flex-1 lg:overflow-y-auto w-full relative">
                     {children}
                 </div>
             </div>
@@ -57,12 +57,12 @@ export default function AdminSplitView({ children, preview, title }: AdminSplitV
                     {/* Add a close preview button on mobile */}
                     <button
                         onClick={() => setShowPreview(false)}
-                        className="lg:hidden absolute top-4 right-4 z-50 rounded-lg bg-[#c8a96e] px-4 py-2 text-xs font-medium text-[#0a0a0a] shadow-xl"
+                        className="lg:hidden fixed top-20 right-4 z-[60] rounded-lg bg-[#c8a96e] px-4 py-2 text-xs font-medium text-[#0a0a0a] shadow-xl"
                     >
                         Back to Editor
                     </button>
                     {/* Fake browser chrome or simple wrapper */}
-                    <div className="flex-1 w-full overflow-y-auto overflow-x-hidden isolate" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="flex-1 w-full lg:overflow-y-auto overflow-x-hidden isolate" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {preview}
                     </div>
                 </div>

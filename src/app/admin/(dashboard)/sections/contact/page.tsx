@@ -70,7 +70,7 @@ export default function ContactSectionPage() {
         <AdminSplitView
             title="Contact Section Editor"
             preview={
-                <div className="w-full h-full relative isolate pointer-events-none overflow-y-auto">
+                <div className="w-full min-h-full bg-black">
                     <ContactSection previewData={contactForm} />
                 </div>
             }

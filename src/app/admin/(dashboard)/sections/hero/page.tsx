@@ -68,7 +68,7 @@ export default function HeroSectionPage() {
         <AdminSplitView
             title="Hero Section Editor"
             preview={
-                <div className="w-full h-full relative isolate pointer-events-none">
+                <div className="w-full min-h-full bg-black">
                     <Hero previewData={heroForm} />
                 </div>
             }

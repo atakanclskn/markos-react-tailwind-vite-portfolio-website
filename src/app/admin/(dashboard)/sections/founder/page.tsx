@@ -142,7 +142,7 @@ export default function FounderSectionPage() {
         <AdminSplitView
             title="About (Founder) Editor"
             preview={
-                <div className="w-full h-full relative isolate pointer-events-none overflow-y-auto">
+                <div className="w-full min-h-full bg-[#0a0a0a]">
                     <FounderSection previewData={founderForm} />
                 </div>
             }
