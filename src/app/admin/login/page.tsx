@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { Camera, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
     const router = useRouter();
@@ -45,8 +45,16 @@ export default function LoginPage() {
             <div className="w-full max-w-sm">
                 {/* Logo */}
                 <div className="mb-10 flex flex-col items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#c8a96e]/10">
-                        <Camera className="h-6 w-6 text-[#c8a96e]" />
+                    <div
+                        className="flex h-12 w-12 items-center justify-center rounded-2xl"
+                        style={{ backgroundColor: 'color-mix(in srgb, var(--color-brand) 15%, transparent)' }}
+                    >
+                        <span
+                            className="text-3xl leading-none pt-1 pr-1"
+                            style={{ fontFamily: 'var(--font-monoton)', color: 'var(--color-brand)' }}
+                        >
+                            M
+                        </span>
                     </div>
                     <div className="text-center">
                         <h1 className="text-xl font-semibold text-[#f5f5f5]">Markos Studio</h1>
