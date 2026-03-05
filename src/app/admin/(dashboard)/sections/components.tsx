@@ -168,7 +168,7 @@ export function SaveButton({ onClick, loading }: { onClick: () => void; loading:
 export function DriveIcon({ className }: { className?: string }) {
     return (
         <img
-            src="https://img.icons8.com/?size=48&id=JF6kPfhVzeVz&format=png"
+            src="https://img.icons8.com/?size=100&id=3NOIXpWW8crC&format=png&color=FFFFFF"
             alt="Google Drive"
             className={className}
         />

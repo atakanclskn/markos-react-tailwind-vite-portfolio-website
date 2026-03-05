@@ -38,18 +38,9 @@ import {
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import CustomDropdown from '@/components/admin/CustomDropdown';
 import type { Photo, Category } from '@/types';
-import { ConfirmModal } from '../sections/components';
+import { ConfirmModal, DriveIcon } from '../sections/components';
 import GoogleButton from '@/components/admin/GoogleButton';
 
-function DriveIcon({ className }: { className?: string }) {
-    return (
-        <img
-            src="https://img.icons8.com/?size=100&id=3NOIXpWW8crC&format=png&color=FFFFFF"
-            alt="Google Drive"
-            className={className}
-        />
-    );
-}
 
 // ─── Reusable Modals ────────────────────────────────────────────────────────
 // Removed Inline ConfirmModal

@@ -10,6 +10,7 @@ import { Loader2, X, Trash2, GripVertical, LogIn, LogOut, HardDrive, Plus } from
 import { useSession, signIn, signOut } from 'next-auth/react';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import GoogleButton from '@/components/admin/GoogleButton';
 
 export default function PreloaderPage() {
     const { preloaderSettings, setPreloaderSettings } = useAdminStore();
@@ -174,9 +175,11 @@ export default function PreloaderPage() {
                                 <label className="text-sm font-medium text-[#f5f5f5]">Add Images</label>
                                 {uploadMode === 'drive' && (
                                     !session ? (
-                                        <button onClick={() => signIn('google')} className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700">
-                                            <LogIn className="h-3.5 w-3.5 shrink-0" /> Connect Google
-                                        </button>
+                                        <GoogleButton
+                                            text="Connect Google"
+                                            onClick={() => signIn('google')}
+                                            className="!w-auto !py-1.5 !px-3 text-xs"
+                                        />
                                     ) : (
                                         <div className="flex items-center gap-2 min-w-0">
                                             <span className="text-xs text-[#666] truncate max-w-[150px]">{session.user?.email}</span>
@@ -189,10 +192,10 @@ export default function PreloaderPage() {
                             {/* Mode Toggle */}
                             <div className="mb-3 sm:mb-4 flex gap-1 rounded-lg border border-white/[0.06] bg-[#0d0d0d] p-1">
                                 <button onClick={() => setUploadMode('drive')} className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors ${uploadMode === 'drive' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                    <DriveIcon className="h-4 w-4 shrink-0" /> <span>Drive</span>
+                                    <DriveIcon className="h-4 w-4 shrink-0" /> <span>Google Drive</span>
                                 </button>
                                 <button onClick={() => setUploadMode('computer')} className={`flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-md px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium transition-colors ${uploadMode === 'computer' ? 'bg-white/[0.06] text-[#f5f5f5]' : 'text-[#666] hover:text-[#a0a0a0]'}`}>
-                                    <HardDrive className="h-3.5 w-3.5 shrink-0" /> <span>Computer</span>
+                                    <HardDrive className="h-3.5 w-3.5 shrink-0" /> <span>From Computer</span>
                                 </button>
                             </div>
 

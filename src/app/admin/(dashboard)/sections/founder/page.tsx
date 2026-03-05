@@ -11,6 +11,7 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import GooglePicker, { PickerFile } from '@/components/admin/GooglePicker';
 import AdminSplitView from '@/components/admin/AdminSplitView';
 import FounderSection from '@/components/FounderSection';
+import GoogleButton from '@/components/admin/GoogleButton';
 
 export default function FounderSectionPage() {
     const { founderInfo, setFounderInfo } = useAdminStore();
@@ -205,9 +206,11 @@ export default function FounderSectionPage() {
                             <label className="text-sm font-medium text-[#f5f5f5]">Profile Photo</label>
                             {uploadMode === 'drive' && (
                                 !session ? (
-                                    <button onClick={() => signIn('google')} className="flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-blue-700">
-                                        <LogIn className="h-3.5 w-3.5" /> Connect Google
-                                    </button>
+                                    <GoogleButton
+                                        text="Connect Google"
+                                        onClick={() => signIn('google')}
+                                        className="!w-auto !py-1.5 !px-3 text-xs"
+                                    />
                                 ) : (
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs text-[#666]">{session.user?.email}</span>
