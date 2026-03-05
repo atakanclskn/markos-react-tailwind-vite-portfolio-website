@@ -188,7 +188,7 @@ export default function GalleryPage() {
 
     const showToast = useCallback((type: 'success' | 'error', message: string) => {
         setToast({ type, message });
-        setTimeout(() => setToast(null), 5000);
+        setTimeout(() => setToast(null), 3000);
     }, []);
 
     useEffect(() => {

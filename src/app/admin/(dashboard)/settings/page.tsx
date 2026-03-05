@@ -198,7 +198,7 @@ export default function SettingsPage() {
 
             {/* Toast */}
             {toast && (
-                <div className="fixed right-6 top-20 z-50 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 shadow-lg">
+                <div className="fixed right-4 left-4 sm:left-auto sm:right-6 top-20 z-50 flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 shadow-lg">
                     <span>{toast}</span>
                     <button onClick={() => setToast(null)}>
                         <X className="h-3.5 w-3.5" />
