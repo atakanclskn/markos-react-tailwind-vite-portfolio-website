@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
+import { useGalleryStore } from '@/store/galleryStore';
 import { getCategories, prefetchPhotosForCategory } from '@/lib/firestore';
 
 const FALLBACK_CATEGORIES = [
@@ -23,6 +24,7 @@ interface GalleryDockProps {
 export default function GalleryDock({ activeCategory }: GalleryDockProps) {
     const router = useRouter();
     const { theme } = useTheme();
+    const setDirection = useGalleryStore(state => state.setDirection);
     const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
     const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
@@ -36,6 +38,11 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
 
     const handleCategoryClick = async (slug: string) => {
         if (slug === activeCategory || navigatingTo) return;
+
+        // Calculate direction: 1 for right, -1 for left
+        const currentIndex = categories.findIndex(c => c.slug === activeCategory);
+        const targetIndex = categories.findIndex(c => c.slug === slug);
+        setDirection(targetIndex > currentIndex ? 1 : -1);
 
         setNavigatingTo(slug);
         try {
