@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { getCategories } from '@/lib/firestore';
+import { getCategories, prefetchPhotosForCategory } from '@/lib/firestore';
 
 const FALLBACK_CATEGORIES = [
     { slug: 'landscape', label: 'Landscape' },
@@ -24,6 +24,7 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
     const router = useRouter();
     const { theme } = useTheme();
     const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+    const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
     useEffect(() => {
         getCategories().then((cats) => {
@@ -32,6 +33,25 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
             }
         });
     }, []);
+
+    const handleCategoryClick = async (slug: string) => {
+        if (slug === activeCategory || navigatingTo) return;
+
+        setNavigatingTo(slug);
+        try {
+            // Prefetch the photos BEFORE triggering the route transition
+            // This ensures the new page has data immediately upon mounting,
+            // preventing a black screen flash.
+            await prefetchPhotosForCategory(slug);
+            router.push(`/gallery/${slug}`);
+        } catch (error) {
+            console.error("Error prefetching category:", error);
+            // Fallback to normal navigation if prefetch fails
+            router.push(`/gallery/${slug}`);
+        } finally {
+            setNavigatingTo(null);
+        }
+    };
 
     return (
         <motion.div
@@ -56,11 +76,15 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
             >
                 {categories.map((cat) => {
                     const isActive = cat.slug === activeCategory;
+                    const isNavigatingToThis = cat.slug === navigatingTo;
+
                     return (
                         <button
                             key={cat.slug}
-                            onClick={() => router.push(`/gallery/${cat.slug}`)}
-                            className="relative flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-300 sm:px-4 sm:py-2 sm:text-sm"
+                            onClick={() => handleCategoryClick(cat.slug)}
+                            disabled={!!navigatingTo}
+                            className={`relative flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium tracking-wide transition-all duration-300 sm:px-4 sm:py-2 sm:text-sm ${isNavigatingToThis ? 'animate-pulse opacity-70' : ''
+                                }`}
                             style={{
                                 fontFamily: 'var(--font-outfit)',
                                 color: isActive
@@ -70,7 +94,7 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
                                         : 'rgba(0,0,0,0.5)',
                             }}
                         >
-                            {isActive && (
+                            {isActive && !isNavigatingToThis && (
                                 <motion.span
                                     layoutId="dock-active-pill"
                                     className="absolute inset-0 rounded-full"
@@ -78,7 +102,9 @@ export default function GalleryDock({ activeCategory }: GalleryDockProps) {
                                     transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
                                 />
                             )}
-                            <span className="relative z-10">{cat.label}</span>
+                            <span className="relative z-10">
+                                {isNavigatingToThis ? 'Loading...' : cat.label}
+                            </span>
                         </button>
                     );
                 })}

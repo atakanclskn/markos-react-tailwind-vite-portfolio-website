@@ -72,6 +72,29 @@ export async function getPhotosByCategory(categoryId: string): Promise<Photo[]> 
     return photos.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }
 
+// --- Cache for Gallery Prefetching ---
+// This allows the GalleryDock to fetch photos *before* triggering a route transition.
+const globalPhotosCache = new Map<string, Photo[]>();
+
+export const getPhotosFromCache = (categorySlug: string): Photo[] | null => {
+    return globalPhotosCache.get(categorySlug) || null;
+};
+
+export const prefetchPhotosForCategory = async (categorySlug: string): Promise<Photo[]> => {
+    if (globalPhotosCache.has(categorySlug)) {
+        return globalPhotosCache.get(categorySlug)!;
+    }
+
+    // Find category ID
+    const cats = await getCategories();
+    const cat = cats.find(c => c.slug === categorySlug);
+    if (!cat || !cat.id) return [];
+
+    const photos = await getPhotosByCategory(cat.id);
+    globalPhotosCache.set(categorySlug, photos);
+    return photos;
+};
+
 export async function getAllPhotos(): Promise<Photo[]> {
     const q = query(collection(db, 'photos'), orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);

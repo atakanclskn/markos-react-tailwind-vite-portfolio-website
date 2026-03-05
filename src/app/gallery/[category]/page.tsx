@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/context/ThemeContext';
-import { getCategories, getPhotosByCategory } from '@/lib/firestore';
+import { getCategories, getPhotosByCategory, getPhotosFromCache } from '@/lib/firestore';
 import type { Photo } from '@/types';
 
 export default function GalleryPage() {
@@ -13,12 +13,18 @@ export default function GalleryPage() {
     const categorySlug = params.category as string;
 
     const [categoryLabel, setCategoryLabel] = useState(categorySlug);
-    const [images, setImages] = useState<Photo[]>([]);
-    const [loading, setLoading] = useState(true);
+    // Attempt to load from cache synchronously on mount
+    const cachedPhotos = getPhotosFromCache(categorySlug);
+    const [images, setImages] = useState<Photo[]>(cachedPhotos || []);
+    // Only show loading if we didn't hit the cache
+    const [loading, setLoading] = useState(!cachedPhotos);
 
     useEffect(() => {
         (async () => {
-            setLoading(true);
+            // Only fetch if cache missed or we want to silently revalidate
+            if (!cachedPhotos) {
+                setLoading(true);
+            }
             try {
                 // Get all categories to find current one and its label
                 const cats = await getCategories();
