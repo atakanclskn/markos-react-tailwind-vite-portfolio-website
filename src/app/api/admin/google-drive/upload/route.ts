@@ -45,7 +45,10 @@ export async function POST(request: NextRequest) {
         // 2. Upload to ImgBB
         const base64Image = buffer.toString('base64');
         const formData = new FormData();
-        const imgbbKey = process.env.IMGBB_API_KEY || '6902c7b41fa8673e8aa0d91855974b42';
+        const imgbbKey = process.env.IMGBB_API_KEY;
+        if (!imgbbKey) {
+            return NextResponse.json({ error: 'IMGBB_API_KEY is not configured.' }, { status: 500 });
+        }
         formData.append('key', imgbbKey);
         formData.append('image', base64Image);
         formData.append('name', fileName || fileId);
