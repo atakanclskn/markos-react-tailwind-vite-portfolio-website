@@ -60,6 +60,7 @@ export default function LoginPage() {
             const allowedEmails = [
                 'atakanclskn@outlook.com',
                 'calskanatakan55@gmail.com',
+                'atakadkfkf@gmail.com',
                 process.env.NEXT_PUBLIC_ADMIN_EMAIL
             ].map(e => e?.toLowerCase());
 
