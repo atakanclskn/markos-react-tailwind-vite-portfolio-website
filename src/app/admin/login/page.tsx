@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logAuditAction } from '@/lib/firestore';
 import { useRouter } from 'next/navigation';
@@ -55,6 +55,22 @@ export default function LoginPage() {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
+
+            // Optional: you can check against an array of emails if you have multiple admins
+            const allowedEmails = [
+                'atakanclskn@outlook.com',
+                'calskanatakan55@gmail.com',
+                process.env.NEXT_PUBLIC_ADMIN_EMAIL
+            ].map(e => e?.toLowerCase());
+
+            if (user.email && !allowedEmails.includes(user.email.toLowerCase())) {
+                await signOut(auth); // Immediately sign them back out
+                setError('This Google account is not authorized to access the admin panel.');
+                trigger("error");
+                setGoogleLoading(false);
+                return;
+            }
+
             await logAuditAction('LOGIN', 'Admin Accessed Panel via Google', 'User successfully authenticated with Google.', user.email || 'unknown');
             router.replace('/admin');
         } catch (err: unknown) {
