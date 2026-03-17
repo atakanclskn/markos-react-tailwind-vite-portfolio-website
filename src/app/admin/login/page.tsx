@@ -61,6 +61,7 @@ export default function LoginPage() {
                 'atakanclskn@outlook.com',
                 'calskanatakan55@gmail.com',
                 'atakadkfkf@gmail.com',
+                'markosstudioss@gmail.com',
                 process.env.NEXT_PUBLIC_ADMIN_EMAIL
             ].map(e => e?.toLowerCase());
 
