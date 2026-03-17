@@ -1,13 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logAuditAction } from '@/lib/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import GoogleButton from '@/components/admin/GoogleButton';
-import { signIn } from 'next-auth/react';
 import { useWebHaptics } from 'web-haptics/react';
 
 export default function LoginPage() {
@@ -17,6 +16,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState('');
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -45,6 +45,30 @@ export default function LoginPage() {
             trigger("error");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGoogleSignIn = async () => {
+        setError('');
+        setGoogleLoading(true);
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+            await logAuditAction('LOGIN', 'Admin Accessed Panel via Google', 'User successfully authenticated with Google.', user.email || 'unknown');
+            router.replace('/admin');
+        } catch (err: unknown) {
+            const firebaseError = err as { code?: string, message?: string };
+            if (firebaseError.code === 'auth/popup-closed-by-user') {
+                setError('Google sign-in was cancelled.');
+            } else if (firebaseError.code === 'auth/popup-blocked') {
+                setError('Google sign-in popup was blocked by the browser.');
+            } else {
+                setError(firebaseError.message || 'An unexpected error occurred during Google sign-in.');
+            }
+            trigger("error");
+        } finally {
+            setGoogleLoading(false);
         }
     };
 
@@ -144,8 +168,9 @@ export default function LoginPage() {
                     </div>
 
                     <GoogleButton
-                        text="Sign in with Google"
-                        onClick={() => signIn('google', { callbackUrl: '/admin' })}
+                        text={googleLoading ? "Signing in..." : "Sign in with Google"}
+                        onClick={handleGoogleSignIn}
+                        disabled={loading || googleLoading}
                     />
                 </form>
             </div>
