@@ -21,6 +21,19 @@ export default function ContactSection({ previewData }: { previewData?: ContactI
     const [contactInfo, setContactInfoState] = useState<ContactInfo | null>(null);
     const [isLoading, setIsLoading] = useState(!previewData);
 
+    const [formData, setFormData] = useState({
+        name: '',
+        subject: '',
+        email: '',
+        phone: '',
+        message: '',
+    });
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [submitError, setSubmitError] = useState('');
+
     useEffect(() => {
         if (previewData) {
             setIsLoading(false);
@@ -84,20 +97,6 @@ export default function ContactSection({ previewData }: { previewData?: ContactI
     const statusText = statusActive
         ? 'Currently available for new projects'
         : 'Currently not available for new projects';
-
-    const [formData, setFormData] = useState({
-        name: '',
-        subject: '',
-        email: '',
-        phone: '',
-        message: '',
-    });
-
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitted, setSubmitted] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [submitError, setSubmitError] = useState('');
 
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
