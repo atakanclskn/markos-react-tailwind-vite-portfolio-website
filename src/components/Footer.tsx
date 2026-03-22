@@ -9,23 +9,64 @@ import type { FooterContent } from '@/types';
 export default function Footer() {
     const { theme, toggleTheme } = useTheme();
     const [footer, setFooter] = useState<FooterContent | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        getFooterContent().then((data) => {
-            if (data) setFooter(data);
-        });
+        let mounted = true;
+        getFooterContent()
+            .then((data) => {
+                if (mounted && data) setFooter(data);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+        return () => {
+            mounted = false;
+        };
     }, []);
 
-    const footerLinks = footer?.socialLinks && footer.socialLinks.length > 0
-        ? footer.socialLinks.map(l => ({ label: l.iconName, href: l.url }))
-        : [
-            { label: 'Instagram', href: '#' },
-            { label: 'Twitter', href: '#' },
-            { label: 'Behance', href: '#' },
-            { label: 'LinkedIn', href: '#' },
-        ];
+    if (isLoading) {
+        return (
+            <footer
+                className="px-6 py-16 md:px-12 lg:px-20"
+                style={{
+                    borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                }}
+            >
+                <div className="mx-auto max-w-6xl animate-pulse">
+                    <div className="grid gap-12 md:grid-cols-4">
+                        <div className="space-y-3">
+                            <div className="h-7 w-40 rounded bg-white/10" />
+                            <div className="h-4 w-48 rounded bg-white/10" />
+                            <div className="h-4 w-44 rounded bg-white/10" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="h-3 w-24 rounded bg-white/10" />
+                            <div className="h-4 w-28 rounded bg-white/10" />
+                            <div className="h-4 w-24 rounded bg-white/10" />
+                            <div className="h-4 w-20 rounded bg-white/10" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="h-3 w-16 rounded bg-white/10" />
+                            <div className="h-4 w-28 rounded bg-white/10" />
+                            <div className="h-4 w-32 rounded bg-white/10" />
+                            <div className="h-4 w-24 rounded bg-white/10" />
+                        </div>
+                        <div className="space-y-3">
+                            <div className="h-3 w-16 rounded bg-white/10" />
+                            <div className="h-12 w-12 rounded-full bg-white/10" />
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        );
+    }
 
-    const copyright = footer?.copyright || `© ${new Date().getFullYear()} Markos Studio. All rights reserved.`;
+    if (!footer) return null;
+
+    const footerLinks = footer.socialLinks?.map(l => ({ label: l.iconName, href: l.url })) ?? [];
+
+    const copyright = footer.copyright;
 
     return (
         <footer

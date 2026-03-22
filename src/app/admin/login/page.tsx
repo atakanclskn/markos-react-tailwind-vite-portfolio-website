@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { logAuditAction } from '@/lib/firestore';
+import { getGoogleAdminAllowedEmails } from '@/lib/adminAllowlist';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import GoogleButton from '@/components/admin/GoogleButton';
@@ -56,14 +57,7 @@ export default function LoginPage() {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
-            // Optional: you can check against an array of emails if you have multiple admins
-            const allowedEmails = [
-                'atakanclskn@outlook.com',
-                'calskanatakan55@gmail.com',
-                'atakadkfkf@gmail.com',
-                'markosstudioss@gmail.com',
-                process.env.NEXT_PUBLIC_ADMIN_EMAIL
-            ].map(e => e?.toLowerCase());
+            const allowedEmails = getGoogleAdminAllowedEmails();
 
             if (user.email && !allowedEmails.includes(user.email.toLowerCase())) {
                 await signOut(auth); // Immediately sign them back out

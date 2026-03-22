@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Topbar from '@/components/admin/Topbar';
 import { getLegalContent, updateLegalContent, logAuditAction } from '@/lib/firestore';
 import type { LegalContent } from '@/types';
+import { useAdminStore } from '@/store/adminStore';
 import { useSession } from 'next-auth/react';
 import { TextAreaField, SaveButton } from '../sections/components';
 import { Loader2, X } from 'lucide-react';
@@ -17,6 +18,7 @@ import { useWebHaptics } from 'web-haptics/react';
 export default function LegalSettingsPage() {
     const { trigger } = useWebHaptics();
     const { data: session } = useSession();
+    const { adminEmail } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
@@ -63,8 +65,8 @@ export default function LegalSettingsPage() {
         try {
             await updateLegalContent(legalForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated Legal Policies', `Modified the ${activeTab} policy text.`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated Legal Policies', `Modified the ${activeTab} policy text.`, emailToLog);
 
             showToast('Legal policies saved successfully.');
         } catch (err) {

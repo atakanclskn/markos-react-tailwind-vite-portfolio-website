@@ -9,28 +9,62 @@ import type { FounderInfo } from '@/types';
 export default function FounderSection({ previewData }: { previewData?: FounderInfo }) {
     const { theme } = useTheme();
     const [founder, setFounder] = useState<FounderInfo | null>(null);
+    const [isLoading, setIsLoading] = useState(!previewData);
 
     useEffect(() => {
-        if (!previewData) {
-            getFounderInfo().then((data) => {
-                if (data) setFounder(data);
-            });
+        if (previewData) {
+            setIsLoading(false);
+            return;
         }
+
+        let mounted = true;
+        getFounderInfo()
+            .then((data) => {
+                if (mounted && data) setFounder(data);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
     }, [previewData]);
 
     const activeData = previewData || founder;
 
-    const name = activeData?.name || 'Onur Satici';
-    const title = activeData?.title || 'Founder & Photography Artist';
-    const bio = activeData?.bio || 'The creative force behind Markos Studio with over 10 years of experience. As a master of natural light and composition, he brings a unique perspective to every project. Working in and around Istanbul, he creates unforgettable visuals for brands and individuals alike.';
-    const photoUrl = activeData?.photoUrl;
-    const stats = activeData?.stats?.length
-        ? activeData.stats
-        : [
-            { value: '10+', label: 'Years Experience' },
-            { value: '500+', label: 'Projects' },
-            { value: '50+', label: 'Brands' },
-        ];
+    if (!previewData && isLoading) {
+        return (
+            <section id="founder" className="px-6 py-24 md:px-12 lg:px-20">
+                <div className="mx-auto max-w-6xl animate-pulse">
+                    <div className="mb-16 text-center">
+                        <div className="mx-auto mb-4 h-3 w-24 rounded bg-white/10" />
+                        <div className="mx-auto h-10 w-56 rounded bg-white/10" />
+                    </div>
+                    <div className="grid items-center gap-12 md:grid-cols-2 lg:gap-20">
+                        <div className="aspect-[3/4] w-full rounded-2xl bg-white/10" />
+                        <div>
+                            <div className="mb-3 h-8 w-56 rounded bg-white/10" />
+                            <div className="mb-6 h-4 w-64 rounded bg-white/10" />
+                            <div className="space-y-3">
+                                <div className="h-4 w-full rounded bg-white/10" />
+                                <div className="h-4 w-full rounded bg-white/10" />
+                                <div className="h-4 w-5/6 rounded bg-white/10" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (!activeData) return null;
+
+    const name = activeData.name;
+    const title = activeData.title;
+    const bio = activeData.bio;
+    const photoUrl = activeData.photoUrl;
+    const stats = activeData.stats ?? [];
 
     return (
         <section id="founder" className="px-6 py-24 md:px-12 lg:px-20">

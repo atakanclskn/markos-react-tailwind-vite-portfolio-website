@@ -16,8 +16,7 @@ import { useWebHaptics } from 'web-haptics/react';
 
 export default function FooterSettingsPage() {
     const { trigger } = useWebHaptics();
-    const { data: session } = useSession();
-    const { footerContent, setFooterContent } = useAdminStore();
+    const { footerContent, setFooterContent, adminEmail } = useAdminStore();
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -59,8 +58,8 @@ export default function FooterSettingsPage() {
             await updateFooterContent(footerForm);
             setFooterContent(footerForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('SETTINGS', 'Updated Footer Details', `Modified footer content or social links.`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('SETTINGS', 'Updated Footer Details', `Modified footer content or social links.`, emailToLog);
 
             showToast('Footer settings saved.');
         } catch (err) {

@@ -20,7 +20,6 @@ import {
 import type { SEOSettings, AppearanceSettings } from '@/types';
 import { useTheme } from '@/context/ThemeContext';
 import { InputField, SaveButton } from '../sections/components';
-import { useSession } from 'next-auth/react';
 import { useWebHaptics } from 'web-haptics/react';
 
 const PREMIUM_COLORS = [
@@ -35,8 +34,7 @@ const PREMIUM_COLORS = [
 
 export default function SettingsPage() {
     const { trigger } = useWebHaptics();
-    const { data: session } = useSession();
-    const { seoSettings, setSEOSettings } = useAdminStore();
+    const { seoSettings, setSEOSettings, adminEmail } = useAdminStore();
 
     const [loading, setLoading] = useState(true);
     const [savingSEO, setSavingSEO] = useState(false);
@@ -93,8 +91,8 @@ export default function SettingsPage() {
             await updateSEOSettings(seoForm);
             setSEOSettings(seoForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('SETTINGS', 'Updated SEO Settings', `Changed site meta information.`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('SETTINGS', 'Updated SEO Settings', `Changed site meta information.`, emailToLog);
 
             showToast('SEO settings saved.');
         } catch (err) {
@@ -112,8 +110,8 @@ export default function SettingsPage() {
             await updateAppearanceSettings(appearanceForm);
             setBrandColor(appearanceForm.brandColor);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('SETTINGS', 'Updated Appearance', `Brand color set to ${appearanceForm.brandColor}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('SETTINGS', 'Updated Appearance', `Brand color set to ${appearanceForm.brandColor}`, emailToLog);
 
             showToast('Appearance settings saved. Brand color updated.');
         } catch (err) {

@@ -14,7 +14,8 @@ import GoogleButton from '@/components/admin/GoogleButton';
 import { useWebHaptics } from 'web-haptics/react';
 
 export default function PreloaderPage() {
-    const { preloaderSettings, setPreloaderSettings } = useAdminStore();
+    const preloaderSettingsStore = useAdminStore();
+    const { preloaderSettings, setPreloaderSettings } = preloaderSettingsStore;
     const { data: session } = useSession();
     const { trigger } = useWebHaptics();
     const accessToken = (session as any)?.accessToken as string | undefined;
@@ -57,8 +58,8 @@ export default function PreloaderPage() {
             await updatePreloaderSettings(data);
             setPreloaderSettings(data);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated PRELOADER Images', `Saved ${images.length} images to the loading screen.`, adminEmail);
+            const emailToLog = preloaderSettingsStore.adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated PRELOADER Images', `Saved ${images.length} images to the loading screen.`, emailToLog);
 
             showToast('Preloader settings saved successfully.');
         } catch (err) {

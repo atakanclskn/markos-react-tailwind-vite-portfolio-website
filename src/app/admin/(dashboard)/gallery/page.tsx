@@ -156,7 +156,7 @@ function EditPhotoModal({
 export default function GalleryPage() {
     const { trigger } = useWebHaptics();
     const { data: session } = useSession();
-    const { photos, setPhotos, categories, setCategories, syncProgress, setSyncProgress } =
+    const { photos, setPhotos, categories, setCategories, syncProgress, setSyncProgress, adminEmail } =
         useAdminStore();
 
     const [loading, setLoading] = useState(true);
@@ -227,8 +227,8 @@ export default function GalleryPage() {
             setCategories([...categories, { id: docRef.id, name: newCatName.trim(), slug, order, createdAt: new Date() }]);
 
             // Audit Log
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('CREATE', 'Created Category', `Category: ${newCatName.trim()}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('CREATE', 'Created Category', `Category: ${newCatName.trim()}`, emailToLog);
 
             setNewCatName('');
             setAddingCat(false);
@@ -248,8 +248,8 @@ export default function GalleryPage() {
             await updateCategoryFn(editingCatId, { name: editCatName.trim(), slug });
             setCategories(categories.map((c) => c.id === editingCatId ? { ...c, name: editCatName.trim(), slug } : c));
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated Category', `Category renamed to: ${editCatName.trim()}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated Category', `Category renamed to: ${editCatName.trim()}`, emailToLog);
 
             setEditingCatId(null);
             showToast('success', 'Category updated.');
@@ -267,8 +267,8 @@ export default function GalleryPage() {
             await deleteCategoryFn(deletingCatId);
             setCategories(categories.filter((c) => c.id !== deletingCatId));
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('DELETE', 'Deleted Category', `Category ID: ${deletingCatId}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('DELETE', 'Deleted Category', `Category ID: ${deletingCatId}`, emailToLog);
 
             if (filterCategory === deletingCatId) setFilterCategory('all');
             if (selectedCategoryId === deletingCatId) setSelectedCategoryId('');
@@ -358,8 +358,8 @@ export default function GalleryPage() {
             message: `Synced ${synced} of ${pickedFiles.length} photos.${errors.length ? ' Some failed.' : ''}`,
         });
         if (synced > 0) {
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('CREATE', 'Uploaded Photos (Google Drive)', `${synced} photo(s) added to category ${getCategoryName(selectedCategoryId)}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('CREATE', 'Uploaded Photos (Google Drive)', `${synced} photo(s) added to category ${getCategoryName(selectedCategoryId)}`, emailToLog);
 
             showToast('success', `${synced} photo(s) added!`);
             setPhotos(await getAllPhotos());
@@ -413,8 +413,8 @@ export default function GalleryPage() {
             message: `Synced ${synced} of ${localFiles.length} photos.${errors.length ? ' Some failed.' : ''}`,
         });
         if (synced > 0) {
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('CREATE', 'Uploaded Photos (Local)', `${synced} photo(s) added to category ${getCategoryName(selectedCategoryId)}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('CREATE', 'Uploaded Photos (Local)', `${synced} photo(s) added to category ${getCategoryName(selectedCategoryId)}`, emailToLog);
 
             showToast('success', `${synced} photo(s) uploaded!`);
             setPhotos(await getAllPhotos());
@@ -431,8 +431,8 @@ export default function GalleryPage() {
             await deletePhotoFn(deleteTarget.id);
             setPhotos(photos.filter((p) => p.id !== deleteTarget.id));
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('DELETE', 'Deleted Photo', `Photo removed from ${getCategoryName(deleteTarget.categoryId)}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('DELETE', 'Deleted Photo', `Photo removed from ${getCategoryName(deleteTarget.categoryId)}`, emailToLog);
 
             showToast('success', 'Photo deleted.');
         } catch {
@@ -447,8 +447,8 @@ export default function GalleryPage() {
             await updatePhoto(id, data);
             setPhotos(photos.map((p) => (p.id === id ? { ...p, ...data } : p)));
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated Photo Details', `Edited photo in ${getCategoryName(data.categoryId)}`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated Photo Details', `Edited photo in ${getCategoryName(data.categoryId)}`, emailToLog);
 
             showToast('success', 'Photo updated.');
         } catch {

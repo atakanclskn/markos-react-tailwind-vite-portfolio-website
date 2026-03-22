@@ -14,8 +14,8 @@ import { useWebHaptics } from 'web-haptics/react';
 
 export default function ContactSectionPage() {
     const { trigger } = useWebHaptics();
+    const { contactInfo, setContactInfo, adminEmail } = useAdminStore();
     const { data: session } = useSession();
-    const { contactInfo, setContactInfo } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
@@ -52,8 +52,8 @@ export default function ContactSectionPage() {
             await updateContactInfo(contactForm);
             setContactInfo(contactForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated CONTACT Section', 'Changes saved to database.', adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated CONTACT Section', 'Changes saved to database.', emailToLog);
 
             showToast('Contact section saved successfully.');
         } catch (err) {

@@ -19,21 +19,68 @@ const SUBJECT_OPTIONS = [
 export default function ContactSection({ previewData }: { previewData?: ContactInfo }) {
     const { theme } = useTheme();
     const [contactInfo, setContactInfoState] = useState<ContactInfo | null>(null);
+    const [isLoading, setIsLoading] = useState(!previewData);
 
     useEffect(() => {
-        if (!previewData) {
-            getContactInfo().then((data) => {
-                if (data) setContactInfoState(data);
-            });
+        if (previewData) {
+            setIsLoading(false);
+            return;
         }
+
+        let mounted = true;
+        getContactInfo()
+            .then((data) => {
+                if (mounted && data) setContactInfoState(data);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
     }, [previewData]);
 
     const activeData = previewData || contactInfo;
 
-    const email = activeData?.email || 'info@markosstudio.com';
-    const phone = activeData?.phone || '+44 747 384 6666';
-    const address = activeData?.address || 'Manchester, United Kingdom';
-    const statusActive = activeData?.statusActive ?? true;
+    if (!previewData && isLoading) {
+        return (
+            <section id="contact" className="px-6 py-24 md:px-12 lg:px-20">
+                <div className="mx-auto max-w-6xl animate-pulse">
+                    <div className="mb-16 text-center">
+                        <div className="mx-auto mb-4 h-3 w-24 rounded bg-white/10" />
+                        <div className="mx-auto h-10 w-72 rounded bg-white/10" />
+                    </div>
+                    <div className="grid gap-12 md:grid-cols-2 lg:gap-20">
+                        <div className="space-y-4">
+                            <div className="h-8 w-52 rounded bg-white/10" />
+                            <div className="h-4 w-full rounded bg-white/10" />
+                            <div className="h-4 w-5/6 rounded bg-white/10" />
+                            <div className="mt-8 space-y-4">
+                                <div className="h-14 w-full rounded-lg bg-white/10" />
+                                <div className="h-14 w-full rounded-lg bg-white/10" />
+                                <div className="h-14 w-full rounded-lg bg-white/10" />
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="h-12 w-full rounded-lg bg-white/10" />
+                            <div className="h-12 w-full rounded-lg bg-white/10" />
+                            <div className="h-12 w-full rounded-lg bg-white/10" />
+                            <div className="h-32 w-full rounded-lg bg-white/10" />
+                            <div className="h-12 w-full rounded-lg bg-white/10" />
+                        </div>
+                    </div>
+                </div>
+            </section>
+        );
+    }
+
+    if (!activeData) return null;
+
+    const email = activeData.email;
+    const phone = activeData.phone;
+    const address = activeData.address;
+    const statusActive = activeData.statusActive ?? true;
     const statusText = statusActive
         ? 'Currently available for new projects'
         : 'Currently not available for new projects';

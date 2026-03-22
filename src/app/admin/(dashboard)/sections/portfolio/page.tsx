@@ -12,8 +12,7 @@ import { useWebHaptics } from 'web-haptics/react';
 
 export default function PortfolioSettingsPage() {
     const { trigger } = useWebHaptics();
-    const { data: session } = useSession();
-    const { bentoGridSettings, setBentoGridSettings } = useAdminStore();
+    const { bentoGridSettings, setBentoGridSettings, adminEmail } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
@@ -50,8 +49,8 @@ export default function PortfolioSettingsPage() {
             await updateBentoGridSettings(bentoSettingsForm);
             setBentoGridSettings(bentoSettingsForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated Portfolio Settings', `Animation interval set to ${bentoSettingsForm.animationIntervalSeconds}s`, adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated Portfolio Settings', `Animation interval set to ${bentoSettingsForm.animationIntervalSeconds}s`, emailToLog);
 
             showToast('Portfolio Grid settings saved successfully.');
         } catch (err) {

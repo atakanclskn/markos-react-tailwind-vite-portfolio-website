@@ -16,7 +16,7 @@ import GoogleButton from '@/components/admin/GoogleButton';
 
 export default function FounderSectionPage() {
     const { trigger } = useWebHaptics();
-    const { founderInfo, setFounderInfo } = useAdminStore();
+    const { founderInfo, setFounderInfo, adminEmail } = useAdminStore();
     const { data: session } = useSession();
     const accessToken = (session as any)?.accessToken as string | undefined;
 
@@ -89,8 +89,8 @@ export default function FounderSectionPage() {
             await updateFounderInfo(data);
             setFounderInfo(data);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated FOUNDER Section', 'Changes saved to database.', adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated FOUNDER Section', 'Changes saved to database.', emailToLog);
 
             setPhotoFile(null);
             setPickedDriveFile(null);

@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Markos Studio
 
-## Getting Started
+Fotoğraf stüdyosu için **Next.js** tabanlı tanıtım sitesi ve **Firebase** ile yönetilen içerik: galeri, iletişim formu, yasal metinler, SEO ve admin paneli.
 
-First, run the development server:
+## Gereksinimler
+
+- Node.js 20+ (Next.js 16 ile uyumlu sürüm önerilir)
+- npm
+
+## Kurulum
+
+```bash
+npm install
+```
+
+## Ortam değişkenleri
+
+Firebase ve isteğe bağlı entegrasyonlar (Google Analytics Data API, ImgBB, NextAuth) için `.env.local` oluşturun. Tüm anahtarların listesi ve açıklamaları için **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)** dosyasına bakın.
+
+## Geliştirme
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama [http://localhost:3000](http://localhost:3000) adresinde açılır. Admin paneli: `/admin`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Üretim
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Dokümantasyon
 
-To learn more about Next.js, take a look at the following resources:
+| Dosya | İçerik |
+|-------|--------|
+| [docs/README.md](docs/README.md) | Dokümantasyon dizini ve okuma sırası |
+| [docs/STACK.md](docs/STACK.md) | Kullanılan kütüphaneler |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Mimari özet |
+| [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md) | Ortam değişkenleri |
+| [docs/ADMIN.md](docs/ADMIN.md) | Admin paneli |
+| [docs/FIRESTORE.md](docs/FIRESTORE.md) | Veri modeli |
+| [CHANGELOG.md](CHANGELOG.md) | Sürüm notları |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Yapılacaklar |
+| [docs/DURUM_VE_EKSIKLER.md](docs/DURUM_VE_EKSIKLER.md) | Eksikler ve risk özeti |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Komutlar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Komut | Açıklama |
+|-------|----------|
+| `npm run dev` | Geliştirme sunucusu |
+| `npm run build` | Üretim derlemesi |
+| `npm run start` | Üretim sunucusu |
+| `npm run lint` | ESLint |

@@ -5,7 +5,6 @@ import Topbar from '@/components/admin/Topbar';
 import { useAdminStore } from '@/store/adminStore';
 import { getHeroContent, updateHeroContent, logAuditAction } from '@/lib/firestore';
 import type { HeroContent } from '@/types';
-import { useSession } from 'next-auth/react';
 import { InputField, SaveButton } from '../components';
 import { Loader2, X } from 'lucide-react';
 import AdminSplitView from '@/components/admin/AdminSplitView';
@@ -14,8 +13,7 @@ import { useWebHaptics } from 'web-haptics/react';
 
 export default function HeroSectionPage() {
     const { trigger } = useWebHaptics();
-    const { data: session } = useSession();
-    const { heroContent, setHeroContent } = useAdminStore();
+    const { heroContent, setHeroContent, adminEmail } = useAdminStore();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
@@ -50,8 +48,8 @@ export default function HeroSectionPage() {
             await updateHeroContent(heroForm);
             setHeroContent(heroForm);
 
-            const adminEmail = session?.user?.email || 'Unknown User';
-            await logAuditAction('UPDATE', 'Updated HERO Section', 'Changes saved to database.', adminEmail);
+            const emailToLog = adminEmail || 'Unknown User';
+            await logAuditAction('UPDATE', 'Updated HERO Section', 'Changes saved to database.', emailToLog);
 
             showToast('Hero section saved successfully.');
         } catch (err) {

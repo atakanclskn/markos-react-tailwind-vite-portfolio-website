@@ -16,8 +16,10 @@ interface AdminState {
     // --- Auth ---
     isAuthenticated: boolean;
     isAuthLoading: boolean;
+    adminEmail: string | null;
     setAuthenticated: (value: boolean) => void;
     setAuthLoading: (value: boolean) => void;
+    setAdminEmail: (email: string | null) => void;
 
     // --- Sidebar ---
     sidebarCollapsed: boolean;
@@ -83,8 +85,10 @@ export const useAdminStore = create<AdminState>((set) => ({
     // --- Auth ---
     isAuthenticated: false,
     isAuthLoading: true,
+    adminEmail: null,
     setAuthenticated: (value) => set({ isAuthenticated: value }),
     setAuthLoading: (value) => set({ isAuthLoading: value }),
+    setAdminEmail: (email) => set({ adminEmail: email }),
 
     // --- Sidebar ---
     sidebarCollapsed: false,

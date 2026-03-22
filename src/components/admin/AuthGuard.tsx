@@ -13,14 +13,16 @@ interface AuthGuardProps {
 
 export default function AuthGuard({ children }: AuthGuardProps) {
     const router = useRouter();
-    const { isAuthenticated, isAuthLoading, setAuthenticated, setAuthLoading } = useAdminStore();
+    const { isAuthenticated, isAuthLoading, setAuthenticated, setAuthLoading, setAdminEmail } = useAdminStore();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setAuthenticated(true);
+                setAdminEmail(user.email);
             } else {
                 setAuthenticated(false);
+                setAdminEmail(null);
                 router.replace('/admin/login');
             }
             setAuthLoading(false);

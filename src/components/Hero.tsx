@@ -9,21 +9,48 @@ import type { HeroContent } from '@/types';
 export default function Hero({ previewData }: { previewData?: HeroContent }) {
     const { theme } = useTheme();
     const [content, setContent] = useState<HeroContent | null>(null);
+    const [isLoading, setIsLoading] = useState(!previewData);
 
     useEffect(() => {
-        if (!previewData) {
-            getHeroContent().then((data) => {
-                if (data) setContent(data);
-            });
+        if (previewData) {
+            setIsLoading(false);
+            return;
         }
+
+        let mounted = true;
+        getHeroContent()
+            .then((data) => {
+                if (mounted && data) setContent(data);
+            })
+            .finally(() => {
+                if (mounted) setIsLoading(false);
+            });
+
+        return () => {
+            mounted = false;
+        };
     }, [previewData]);
 
     const activeData = previewData || content;
 
-    // Fallback defaults while loading or if Firestore is empty
-    const title = activeData?.title || 'Every Frame a Story';
-    const subtitle = activeData?.subtitle || 'At Markos Studio, we transform your moments into timeless art. From nature to fashion, portraits to products, we provide professional photography services across every field.';
-    const buttonText = activeData?.buttonText || 'Explore Our Portfolio';
+    if (!previewData && isLoading) {
+        return (
+            <section id="hero" className="relative flex min-h-[100dvh] items-center justify-center px-6 pb-12 pt-24">
+                <div className="relative z-10 w-full max-w-4xl animate-pulse text-center">
+                    <div className="mx-auto mb-6 h-3 w-36 rounded bg-white/10" />
+                    <div className="mx-auto mb-4 h-10 w-full max-w-3xl rounded bg-white/10 sm:h-12 md:h-14" />
+                    <div className="mx-auto mb-8 h-10 w-5/6 max-w-2xl rounded bg-white/10" />
+                    <div className="mx-auto h-12 w-56 rounded-full bg-white/10" />
+                </div>
+            </section>
+        );
+    }
+
+    if (!activeData) return null;
+
+    const title = activeData.title;
+    const subtitle = activeData.subtitle;
+    const buttonText = activeData.buttonText;
 
     // Split title to apply gradient on last word
     const titleWords = title.split(' ');
