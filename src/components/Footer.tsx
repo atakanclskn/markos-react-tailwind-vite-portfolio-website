@@ -28,7 +28,7 @@ export default function Footer() {
     if (isLoading) {
         return (
             <footer
-                className="px-6 py-16 md:px-12 lg:px-20"
+                className="px-6 pt-16 pb-10 md:px-12 md:pb-12 lg:px-20"
                 style={{
                     borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
                 }}
@@ -70,7 +70,7 @@ export default function Footer() {
 
     return (
         <footer
-            className="px-6 py-16 md:px-12 lg:px-20"
+            className="px-6 pt-16 pb-10 md:px-12 md:pb-12 lg:px-20"
             style={{
                 borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
             }}
@@ -260,53 +260,61 @@ export default function Footer() {
                     </div>
                 </div>
 
-                {/* Bottom bar */}
+                {/* Site footer row (copyright) */}
                 <div
-                    className="mt-12 flex flex-col items-center justify-between gap-6 pt-8 md:flex-row md:gap-4"
+                    className="mt-12 pt-6"
                     style={{
                         borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`,
                     }}
                 >
-                    <p
-                        className="text-xs"
-                        style={{
-                            fontFamily: 'var(--font-outfit)',
-                            color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-                        }}
-                    >
-                        {copyright}
-                    </p>
+                    <div className="flex flex-col items-center justify-between gap-6 md:flex-row md:gap-4">
+                        <p
+                            className="text-xs"
+                            style={{
+                                fontFamily: 'var(--font-outfit)',
+                                color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+                            }}
+                        >
+                            {copyright}
+                        </p>
 
-                    <p
-                        className="text-xs"
-                        style={{
-                            fontFamily: 'var(--font-outfit)',
-                            color:
-                                theme === 'dark'
-                                    ? 'rgba(255,255,255,0.2)'
-                                    : 'rgba(0,0,0,0.2)',
-                        }}
-                    >
-                        Manchester, United Kingdom
-                    </p>
+                        <p
+                            className="text-xs"
+                            style={{
+                                fontFamily: 'var(--font-outfit)',
+                                color:
+                                    theme === 'dark'
+                                        ? 'rgba(255,255,255,0.2)'
+                                        : 'rgba(0,0,0,0.2)',
+                            }}
+                        >
+                            Manchester, United Kingdom
+                        </p>
+                    </div>
                 </div>
 
-                <p
-                    className="mt-6 text-center text-xs"
+                {/* Designer credit — separated strip below site footer */}
+                <div
+                    className="mt-10 w-full pt-10"
                     style={{
-                        fontFamily: 'var(--font-outfit)',
-                        color: theme === 'dark' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                        borderTop: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)'}`,
                     }}
                 >
-                    <a
-                        href="https://atakanclskn.me"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="transition-colors duration-300 hover:text-[var(--color-brand)]"
-                    >
-                        Designed by atakanclskn
-                    </a>
-                </p>
+                    <p className="w-full text-center">
+                        <a
+                            href="https://atakanclskn.me"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-[0.65rem] font-semibold uppercase tracking-[0.28em] transition-colors duration-300 hover:text-[var(--color-brand)]"
+                            style={{
+                                fontFamily: 'var(--font-outfit)',
+                                color: theme === 'dark' ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.28)',
+                            }}
+                        >
+                            Designed by atakanclskn
+                        </a>
+                    </p>
+                </div>
             </div>
         </footer>
     );

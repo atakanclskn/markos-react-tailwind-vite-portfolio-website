@@ -16,9 +16,12 @@ export interface PickerFile {
     webContentLink?: string;
 }
 
+/* Google Picker loads global APIs at runtime (untyped third-party globals) */
 declare global {
     interface Window {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         gapi: any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         google: any;
     }
 }
@@ -43,14 +46,14 @@ export default function GooglePicker({ accessToken, onPhotosSelected, children }
         document.body.appendChild(script);
     }, []);
 
-    const openPicker = useCallback(() => {
+    const openPicker = useCallback(function openPickerFn() {
         if (!pickerLoaded.current || !window.google?.picker) {
             // Try to load and open again in a moment
             setTimeout(() => {
                 if (window.gapi && !pickerLoaded.current) {
                     window.gapi.load('picker', () => {
                         pickerLoaded.current = true;
-                        openPicker();
+                        openPickerFn();
                     });
                 } else {
                     alert('Google Picker is still loading, please wait a moment and try again.');
@@ -76,15 +79,17 @@ export default function GooglePicker({ accessToken, onPhotosSelected, children }
         let builder = new window.google.picker.PickerBuilder()
             .addView(docsView)
             .setOAuthToken(accessToken)
-            .setCallback((data: any) => {
-                if (data.action === window.google.picker.Action.PICKED) {
-                    const files: PickerFile[] = data.docs.map((doc: any) => ({
-                        id: doc.id,
-                        name: doc.name || doc.title || `photo_${doc.id}`,
-                        mimeType: doc.mimeType || 'image/jpeg',
-                        thumbnailLink: doc.thumbnailLink || doc.iconUrl,
-                        webContentLink: doc.url,
-                    }));
+            .setCallback((data: { action: string; docs?: Array<Record<string, string | undefined>> }) => {
+                if (data.action === window.google.picker.Action.PICKED && data.docs) {
+                    const files: PickerFile[] = data.docs
+                        .filter((doc): doc is typeof doc & { id: string } => typeof doc.id === 'string' && doc.id.length > 0)
+                        .map((doc) => ({
+                            id: doc.id,
+                            name: doc.name || doc.title || `photo_${doc.id}`,
+                            mimeType: doc.mimeType || 'image/jpeg',
+                            thumbnailLink: doc.thumbnailLink || doc.iconUrl,
+                            webContentLink: doc.url,
+                        }));
                     onPhotosSelected(files);
                 }
             })
