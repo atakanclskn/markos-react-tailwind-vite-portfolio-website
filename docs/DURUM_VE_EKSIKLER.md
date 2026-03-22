@@ -9,8 +9,9 @@ Bu belge, “**ne kaldı?**”, “**nerede boşluk var?**” ve “**üstünde 
 | Durum | Açıklama |
 |-------|----------|
 | Giderildi | Kök `README` create-next-app şablonundan çıkarıldı; `docs/` teknik dokümantasyon eklendi. |
-| Eksik | Otomatik CI/CD dokümantasyonu yok; depoda workflow dosyası yok. |
+| Kısmen | GitHub Actions ile `npm run typecheck` çalışıyor; ESLint pipeline’a eklenmedi (`eslint-config-next` ile ESLint 10 arasında kural yükleme hatası — `npm run lint` yerelde de başarısız olabilir). |
 | Eksik | `package.json` içinde `test` script’i yok; otomatik test altyapısı kurulmamış. |
+| Eklendi | `npm run knip` script’i; kök `.env.example`. |
 
 **Yapılacaklar:** Üretim deploy adımlarını README veya ayrı bir “Deploy” bölümünde yazmak; test stratejisi seçildiğinde CHANGELOG’a işlemek.
 
@@ -21,19 +22,19 @@ Bu belge, “**ne kaldı?**”, “**nerede boşluk var?**” ve “**üstünde 
 - **Firebase Auth:** Admin paneli girişi ve `AuthGuard` bunun üzerinde.
 - **NextAuth (Google):** `/api/analytics` NextAuth oturumu istiyor; galeri, founder, preloader gibi sayfalarda `signIn('google')` Drive / OAuth için kullanılıyor.
 
-**Risk:** Sadece Firebase ile giriş yapan bir kullanıcı, NextAuth oturumu olmadan **Analytics** API’sine 401 alabilir. İki OAuth akışının (Firebase Google vs NextAuth Google) kullanıcı deneyiminde netleştirilmesi gerekir.
+**İyileştirildi:** Analytics sayfasında 401 durumunda **NextAuth ile Google** girişi için buton ve oturum gelince otomatik yeniden istek.
 
-**Yapılacaklar:** Analytics sayfasında oturum yoksa yönlendirme veya “Google ile bağlan” CTA’sı; veya mimari sadeleştirme (tek kimlik sağlayıcısı).
+**Kalan risk:** İki OAuth akışı (Firebase Google vs NextAuth Google) hâlâ ayrı; uzun vadede tek oturum modeli düşünülebilir.
 
 ---
 
-## 3. Admin yetkilendirme (kod içi allowlist)
+## 3. Admin yetkilendirme (allowlist)
 
-`src/app/admin/login/page.tsx` içinde Google girişinde izin verilen e-postalar **kod içinde sabit** listeleniyor; `NEXT_PUBLIC_ADMIN_EMAIL` ile tek ek adres destekleniyor.
+Google allowlist **`NEXT_PUBLIC_ADMIN_EMAILS`** (virgülle ayrılmış) ve **`NEXT_PUBLIC_ADMIN_EMAIL`** ile yönetilir; mantık `src/lib/adminAllowlist.ts` içinde. Bu değişkenler set edilmezse **kod içi varsayılan** dört adres kullanılır (yerel geliştirme).
 
-**Risk:** Yeni admin eklemek için deploy gerekebilir; e-postalar repoda görünür (gizli değil).
+**Risk:** Üretimde env verilmezse varsayılanlar hâlâ geçerli olur; sıkı kurulum için env zorunlu tutulmalı veya varsayılanlar kaldırılmalı.
 
-**Yapılacaklar:** Allowlist’i ortam değişkeni veya Firestore `admins` koleksiyonuna taşımak (tercih sizin).
+**Yapılacaklar:** İsterseniz varsayılanları kaldırıp yalnızca env; veya Firestore `admins` koleksiyonu.
 
 ---
 
@@ -68,14 +69,14 @@ Rota taraması: `src/app/**/page.tsx` dosyaları tam sayfa bileşeni içeriyor; 
 ## 6. Güvenlik ve operasyon
 
 - **Firestore Security Rules:** Kod deposunda tanımlı değil; Firebase konsolunda yapılandırılmalı (public yazma/okuma riskleri).
-- **firebase-admin:** `package.json`’da var; `src/` altında kullanılmıyor — gereksiz yüzey veya gelecek kullanım için not.
+- **firebase-admin:** Kaldırıldı (kullanılmıyordu).
 - **Yedekleme ve izleme:** Belgede politika yok; üretim için ayrıca tanımlanmalı.
 
 ---
 
 ## 7. Üstünde durulmayan / düşük öncelik
 
-- `knip` projede var; npm script’e bağlı değil — düzenli kullanılmıyor olabilir.
+- `npm run knip` ile tarama yapılabilir; uyarı veren dosyalar (ör. `scripts/`, `test-categories.mjs`) için `knip` yapılandırması veya temizlik ayrı iş.
 - `recharts` / analytics response tipleri bazı yerlerde `any` — tip sıkılaştırması yapılabilir.
 - Çok satırlı `GA_PRIVATE_KEY` kaçışları farklı barındırıcılarda hata çıkarabilir; deploy dokümantasyonu netleştirilmeli.
 

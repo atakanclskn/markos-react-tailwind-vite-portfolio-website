@@ -15,11 +15,14 @@ Tüm değerler **gerçek anahtarlar olmadan** burada açıklanır. Üretimde `.e
 
 `src/lib/firebase.ts` bu değişkenleri okur; eksikse demo placeholder’lar kullanılır (geliştirme için uyarı verir, üretimde doğru ayarlanmalıdır).
 
-## Admin e-posta (isteğe bağlı genişletme)
+## Admin e-posta (Google / Firebase giriş allowlist)
 
 | Değişken | Zorunlu | Açıklama |
 |----------|---------|----------|
-| `NEXT_PUBLIC_ADMIN_EMAIL` | Hayır | Google ile girişte izin verilen ek e-posta adresi (login sayfasındaki allowlist ile birlikte). |
+| `NEXT_PUBLIC_ADMIN_EMAILS` | Hayır | Virgül veya noktalı virgülle ayrılmış izinli e-posta listesi. **En az bir adres burada veya `NEXT_PUBLIC_ADMIN_EMAIL` ile verilirse** yalnızca bu adresler kullanılır. |
+| `NEXT_PUBLIC_ADMIN_EMAIL` | Hayır | Tek ek izinli adres (geriye dönük uyumluluk). |
+
+İkisi de boşsa [`src/lib/adminAllowlist.ts`](../src/lib/adminAllowlist.ts) içindeki varsayılan liste devreye girer (yerel geliştirme). Üretimde allowlist’i env ile vermek önerilir.
 
 ## NextAuth (Analytics API ve Google oturumu)
 
@@ -67,6 +70,7 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
 
+NEXT_PUBLIC_ADMIN_EMAILS=
 NEXT_PUBLIC_ADMIN_EMAIL=
 
 # NextAuth

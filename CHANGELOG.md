@@ -7,6 +7,13 @@ Bu dosya [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) ilkelerine uyg
 ### Eklenen
 
 - Proje kökü ve `docs/` altında Türkçe teknik dokümantasyon (stack, mimari, ortam değişkenleri, admin, Firestore, yol haritası, durum/eksikler).
+- Kök `.env.example`; `npm run typecheck` ve `npm run knip` script’leri; GitHub Actions ile `typecheck` CI.
+- `NEXT_PUBLIC_ADMIN_EMAILS` ile Google admin allowlist (env doluysa yalnızca bu liste + `NEXT_PUBLIC_ADMIN_EMAIL`); `src/lib/adminAllowlist.ts`.
+- Analytics sayfasında 401 için NextAuth ile giriş çağrısı (`useSession` ile oturum sonrası otomatik yenileme).
+
+### Değişen
+
+- Kullanılmayan `firebase-admin` bağımlılığı kaldırıldı.
 
 ---
 

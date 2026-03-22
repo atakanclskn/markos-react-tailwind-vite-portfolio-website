@@ -290,6 +290,23 @@ export default function Footer() {
                         Manchester, United Kingdom
                     </p>
                 </div>
+
+                <p
+                    className="mt-6 text-center text-xs"
+                    style={{
+                        fontFamily: 'var(--font-outfit)',
+                        color: theme === 'dark' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
+                    }}
+                >
+                    <a
+                        href="https://atakanclskn.me"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="transition-colors duration-300 hover:text-[var(--color-brand)]"
+                    >
+                        Designed by atakanclskn
+                    </a>
+                </p>
             </div>
         </footer>
     );

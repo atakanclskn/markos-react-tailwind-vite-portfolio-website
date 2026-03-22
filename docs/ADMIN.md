@@ -17,7 +17,7 @@ Başarılı girişte denetim günlüğüne (`audit_logs`) kayıt yazılır.
 ## NextAuth
 
 - Kök layout’ta `SessionProvider` vardır; **admin sayfalarının çoğu Firebase ile korunur**.
-- **Analytics** sayfası veriyi `/api/analytics` üzerinden alır; bu API **NextAuth oturumu** (Google OAuth) ister. Oturum yoksa API 401 döner.
+- **Analytics** sayfası veriyi `/api/analytics` üzerinden alır; bu API **NextAuth oturumu** (Google OAuth) ister. Oturum yoksa API 401 döner; sayfada **NextAuth ile Google** girişi için bir kısayol gösterilir.
 - **Galeri, founder, preloader** gibi sayfalarda Google Drive / Picker için **`signIn('google')`** (NextAuth) butonları vardır; bu, Firebase Google girişinden bağımsız ikinci bir OAuth oturumudur.
 - **Portfolio, contact, footer, legal** sayfalarında `useSession` yalnızca oturum bilgisini okumak için kullanılabilir — davranış için ilgili `page.tsx` dosyasına bakın.
 

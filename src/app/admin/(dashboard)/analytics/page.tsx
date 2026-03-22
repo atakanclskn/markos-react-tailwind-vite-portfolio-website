@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession, signIn } from 'next-auth/react';
 import {
     BarChart3,
     Users,
@@ -34,17 +35,30 @@ interface AnalyticsData {
 const COLORS = ['#c8a96e', '#8884d8', '#82ca9d', '#ffc658'];
 
 export default function AnalyticsPage() {
+    const { data: session } = useSession();
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [needsNextAuth, setNeedsNextAuth] = useState(false);
     const [dateRange, setDateRange] = useState<'7daysAgo' | '30daysAgo' | '90daysAgo'>('30daysAgo');
 
     useEffect(() => {
         const fetchAnalytics = async () => {
             setLoading(true);
             setError(null);
+            setNeedsNextAuth(false);
             try {
-                const res = await fetch(`/api/analytics?startDate=${dateRange}&endDate=today`);
+                const res = await fetch(
+                    `/api/analytics?startDate=${dateRange}&endDate=today`,
+                    { credentials: 'include' }
+                );
+
+                if (res.status === 401) {
+                    setNeedsNextAuth(true);
+                    setData(null);
+                    return;
+                }
+
                 const json = await res.json();
 
                 if (!res.ok) {
@@ -52,15 +66,16 @@ export default function AnalyticsPage() {
                 }
 
                 setData(json);
-            } catch (err: any) {
-                setError(err.message);
+            } catch (err: unknown) {
+                const message = err instanceof Error ? err.message : 'Failed to fetch analytics';
+                setError(message);
             } finally {
                 setLoading(false);
             }
         };
 
         fetchAnalytics();
-    }, [dateRange]);
+    }, [dateRange, session]);
 
     // Calculate totals for KPI cards
     const totalUsers = data?.timeline.reduce((acc, curr) => acc + curr.activeUsers, 0) || 0;
@@ -121,6 +136,28 @@ export default function AnalyticsPage() {
                         ))}
                     </div>
                 </div>
+
+                {/* NextAuth required (Analytics API uses server session, not Firebase only) */}
+                {needsNextAuth && !loading && (
+                    <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-5 space-y-3">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" />
+                            <div className="space-y-2">
+                                <h3 className="text-sm font-medium text-amber-200">Google session required</h3>
+                                <p className="text-xs text-amber-200/80 leading-relaxed">
+                                    Admin login uses Firebase; this dashboard loads data through NextAuth. Sign in with the same Google account you use for Drive/Picker, then data will load automatically.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => signIn('google')}
+                                    className="rounded-lg bg-amber-500/20 px-4 py-2 text-xs font-medium text-amber-100 border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                                >
+                                    Continue with Google (NextAuth)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Error State */}
                 {error && (

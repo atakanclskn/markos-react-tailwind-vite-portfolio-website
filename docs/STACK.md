@@ -16,7 +16,6 @@ Aşağıdaki liste [`package.json`](../package.json) ile uyumludur.
 | Paket | Rol |
 |-------|-----|
 | **firebase** | İstemci: Firestore, Storage, Auth (admin girişi). |
-| **firebase-admin** | `package.json` bağımlılığı; şu an `src/` veya `scripts/` altında doğrudan import edilmiyor (gelecekte veya kullanılmayan bağımlılık olarak `knip` ile kontrol edilebilir). |
 | **next-auth** | OAuth oturumu; özellikle **Google Analytics Data API** için sunucu tarafında `getServerSession` ile korunan `/api/analytics`. |
 
 ## UI ve etkileşim

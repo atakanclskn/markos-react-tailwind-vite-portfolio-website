@@ -15,7 +15,7 @@ npm install
 
 ## Ortam değişkenleri
 
-Firebase ve isteğe bağlı entegrasyonlar (Google Analytics Data API, ImgBB, NextAuth) için `.env.local` oluşturun. Tüm anahtarların listesi ve açıklamaları için **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)** dosyasına bakın.
+[Kök dizindeki `.env.example`](.env.example) dosyasını `.env.local` olarak kopyalayıp doldurun. Açıklamalar için **[docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)** dosyasına bakın.
 
 ## Geliştirme
 
@@ -53,4 +53,8 @@ npm start
 | `npm run dev` | Geliştirme sunucusu |
 | `npm run build` | Üretim derlemesi |
 | `npm run start` | Üretim sunucusu |
-| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` (tip kontrolü; CI ile aynı) |
+| `npm run lint` | ESLint (şu an ESLint 10 ile `eslint-config-next` uyumsuzluğu olabilir) |
+| `npm run knip` | Kullanılmayan export/bağımlılık taraması |
+
+GitHub Actions: push/PR’de `typecheck` çalışır (`.github/workflows/ci.yml`).
